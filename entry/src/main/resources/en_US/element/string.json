@@ -1,0 +1,16 @@
+{
+    "string": [
+        {
+            "name": "module_desc",
+            "value": "module description"
+        },
+        {
+            "name": "EntryAbility_desc",
+            "value": "HarmonyOS-driven Smart Life Assistant for the Elderly"
+        },
+        {
+            "name": "EntryAbility_label",
+            "value": "ElderMate"
+        }
+    ]
+}
