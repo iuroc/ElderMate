@@ -2,7 +2,7 @@
 
 ## 项目信息
 
-- 中文论文题目：鸿蒙驱动的老年人智能生活助手设计与实现
+- 中文论文题目：基于鸿蒙系统的老年人智能生活助手设计与实现
 - 英文论文题目：Design and Implementation of an Intelligent Life Assistant for the Elderly Based on HarmonyOS
 - 中文软件名称：智老同行
 - 英文软件名称：ElderMate
