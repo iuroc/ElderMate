@@ -11,6 +11,14 @@
         {
             "name": "EntryAbility_label",
             "value": "智老同行"
+        },
+        {
+            "name": "READ_CALENDAR_reason",
+            "value": "读取日历用于用药提醒"
+        },
+        {
+            "name": "WRITE_CALENDAR_reason",
+            "value": "写入日历用于用药提醒"
         }
     ]
 }

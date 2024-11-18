@@ -7,6 +7,18 @@
         "deviceTypes": [
             "phone"
         ],
+        "requestPermissions": [
+            {
+                "name": "ohos.permission.READ_CALENDAR",
+                "reason": "$string:READ_CALENDAR_reason",
+                "usedScene": {}
+            },
+            {
+                "name": "ohos.permission.WRITE_CALENDAR",
+                "reason": "$string:READ_CALENDAR_reason",
+                "usedScene": {}
+            }
+        ],
         "deliveryWithInstall": true,
         "installationFree": false,
         "pages": "$profile:main_pages",
@@ -43,7 +55,7 @@
                         "name": "ohos.extension.backup",
                         "resource": "$profile:backup_config"
                     }
-                ],
+                ]
             }
         ]
     }
