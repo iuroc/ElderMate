@@ -17,6 +17,9 @@
                 "name": "ohos.permission.WRITE_CALENDAR",
                 "reason": "$string:READ_CALENDAR_reason",
                 "usedScene": {}
+            },
+            {
+                "name": "ohos.permission.INTERNET",
             }
         ],
         "deliveryWithInstall": true,

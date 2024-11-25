@@ -1,8 +1,8 @@
-import { Assistant as AssistantTabContent } from './tabContents/Assistant'
-import { Community as CommunityTabContent } from './tabContents/Community'
-import { Home as HomeTabContent } from './tabContents/Home'
-import { News as NewsTabContent } from './tabContents/News'
-import { Profile as ProfileTabContent } from './tabContents/Profile'
+import { Assistant as AssistantTabContent } from '../tabContents/Assistant'
+import { Community as CommunityTabContent } from '../tabContents/Community'
+import { Home as HomeTabContent } from '../tabContents/Home'
+import { News as NewsTabContent } from '../tabContents/News'
+import { Profile as ProfileTabContent } from '../tabContents/Profile'
 
 @Entry
 @Component
