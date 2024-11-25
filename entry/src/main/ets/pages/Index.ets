@@ -1,18 +1,20 @@
-import { Assistant as AssistantTabContent } from '../tabContents/Assistant'
-import { Community as CommunityTabContent } from '../tabContents/Community'
-import { Home as HomeTabContent } from '../tabContents/Home'
-import { News as NewsTabContent } from '../tabContents/News'
-import { Profile as ProfileTabContent } from '../tabContents/Profile'
+import { Assistant as AssistantTabContent } from '../tabContents/Assistant/Assistant'
+import { Community as CommunityTabContent } from '../tabContents/Community/Community'
+import { Home as HomeTabContent } from '../tabContents/Home/Home'
+import { News as NewsTabContent } from '../tabContents/News/News'
+import { Profile as ProfileTabContent } from '../tabContents/Profile/Profile'
 
 @Entry
 @Component
 struct Index {
-    @State message: string = 'Hello World'
+    tabsController: TabsController = new TabsController()
 
     build() {
-        Tabs({ barPosition: BarPosition.End }) {
+        Tabs({ barPosition: BarPosition.End, controller: this.tabsController }) {
             TabContent() {
-                HomeTabContent()
+                HomeTabContent({
+                    tabsController: this.tabsController
+                })
             }.tabBar('首页')
 
             TabContent() {
