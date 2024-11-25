@@ -8,6 +8,7 @@ interface ListItem {
 
 @Component
 export struct HomeList {
+    /** 入口页面的底部导航栏控制器 */
     @Require tabsController: TabsController = new TabsController()
 
     build() {
@@ -17,14 +18,15 @@ export struct HomeList {
                     ComposeListItem({
                         contentItem: item.contentItem,
                         operateItem: item.operateItem || {
-                            button: { text: '进入' }
+                            arrow: { value: $r('sys.media.ohos_ic_public_arrow_right') }
                         },
-                    }).onClick(() => {
+                    }).onClick(event => {
                         item.onClick(this)
                     })
                 }
             })
         }
+        .margin(10)
     }
 
     listItems: ListItem[] = [
@@ -35,8 +37,7 @@ export struct HomeList {
                 iconStyle: IconType.SYSTEM_ICON,
                 icon: $r('app.media.doc_plaintext_and_pencil'),
             },
-            onClick() {
-
+            onClick(homeList: HomeList) {
             }
         },
         {
@@ -82,7 +83,7 @@ export struct HomeList {
         {
             contentItem: {
                 primaryText: '智能聊天助手',
-                secondaryText: '解答问题，陪您度过有趣时光',
+                secondaryText: '随时陪您聊天和解答问题',
                 iconStyle: IconType.SYSTEM_ICON,
                 icon: $r('app.media.doc_plaintext_and_pencil')
             },
