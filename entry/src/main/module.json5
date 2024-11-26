@@ -5,22 +5,9 @@
         "description": "$string:module_desc",
         "mainElement": "EntryAbility",
         "deviceTypes": [
-            "phone"
-        ],
-        "requestPermissions": [
-            {
-                "name": "ohos.permission.READ_CALENDAR",
-                "reason": "$string:READ_CALENDAR_reason",
-                "usedScene": {}
-            },
-            {
-                "name": "ohos.permission.WRITE_CALENDAR",
-                "reason": "$string:READ_CALENDAR_reason",
-                "usedScene": {}
-            },
-            {
-                "name": "ohos.permission.INTERNET",
-            }
+            "phone",
+            "tablet",
+            "2in1"
         ],
         "deliveryWithInstall": true,
         "installationFree": false,
@@ -30,9 +17,9 @@
                 "name": "EntryAbility",
                 "srcEntry": "./ets/entryability/EntryAbility.ets",
                 "description": "$string:EntryAbility_desc",
-                "icon": "$media:icon",
+                "icon": "$media:layered_image",
                 "label": "$string:EntryAbility_label",
-                "startWindowIcon": "$media:icon_startWindow",
+                "startWindowIcon": "$media:startIcon",
                 "startWindowBackground": "$color:start_window_background",
                 "exported": true,
                 "skills": [
@@ -58,7 +45,7 @@
                         "name": "ohos.extension.backup",
                         "resource": "$profile:backup_config"
                     }
-                ]
+                ],
             }
         ]
     }

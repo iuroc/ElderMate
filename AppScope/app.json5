@@ -1,7 +1,7 @@
 {
     "app": {
-        "bundleName": "com.zyl.demo",
-        "vendor": "周依露",
+        "bundleName": "com.zyl.elderMate",
+        "vendor": "example",
         "versionCode": 1000000,
         "versionName": "1.0.0",
         "icon": "$media:app_icon",

@@ -6,11 +6,11 @@
         },
         {
             "name": "EntryAbility_desc",
-            "value": "鸿蒙驱动的老年人智能生活助手"
+            "value": "description"
         },
         {
             "name": "EntryAbility_label",
-            "value": "智老同行"
+            "value": "label"
         }
     ]
 }
