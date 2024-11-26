@@ -1,6 +1,22 @@
 @Component
 export struct Community {
     build() {
-        Button('这里是社区页面')
+        RelativeContainer() {
+            Tabs() {
+                TabContent() {
+                    RelativeContainer() {
+
+                    }
+                    .backgroundColor(Color.Pink)
+                }.tabBar('生活圈子')
+
+                TabContent() {
+                    RelativeContainer() {
+
+                    }
+                    .backgroundColor(Color.Yellow)
+                }.tabBar('活动中心')
+            }
+        }
     }
 }

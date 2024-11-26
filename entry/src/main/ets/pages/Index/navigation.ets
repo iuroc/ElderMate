@@ -1,26 +1,19 @@
 import { TabsNameMap } from "./MyTabs"
 import { SymbolGlyphModifier } from "@kit.ArkUI"
 
-interface NavigationConfigItem {
-    menuItems: NavigationMenuItem[]
-    title: string
-    titleMode: NavigationTitleMode
-}
-
-type NavigationConfig = Record<TabsNameMap, NavigationConfigItem>
-
 /** 每个页面单独的导航配置 */
 export const getNavigationConfig: () => NavigationConfig = () => {
     return {
         'home': {
             menuItems: [
-                { value: '', symbolIcon: new SymbolGlyphModifier($r('sys.symbol.camera_mode_dualview')) }
             ],
             title: '智老同行',
             titleMode: NavigationTitleMode.Free
         },
         'community': {
-            menuItems: [],
+            menuItems: [
+                { value: '发表帖子', symbolIcon: new SymbolGlyphModifier($r('sys.symbol.square_and_pencil')) }
+            ],
             title: '老年社区',
             titleMode: NavigationTitleMode.Mini
         },
@@ -41,3 +34,11 @@ export const getNavigationConfig: () => NavigationConfig = () => {
         },
     }
 }
+
+interface NavigationConfigItem {
+    menuItems: NavigationMenuItem[]
+    title: string
+    titleMode: NavigationTitleMode
+}
+
+type NavigationConfig = Record<TabsNameMap, NavigationConfigItem>
