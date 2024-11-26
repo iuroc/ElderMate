@@ -6,11 +6,11 @@
         },
         {
             "name": "EntryAbility_desc",
-            "value": "description"
+            "value": "HarmonyOS-driven Smart Life Assistant for the Elderly"
         },
         {
             "name": "EntryAbility_label",
-            "value": "label"
+            "value": "ElderMate"
         }
     ]
 }
