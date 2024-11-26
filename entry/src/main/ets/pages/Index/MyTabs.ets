@@ -3,25 +3,29 @@ import { Community as CommunityTabContent } from '../../tabContents/Community/Co
 import { Assistant as AssistantTabContent } from '../../tabContents/Assistant/Assistant'
 import { News as NewsTabContent } from '../../tabContents/News/News'
 import { Profile as ProfileTabContent } from '../../tabContents/Profile/Profile'
-import { getNavigationConfig } from './navigation'
+import { getNavigationConfig, NavigationConfig } from './MyNavigation'
 
 @Component
 export struct MyTabs {
-    private tabsController = new TabsController()
     @Link navigationMenuItems: NavigationMenuItem[]
     @Link navigationTitleMode: NavigationTitleMode
     @Link navigationTitle: string
-    /** 当前显示的右上角工具栏按钮列表 */
-    navigationConfig = getNavigationConfig()
+    /** 每个页面单独的导航配置 */
+    @Require navigationConfig: NavigationConfig = getNavigationConfig()
+    /** 设置默认显示的页面 */
+    private defaultTabsIndex = TabsIndex.Home
+    private tabsController = new TabsController()
 
     aboutToAppear(): void {
-        this.navigationMenuItems = this.navigationConfig['home'].menuItems
-        this.navigationTitleMode = this.navigationConfig['home'].titleMode
-        this.navigationTitle = this.navigationConfig['home'].title
+        // 设置初始状态下
+        const config = this.navigationConfig[tabsNameMap[this.defaultTabsIndex]]
+        this.navigationMenuItems = config.menuItems
+        this.navigationTitleMode = config.titleMode
+        this.navigationTitle = config.title
     }
 
     build() {
-        Tabs({ barPosition: BarPosition.End, controller: this.tabsController }) {
+        Tabs({ barPosition: BarPosition.End, controller: this.tabsController, index: this.defaultTabsIndex }) {
             TabContent() {
                 HomeTabContent({
                     tabsController: this.tabsController
@@ -45,14 +49,13 @@ export struct MyTabs {
             }.tabBar('我的')
         }
         .onAnimationStart((_, targetIndex: TabsIndex) => {
-            onAnimationStart(this, targetIndex)
+            handleAnimationStart(this, targetIndex)
         })
     }
 }
 
-
 /** 监听每次切换 `Tabs` 导航页面，比 `onChange` 更早 */
-const onAnimationStart = (that: MyTabs, targetIndex: TabsIndex) => {
+const handleAnimationStart = (that: MyTabs, targetIndex: TabsIndex) => {
     const currentNavigationConfig = that.navigationConfig[tabsNameMap[targetIndex]]
     that.navigationTitleMode = currentNavigationConfig.titleMode
     that.navigationTitle = currentNavigationConfig.title

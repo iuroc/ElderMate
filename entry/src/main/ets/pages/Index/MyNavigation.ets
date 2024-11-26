@@ -1,12 +1,34 @@
-import { TabsNameMap } from "./MyTabs"
+import { MyTabs, TabsNameMap } from "./MyTabs"
 import { SymbolGlyphModifier } from "@kit.ArkUI"
 
-/** 每个页面单独的导航配置 */
+@Component
+export struct MyNavigation {
+    @State navigationMenuItems: NavigationMenuItem[] = []
+    @State navigationTitleMode: NavigationTitleMode = NavigationTitleMode.Free
+    @State navigationTitle: string = ''
+    navigationConfig = getNavigationConfig()
+
+    build() {
+        Navigation() {
+            MyTabs({
+                navigationMenuItems: this.navigationMenuItems,
+                navigationTitleMode: this.navigationTitleMode,
+                navigationTitle: this.navigationTitle,
+                navigationConfig: this.navigationConfig
+            })
+        }
+        .title(this.navigationTitle)
+        .titleMode(this.navigationTitleMode)
+        .menus(this.navigationMenuItems)
+        .hideBackButton(true)
+    }
+}
+
+/** 每个页面单独的导航配置（右上角菜单项、标题栏内容和模式） */
 export const getNavigationConfig: () => NavigationConfig = () => {
     return {
         'home': {
-            menuItems: [
-            ],
+            menuItems: [],
             title: '智老同行',
             titleMode: NavigationTitleMode.Free
         },
@@ -41,4 +63,4 @@ interface NavigationConfigItem {
     titleMode: NavigationTitleMode
 }
 
-type NavigationConfig = Record<TabsNameMap, NavigationConfigItem>
+export type NavigationConfig = Record<TabsNameMap, NavigationConfigItem>
