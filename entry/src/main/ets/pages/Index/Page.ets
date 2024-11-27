@@ -2,7 +2,7 @@ import { AppNavigation } from './AppNavigation'
 
 @Entry
 @Component
-struct Index {
+struct Page {
     build() {
         RelativeContainer(){
             AppNavigation()

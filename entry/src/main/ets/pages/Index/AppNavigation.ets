@@ -1,88 +1,112 @@
 import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { Page as HomePage } from '../Home/Page'
+import { Page as SharePage } from '../Share/Page'
+import { Page as ChatPage } from '../Chat/Page'
+import { Page as MorePage } from '../More/Page'
+import { Page as UserPage } from '../User/Page'
+import { NavigationContent } from './NavigationContent'
 
 @Component
 export struct AppNavigation {
     toolbarItems = this.makeToolbarItems()
     menuItems = this.makeMenuItems()
-    title: ResourceStr = $r('app.string.EntryAbility_label')
     @Provide pathInfos: NavPathStack = new NavPathStack()
 
     aboutToAppear(): void {
-
     }
 
     build() {
         Navigation(this.pathInfos) {
-
+            NavigationContent()
         }
-        .title(this.title)
+        .title(this.getGreeting())
         .hideBackButton(true)
         .menus(this.menuItems)
         .toolbarConfiguration(this.toolbarItems)
         .navDestination(this.PageMap)
+        .titleMode(NavigationTitleMode.Free)
     }
 
+    /** 子页面配置 */
     @Builder
-    PageMap(name: string) {
+    PageMap(name: string, _param: string) {
         if (name == 'home') {
-            NavDestination() {
-                Button('智老同行').onClick(() => {
-                    // this.pathInfos.pop()
-                    console.log('iuroc', JSON.stringify(this.pathInfos.getParamByName('name')))
-                })
-            }
+            HomePage()
         } else if (name == 'share') {
-            NavDestination() {
-                Button('分享生活')
-            }
+            SharePage()
         } else if (name == 'chat') {
-            NavDestination() {
-                Button('聊天助手')
-            }
+            ChatPage()
         } else if (name == 'more') {
-            NavDestination() {
-                Button('更多资讯')
-            }
+            MorePage()
         } else if (name == 'user') {
-            NavDestination() {
-                Button('个人中心')
-            }
+            UserPage()
         }
     }
 
+    /** 右上角菜单配置 */
     makeMenuItems(): NavigationMenuItem[] {
         return [
             { value: '分享软件', symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')) }
         ]
     }
 
+    /** 根据当前时间返回问候语 */
+    getGreeting(): string {
+        const now = new Date()
+        const hours = now.getHours()
+        let greeting = ''
+        if (hours < 5) {
+            greeting = '晚安~'
+        } else if (hours < 12) {
+            greeting = '早上好~'
+        } else if (hours < 14) {
+            greeting = '中午好~'
+        } else if (hours < 18) {
+            greeting = '下午好~'
+        } else if (hours < 24) {
+            greeting = '晚上好~'
+        }
+        return greeting
+    }
+
+    /** 底部工具栏配置 */
     makeToolbarItems(): ToolbarItem[] {
         const that = this
         return [
             {
                 value: '智老同行',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.house')),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.house_fill')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'home', param: 'Hello World' })
-                }
+                },
             },
             {
                 value: '分享生活',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.pencil_and_card')),
+                action() {
+                    that.pathInfos.pushPath({ name: 'share', param: 'Hello World' })
+                }
             },
             {
                 value: '聊天助手',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ellipsis_bubble'))
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ellipsis_bubble')),
+                action() {
+                    that.pathInfos.pushPath({ name: 'chat', param: 'Hello World' })
+                }
             },
             {
                 value: '更多资讯',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.more'))
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.more')),
+                action() {
+                    that.pathInfos.pushPath({ name: 'more', param: 'Hello World' })
+                }
             },
             {
                 value: '个人中心',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.person'))
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.person')),
+                action() {
+                    that.pathInfos.pushPath({ name: 'user', param: 'Hello World' })
+                }
             },
         ]
     }
 }
-
