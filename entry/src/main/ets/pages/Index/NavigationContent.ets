@@ -3,13 +3,10 @@ import { ComposeListItem, ContentItem, IconType, OperateItem } from '@kit.ArkUI'
 /** 导航页内容 */
 @Component
 export struct NavigationContent {
+    scroller?: Scroller
+
     build() {
-        Scroll() {
-            Column({ space: 10 }) {
-                HomeList()
-            }
-            .padding(10)
-        }
+        HomeList({ scroller: this.scroller })
     }
 }
 
@@ -21,24 +18,28 @@ interface ListItem {
 
 @Component
 struct HomeList {
+    scroller = new Scroller()
     private listItems = this.makeListItems()
+    @Consume('Index') pathInfos: NavPathStack
 
     build() {
-        List() {
+        List({ scroller: this.scroller }) {
             ForEach(this.listItems, (item: ListItem) => {
                 ListItem() {
                     ComposeListItem({
                         contentItem: item.contentItem,
                         operateItem: item.operateItem,
-                    }).onClick(event => {
-                        item.onClick(event)
-                    })
+                    }).onClick(item.onClick)
                 }
             })
         }
+        .width('auto')
+        .height('auto')
+        .padding(10)
     }
 
     private makeListItems(): ListItem[] {
+        const that = this
         return [
             {
                 contentItem: {
@@ -97,7 +98,8 @@ struct HomeList {
                     iconStyle: IconType.HEAD_SCULPTURE,
                     icon: $r('app.media.doc_plaintext_and_pencil')
                 },
-                onClick(homeList) {
+                onClick() {
+                    that.pathInfos.pushPath({ name: 'chat' })
                 }
             },
             {
@@ -107,7 +109,8 @@ struct HomeList {
                     iconStyle: IconType.HEAD_SCULPTURE,
                     icon: $r('app.media.flag')
                 },
-                onClick(homeList) {
+                onClick() {
+
                 }
             },
         ]

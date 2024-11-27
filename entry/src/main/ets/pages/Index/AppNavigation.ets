@@ -1,5 +1,4 @@
 import { SymbolGlyphModifier } from '@kit.ArkUI'
-import { Page as HomePage } from '../Home/Page'
 import { Page as SharePage } from '../Share/Page'
 import { Page as ChatPage } from '../Chat/Page'
 import { Page as MorePage } from '../More/Page'
@@ -10,14 +9,17 @@ import { NavigationContent } from './NavigationContent'
 export struct AppNavigation {
     toolbarItems = this.makeToolbarItems()
     menuItems = this.makeMenuItems()
-    @Provide pathInfos: NavPathStack = new NavPathStack()
+    @Consume('Index') pathInfos: NavPathStack
+    /** 首页列表滚动控制器 */
+    appScroller = new Scroller()
 
     aboutToAppear(): void {
+
     }
 
     build() {
         Navigation(this.pathInfos) {
-            NavigationContent()
+            NavigationContent({ scroller: this.appScroller })
         }
         .title(this.getGreeting())
         .hideBackButton(true)
@@ -30,9 +32,7 @@ export struct AppNavigation {
     /** 子页面配置 */
     @Builder
     PageMap(name: string, _param: string) {
-        if (name == 'home') {
-            HomePage()
-        } else if (name == 'share') {
+        if (name == 'share') {
             SharePage()
         } else if (name == 'chat') {
             ChatPage()
@@ -77,34 +77,35 @@ export struct AppNavigation {
                 value: '智老同行',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.house_fill')),
                 action() {
+                    that.appScroller.scrollTo({ xOffset: 0, yOffset: 0 })
                 },
             },
             {
                 value: '分享生活',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.pencil_and_card')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'share', param: 'Hello World' })
+                    that.pathInfos.pushPath({ name: 'share' })
                 }
             },
             {
                 value: '聊天助手',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ellipsis_bubble')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'chat', param: 'Hello World' })
+                    that.pathInfos.pushPath({ name: 'chat' })
                 }
             },
             {
                 value: '更多资讯',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.more')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'more', param: 'Hello World' })
+                    that.pathInfos.pushPath({ name: 'more' })
                 }
             },
             {
                 value: '个人中心',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.person')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'user', param: 'Hello World' })
+                    that.pathInfos.pushPath({ name: 'user' })
                 }
             },
         ]
