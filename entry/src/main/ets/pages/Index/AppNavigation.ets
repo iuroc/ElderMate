@@ -77,7 +77,7 @@ export struct AppNavigation {
                 value: '智老同行',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.house_fill')),
                 action() {
-                    that.appScroller.scrollTo({ xOffset: 0, yOffset: 0 })
+                    that.appScroller.scrollTo({ xOffset: 0, yOffset: 0, animation: true })
                 },
             },
             {
