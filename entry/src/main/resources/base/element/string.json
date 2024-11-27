@@ -6,11 +6,23 @@
         },
         {
             "name": "EntryAbility_desc",
-            "value": "鸿蒙驱动的老年人智能生活助手"
+            "value": "HarmonyOS-driven Smart Life Assistant for the Elderly"
         },
         {
             "name": "EntryAbility_label",
-            "value": "智老同行"
+            "value": "ElderMate"
+        },
+        {
+            "name": "ChatPage_send",
+            "value": "Send"
+        },
+        {
+            "name": "ChatPage_placeholder",
+            "value": "Ask me anything."
+        },
+        {
+            "name": "ChatPage_title",
+            "value": "Chat Assistant"
         }
     ]
 }

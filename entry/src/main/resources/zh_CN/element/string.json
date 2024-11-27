@@ -1,16 +1,28 @@
 {
     "string": [
         {
-            "name": "module_desc",
-            "value": "模块描述"
+            "name": "ChatPage_placeholder",
+            "value": "您可以问我任何问题"
+        },
+        {
+            "name": "ChatPage_send",
+            "value": "发送"
+        },
+        {
+            "name": "EntryAbility_label",
+            "value": "智老同行"
         },
         {
             "name": "EntryAbility_desc",
             "value": "鸿蒙驱动的老年人智能生活助手"
         },
         {
-            "name": "EntryAbility_label",
-            "value": "智老同行"
+            "name": "module_desc",
+            "value": "模块描述"
+        },
+        {
+            "name": "ChatPage_title",
+            "value": "聊天助手"
         }
     ]
 }
