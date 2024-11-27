@@ -3,7 +3,7 @@ import { AppNavigation } from './AppNavigation'
 @Entry
 @Component
 struct Page {
-    @Provide('Index') pathInfos: NavPathStack = new NavPathStack()
+    pathInfos = new NavPathStack()
 
     onPageShow(): void {
         if (this.pathInfos.getAllPathName().length == 0) {
@@ -13,7 +13,7 @@ struct Page {
 
     build() {
         RelativeContainer() {
-            AppNavigation()
+            AppNavigation({ pathInfos: this.pathInfos })
         }
     }
 }

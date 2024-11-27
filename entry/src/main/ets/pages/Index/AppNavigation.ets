@@ -7,11 +7,11 @@ import { NavigationContent } from './NavigationContent'
 
 @Component
 export struct AppNavigation {
-    toolbarItems = this.makeToolbarItems()
-    menuItems = this.makeMenuItems()
-    @Consume('Index') pathInfos: NavPathStack
+    private toolbarItems = this.makeToolbarItems()
+    private menuItems = this.makeMenuItems()
+    @Provide('AppNavigation') pathInfos: NavPathStack = new NavPathStack()
     /** 首页列表滚动控制器 */
-    appScroller = new Scroller()
+    private appScroller = new Scroller()
 
     aboutToAppear(): void {
 
@@ -44,14 +44,14 @@ export struct AppNavigation {
     }
 
     /** 右上角菜单配置 */
-    makeMenuItems(): NavigationMenuItem[] {
+    private makeMenuItems(): NavigationMenuItem[] {
         return [
             { value: '分享软件', symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')) }
         ]
     }
 
     /** 根据当前时间返回问候语 */
-    getGreeting(): string {
+    private getGreeting(): string {
         const now = new Date()
         const hours = now.getHours()
         let greeting = ''
@@ -70,7 +70,7 @@ export struct AppNavigation {
     }
 
     /** 底部工具栏配置 */
-    makeToolbarItems(): ToolbarItem[] {
+    private makeToolbarItems(): ToolbarItem[] {
         const that = this
         return [
             {

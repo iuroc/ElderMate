@@ -20,7 +20,7 @@ interface ListItem {
 struct HomeList {
     scroller = new Scroller()
     private listItems = this.makeListItems()
-    @Consume('Index') pathInfos: NavPathStack
+    @Consume('AppNavigation') pathInfos: NavPathStack
 
     build() {
         List({ scroller: this.scroller }) {
