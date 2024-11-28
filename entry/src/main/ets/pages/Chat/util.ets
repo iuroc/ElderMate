@@ -1,3 +1,7 @@
+import { systemShare } from '@kit.ShareKit'
+import { uniformTypeDescriptor as utd } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
+
 /** 消息列表项数据 */
 export interface MessageData {
     /** 消息角色，如果是 `info
@@ -34,4 +38,37 @@ export function getSelectedItems(messageDataList: MessageData[]): MessageData[] 
 /** 判断当前消息列表是否被全选 */
 export function isAllSelected(messageDataList: MessageData[]): boolean {
     return messageDataList.filter(item =>!item.selected && item.role != 'info' && !item.hidden).length == 0
+}
+
+/**
+ * 调用系统能力分享文本
+ * @param context
+ * @param record 需要分享的数据
+ * @throws { BusinessError } 401 - Parameter error.
+ */
+export async function systemShareText(
+    context: Context,
+    title: string,
+    content: string
+): Promise<void> {
+    const sharedData = new systemShare.SharedData({
+        utd: utd.UniformDataType.TEXT,
+        title, content,
+    })
+    const controller = new systemShare.ShareController(sharedData)
+    await controller.show(context as common.UIAbilityContext, {
+        selectionMode: systemShare.SelectionMode.SINGLE,
+        previewMode: systemShare.SharePreviewMode.DETAIL,
+    })
+}
+
+/**
+ * 合并多条消息为用于分享的纯文本，包含 `user` 和 `assistant` 消息
+ * @param items
+ * @returns
+ */
+export function mergedMessageForSharing(items: MessageData[]) {
+    return items.map(item => {
+        return `【${item.role}】\n${item.content.trim()}`
+    }).join(`\n${'-'.repeat(20)}\n`)
 }

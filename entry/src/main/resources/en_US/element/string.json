@@ -13,7 +13,7 @@
             "value": "ElderMate"
         },
         {
-            "name": "ChatPage_send",
+            "name": "ChatPage_button_text_send",
             "value": "Send"
         },
         {
@@ -23,6 +23,30 @@
         {
             "name": "ChatPage_title",
             "value": "Chat Assistant"
+        },
+        {
+            "name": "ChatPage_TextSelectModal_text_share_title",
+            "value": "Text shared by the intelligent assistant"
+        },
+        {
+            "name": "ChatPage_clean_messages_tip",
+            "value": "Are you sure you want to clear the message list?"
+        },
+        {
+            "name": "ChatPage_delete_selected_messages_tip",
+            "value": "Are you sure you want to delete the selected messages?"
+        },
+        {
+            "name": "button_text_confirm",
+            "value": "Confirm"
+        },
+        {
+            "name": "button_text_cancel",
+            "value": "Cancel"
+        },
+        {
+            "name": "title_text_tip",
+            "value": "Tip"
         }
     ]
 }
