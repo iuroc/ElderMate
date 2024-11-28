@@ -1,5 +1,12 @@
 import { LengthMetrics, SymbolGlyphModifier, promptAction } from '@kit.ArkUI'
-import { changeAllSelectStatus, deleteByUUID, MessageData, MessageList, quitSelectMode } from './MessageList'
+import {
+    changeAllSelectStatus,
+    deleteByUUID,
+    isAllSelected,
+    MessageData,
+    MessageList,
+    quitSelectMode
+} from './MessageList'
 import { util } from '@kit.ArkTS'
 
 @Component
@@ -23,10 +30,6 @@ export struct Page {
                 uuid: util.generateRandomUUID(false)
             }
         ]
-    }
-
-    isAllSelected() {
-        return this.messageDataList.filter(item =>!item.selected).length == 0
     }
 
     /** 消息列表数据 */
@@ -117,10 +120,10 @@ export struct Page {
 
     @Builder
     SelectPanel() {
-        Button(this.isAllSelected() ? '全不选' : '全选',
+        Button(isAllSelected(this) ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
-            changeAllSelectStatus(this, !this.isAllSelected())
+            changeAllSelectStatus(this, !isAllSelected(this))
         })
         Button('退出多选',
             { buttonStyle: ButtonStyleMode.NORMAL }

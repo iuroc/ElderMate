@@ -59,7 +59,7 @@ export struct MessageList {
             space: { main: LengthMetrics.vp(10) },
             justifyContent: this.makeJustifyContent(item),
         }) {
-            if (this.selectMode) {
+            if (this.selectMode && item.role != 'info') {
                 Checkbox().flexShrink(0).select(item.selected)
                     .onChange(value => {
                         for (let i = 0; i < this.messageDataList.length; i++) {
@@ -131,6 +131,11 @@ export struct MessageList {
         if (item.role == 'info') {
             return []
         }
+
+        if (this.selectMode) {
+            return []
+        }
+
         return [
             {
                 value: '复制文本',
@@ -154,7 +159,7 @@ export struct MessageList {
                 },
             },
             {
-                value: this.selectMode ? '退出多选模式' : '进入多选模式',
+                value: this.selectMode ? '退出多选' : '批量选择',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
                 action: () => {
                     if (this.selectMode) {
@@ -235,4 +240,13 @@ export function deleteByUUID(component: MessageList | ChatPage, uuid: string) {
             return
         }
     }
+}
+
+/**
+ * 当前可见项目是否全部选中状态（不包含 `hidden=true` 和 `role=info` 的项目）
+ * @param component
+ * @returns
+ */
+export function isAllSelected(component: MessageList | ChatPage) {
+    return component.messageDataList.filter(item =>!item.selected && item.role != 'info' && !item.hidden).length == 0
 }
