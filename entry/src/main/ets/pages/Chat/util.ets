@@ -72,3 +72,25 @@ export function mergedMessageForSharing(items: MessageData[]) {
         return `【${item.role}】\n${item.content.trim()}`
     }).join(`\n${'-'.repeat(20)}\n`)
 }
+
+interface HasMessageDataList {
+    messageDataList: MessageData[]
+}
+
+/** 删除指定 `UUID` 的消息 */
+export function deleteByUUID(that: HasMessageDataList, uuid: string): void {
+    for (let i = 0; i < that.messageDataList.length; i++) {
+        if (that.messageDataList[i].uuid == uuid) {
+            that.messageDataList.splice(i, 1)
+            return
+        }
+    }
+}
+
+/** 设置全选或全不选，将例外项将设置为相反的值 */
+export function changeAllSelectStatus(that: HasMessageDataList, selected: boolean, ...excepts: string[]) {
+    that.messageDataList = that.messageDataList.map(item => {
+        item.selected = excepts.includes(item.uuid) ? !selected : selected
+        return item
+    })
+}
