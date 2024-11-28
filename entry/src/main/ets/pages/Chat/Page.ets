@@ -1,7 +1,6 @@
 import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
 import {
-    getSelectableItems,
     getSelectedItems,
     isAllSelected,
     mergedMessageForSharing,
@@ -30,7 +29,6 @@ export struct Page {
     systemPasteboard = pasteboard.getSystemPasteboard()
     @State isModalShow: boolean = false
     @State textSelectModalText: string = ''
-    textSelectModalTextController = new TextController()
     textShareTitle: string = ''
 
     async aboutToAppear() {
@@ -82,7 +80,6 @@ export struct Page {
         RelativeContainer() {
             TextSelectModal({
                 text: this.textSelectModalText,
-                controller: this.textSelectModalTextController
             })
         }
     }

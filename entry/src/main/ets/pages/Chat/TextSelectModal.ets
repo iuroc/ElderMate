@@ -1,6 +1,4 @@
 import { LengthMetrics } from "@kit.ArkUI"
-import { systemShare } from "@kit.ShareKit"
-import { uniformTypeDescriptor } from "@kit.ArkData"
 import { systemShareText } from "./util"
 import { common } from "@kit.AbilityKit"
 import { BusinessError } from "@kit.BasicServicesKit"
@@ -47,6 +45,7 @@ export struct TextSelectModal {
             }.padding(20)
         }
         .height('100%')
+        .align(Alignment.Top)
         .edgeEffect(EdgeEffect.Spring)
     }
 }
