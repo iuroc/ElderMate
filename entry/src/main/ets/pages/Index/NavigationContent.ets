@@ -96,7 +96,7 @@ struct HomeList {
                     primaryText: '智能聊天助手',
                     secondaryText: '随时陪您聊天和解答问题',
                     iconStyle: IconType.HEAD_SCULPTURE,
-                    icon: $r('app.media.doc_plaintext_and_pencil')
+                    icon: $r('app.media.ellipsis_bubble')
                 },
                 onClick() {
                     that.pathInfos.pushPath({ name: 'chat' })
