@@ -99,7 +99,7 @@ struct HomeList {
                     icon: $r('app.media.ellipsis_bubble')
                 },
                 onClick() {
-                    that.pathInfos.pushPath({ name: 'chat' })
+                    that.pathInfos.pushPath({ name: 'Chat' })
                 }
             },
             {

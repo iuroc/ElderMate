@@ -25,27 +25,26 @@ export struct AppNavigation {
         .hideBackButton(true)
         .menus(this.menuItems)
         .toolbarConfiguration(this.toolbarItems)
-        .navDestination(this.PageMap)
+        // .navDestination(this.PageMap)
         .titleMode(NavigationTitleMode.Free)
-    }
-
-    /** 子页面配置 */
-    @Builder
-    PageMap(name: string, _param: string) {
-        if (name == 'share') {
-            SharePage()
-        } else if (name == 'chat') {
-            ChatPage()
-        } else if (name == 'more') {
-            MorePage()
-        } else if (name == 'user') {
-            UserPage()
-        }
+        .onAppear(() => {
+            this.pathInfos.pushPath({ name: 'Chat' })
+        })
     }
 
     /** 右上角菜单配置 */
     private makeMenuItems(): NavigationMenuItem[] {
         return [
+            {
+                value: '关于本项目',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.info_circle')),
+                action: () => {
+                    AlertDialog.show({
+                        title: '关于本项目',
+                        message: $r('app.string.about_project')
+                    })
+                }
+            },
             { value: '分享软件', symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')) }
         ]
     }
@@ -84,28 +83,28 @@ export struct AppNavigation {
                 value: '分享生活',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.pencil_and_card')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'share' })
+                    that.pathInfos.pushPath({ name: 'Share' })
                 }
             },
             {
                 value: '聊天助手',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ellipsis_bubble')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'chat' })
+                    that.pathInfos.pushPath({ name: 'Chat' })
                 }
             },
             {
                 value: '更多资讯',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.more')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'more' })
+                    that.pathInfos.pushPath({ name: 'More' })
                 }
             },
             {
                 value: '个人中心',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.person')),
                 action() {
-                    that.pathInfos.pushPath({ name: 'user' })
+                    that.pathInfos.pushPath({ name: 'User' })
                 }
             },
         ]

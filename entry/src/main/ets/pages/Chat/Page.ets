@@ -282,17 +282,12 @@ export struct Page {
                 value: '查看 Messages JSON',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.map')),
 
-            },
-            {
-                value: '关于本项目',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.info_circle')),
-                action: () => {
-                    AlertDialog.show({
-                        title: '关于本项目',
-                        message: $r('app.string.about_project')
-                    })
-                }
             }
         ]
     }
+}
+
+@Builder
+export function PageBuilder() {
+    Page()
 }

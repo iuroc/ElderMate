@@ -11,3 +11,8 @@ export struct Page {
         .title('聊天助手')
     }
 }
+
+@Builder
+export function PageBuilder() {
+    Page()
+}

@@ -11,3 +11,8 @@ export struct Page {
         .title('更多资讯')
     }
 }
+
+@Builder
+export function PageBuilder() {
+    Page()
+}

@@ -11,3 +11,8 @@ export struct Page {
         .title('个人中心')
     }
 }
+
+@Builder
+export function PageBuilder() {
+    Page()
+}

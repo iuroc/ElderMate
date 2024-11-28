@@ -5,12 +5,6 @@ import { AppNavigation } from './AppNavigation'
 struct Page {
     pathInfos = new NavPathStack()
 
-    onPageShow(): void {
-        if (this.pathInfos.getAllPathName().length == 0) {
-            this.pathInfos.pushPath({ name: 'chat' })
-        }
-    }
-
     build() {
         RelativeContainer() {
             AppNavigation({ pathInfos: this.pathInfos })
