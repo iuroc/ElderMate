@@ -1,7 +1,7 @@
-import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
-import { changeAllSelectStatus, deleteByUUID, MessageData, MessageList, } from './MessageList'
+import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
-import { scrollToBottom } from './util'
+import { getSelectableItems, getSelectedItems, isAllSelected, MessageData, scrollToBottom } from './util'
+import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 
 @Component
 export struct Page {
@@ -9,28 +9,18 @@ export struct Page {
     @State title: string = ''
     /** 消息输入框内容 */
     @State inputValue: string = ''
-    scroller = new Scroller()
+    messageListScroller = new Scroller()
+    /** 是否正在请求生成内容 */
     @State chatRequesting: boolean = false
+    /** 是否处于多选模式 */
     @State selectMode: boolean = false
     textAreaController = new TextAreaController()
-
-    // 默认的消息列表数据
-    getDefaultMessageDataList(): MessageData[] {
-        return [
-            {
-                role: 'info',
-                content: '我是智能聊天助手，您可以问我任何问题~',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            }
-        ]
-    }
-
     /** 消息列表数据 */
     @State messageDataList: MessageData[] = this.getDefaultMessageDataList()
+    systemPasteboard = pasteboard.getSystemPasteboard()
+    @State textAreaLineCount: number = 0
 
     async aboutToAppear() {
-        console.log('ChatPage aboutToAppear')
         const context = getContext()
         const resourceManager = context.resourceManager
         this.title = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
@@ -40,6 +30,7 @@ export struct Page {
                 role: 'system',
                 content: '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。',
                 createTime: new Date(),
+                hidden: true,
                 uuid: util.generateRandomUUID(false),
             },
             {
@@ -85,15 +76,11 @@ export struct Page {
     build() {
         NavDestination() {
             Flex({ direction: FlexDirection.Column }) {
-                MessageList({
-                    scroller: this.scroller,
-                    messageDataList: this.messageDataList,
-                    selectMode: this.selectMode,
-                    textAreaController: this.textAreaController
-                }).flexGrow(1)
+                this.MessageListContainer()
                 Flex({
                     space: { main: LengthMetrics.vp(10) },
-                    justifyContent: FlexAlign.Center
+                    justifyContent: FlexAlign.Center,
+                    alignItems: ItemAlign.End
                 }) {
                     if (this.selectMode) {
                         this.SelectPanel()
@@ -109,12 +96,34 @@ export struct Page {
         .menus(this.getMenuItems())
     }
 
+    /** 消息列表容器 */
+    @Builder
+    MessageListContainer() {
+        Scroll(this.messageListScroller) {
+            Column({ space: 20 }) {
+                ForEach(this.messageDataList, (item: MessageData) => {
+                    this.MessageItem(item)
+                })
+            }
+            .margin(20)
+        }
+        .onTouch(event => {
+            if (event.type == TouchType.Down) {
+                this.textAreaController.stopEditing()
+            }
+        })
+        .align(Alignment.Top)
+        .height('100%')
+        .edgeEffect(EdgeEffect.Spring)
+        .flexGrow(1)
+    }
+
     @Builder
     SelectPanel() {
-        Button(this.isAllSelected() ? '全不选' : '全选',
+        Button(isAllSelected(this.messageDataList) ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
-            changeAllSelectStatus(this, !this.isAllSelected())
+            this.changeAllSelectStatus(!isAllSelected(this.messageDataList))
         })
         Button('退出多选',
             { buttonStyle: ButtonStyleMode.NORMAL }
@@ -126,7 +135,21 @@ export struct Page {
                 value: '复制文本',
                 icon: $r('app.media.copy'),
                 action: () => {
-
+                    const selectedItems = getSelectedItems(this.messageDataList)
+                    const text = selectedItems.map(item => {
+                        return `【${item.role}】\n${item.content.trim()}`
+                    }).join(`\n${'-'.repeat(20)}\n`)
+                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
+                    this.systemPasteboard.setData(data)
+                        .then(() => {
+                            promptAction.showToast({ message: `复制成功` })
+                        })
+                        .catch((error: BusinessError) => {
+                            promptAction.showToast({ message: `复制失败：${error.message}` })
+                        })
+                        .finally(() => {
+                            this.selectMode = false
+                        })
                 }
             },
             {
@@ -140,12 +163,13 @@ export struct Page {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
-                    this.messageDataList.filter(item => item.selected)
-                        .forEach(item => {
-                            if (item.selected) {
-                                deleteByUUID(this, item.uuid)
-                            }
-                        })
+                    getSelectedItems(this.messageDataList).forEach(item => {
+                        this.deleteByUUID(item.uuid)
+                    })
+
+                    if (getSelectableItems(this.messageDataList).length == 0) {
+                        this.selectMode = false
+                    }
                 }
             },
             {
@@ -157,9 +181,7 @@ export struct Page {
         ])
     }
 
-    /**
-     * 消息输入框
-     */
+    /** 消息输入框 */
     @Builder
     MessageInput() {
         TextArea({
@@ -170,6 +192,7 @@ export struct Page {
             .enableKeyboardOnFocus(false)
             .onChange(value => {
                 this.inputValue = value
+                this.textAreaLineCount = this.textAreaController.getTextContentLineCount()
             })
             .onEditChange(_isEditing => {
                 if (_isEditing) {
@@ -179,23 +202,216 @@ export struct Page {
                 // 这里是个隐患，在软键盘抬起的同时让滚动区域滚到底部，需要设置一个时间去等待软键盘完全抬起，否则将无法正常跳转底部
                 // 稳妥的做法是等待软键盘完全抬起，再滚动到底部，否则在软键盘完全抬起之前会滚动到错误的底部，软件就以为那里就是最底部了
                 setTimeout(() => {
-                    this.scroller.scrollEdge(Edge.Bottom)
+                    this.messageListScroller.scrollEdge(Edge.Bottom)
                 }, 150)
             })
     }
 
-    /**
-     * 消息发送按钮
-     */
+    /** 消息发送按钮 */
     @Builder
     SendButton() {
-        Button($r('app.string.ChatPage_send'), {
-            stateEffect: this.inputValue.trim() != '',
-            buttonStyle: this.inputValue.trim() != '' ? ButtonStyleMode.EMPHASIZED : ButtonStyleMode.NORMAL
-        }).flexShrink(0)
-            .onClick(() => {
-                this.handleSendMessage()
+        Column({ space: 10 }) {
+            if (this.textAreaLineCount > 4) {
+                Text(`${this.inputValue.trim().length}字`)
+            }
+            Button($r('app.string.ChatPage_send'), {
+                stateEffect: this.inputValue.trim() != '',
+                buttonStyle: this.inputValue.trim() != '' ? ButtonStyleMode.EMPHASIZED : ButtonStyleMode.NORMAL
             })
+                .onClick(() => {
+                    this.handleSendMessage()
+                })
+        }
+        .flexShrink(0)
+    }
+
+    /** 消息列表中的头像 */
+    @Builder
+    MessageAvatar(item: MessageData) {
+        SymbolGlyph(this.makeAvatarSymbolResource(item))
+            .fontSize(30)
+            .padding(3)
+            .borderRadius(10)
+            .flexShrink(0)
+            .margin({ top: 2 })
+            .shadow({ radius: 10, color: $r('sys.color.ohos_id_color_list_separator') })
+    }
+
+    /** 消息列表项，包含头像和消息气泡 */
+    @Builder
+    MessageItem(item: MessageData) {
+        if (!item.hidden)
+        Flex({
+            space: { main: LengthMetrics.vp(10) },
+            justifyContent: this.makeJustifyContent(item),
+        }) {
+            if (this.selectMode && item.role != 'info') {
+                this.MessageCheckbox(item)
+                Blank()
+            }
+            if (item.role == 'user') {
+                this.MessageBubble(item)
+                this.MessageAvatar(item)
+            } else {
+                this.MessageAvatar(item)
+                this.MessageBubble(item)
+            }
+        }
+        .onClick(() => {
+            if (this.selectMode) {
+                this.toggleSelected(item.uuid)
+            }
+        })
+    }
+
+    /** 消息多选项 */
+    @Builder
+    MessageCheckbox(item: MessageData) {
+        Checkbox()
+            .flexShrink(0)
+            .select(item.selected)
+            .onChange(() => {
+                this.toggleSelected(item.uuid)
+            })
+            .shape(CheckBoxShape.ROUNDED_SQUARE)
+    }
+
+    /** 消息列表中的消息气泡 */
+    @Builder
+    MessageBubble(item: MessageData) {
+        Text(item.content)
+            .padding(10)
+            .borderRadius(10)
+            .backgroundColor(this.makeBubbleBGColor(item))
+            .bindMenu(this.BubbleMenu(item))
+            .onClick(() => {
+                if (this.selectMode) {
+                    this.toggleSelected(item.uuid)
+                }
+            })
+    }
+
+    @Builder
+    BubbleMenu(item: MessageData) {
+        if (item.role != 'info' && !this.selectMode)
+        Menu() {
+            ForEach(this.makeBubbleMenuElements(item), (element: MenuElement) => {
+                MenuItem({
+                    content: element.value,
+                    symbolStartIcon: element.symbolIcon,
+                    startIcon: element.icon,
+                }).onClick(() => {
+                    element.action()
+                })
+            })
+        }
+    }
+
+    getDefaultMessageDataList(): MessageData[] {
+        return [
+            {
+                role: 'info',
+                content: '我是智能聊天助手，您可以问我任何问题~',
+                createTime: new Date(),
+                uuid: util.generateRandomUUID(false),
+            }
+        ]
+    }
+
+    toggleSelected(uuid: string) {
+        for (let i = 0; i < this.messageDataList.length; i++) {
+            if (uuid == this.messageDataList[i].uuid) {
+                this.messageDataList[i].selected = !this.messageDataList[i].selected
+                this.messageDataList[i] = JSON.parse(JSON.stringify(this.messageDataList[i]))
+                return
+            }
+        }
+    }
+
+    makeJustifyContent(item: MessageData) {
+        switch (item.role) {
+            case 'user':
+                return FlexAlign.End
+            default:
+                return FlexAlign.Start
+        }
+    }
+
+    makeAvatarSymbolResource(item: MessageData): Resource {
+        switch (item.role) {
+            case 'user':
+                return $r('sys.symbol.person_crop_circle_fill_1')
+            case 'info':
+                return $r('sys.symbol.flag')
+            case 'system':
+                return $r('sys.symbol.gearshape')
+            case 'assistant':
+                return $r('sys.symbol.lightbulb')
+            default:
+                throw new Error('role not allow')
+        }
+    }
+
+    richEditorController = new RichEditorController()
+
+    /** 聊天内容气泡的菜单配置 */
+    makeBubbleMenuElements(item: MessageData): MenuElement[] {
+        return [
+            {
+                value: '复制文本',
+                icon: $r('app.media.copy'),
+                action: () => {
+
+                }
+            },
+            {
+                value: '选择文本',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
+                action: () => {
+
+                },
+            },
+            {
+                value: '分享文本',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+                action: () => {
+
+                },
+            },
+            {
+                value: this.selectMode ? '退出多选' : '批量选择',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
+                action: () => {
+                    this.selectMode = !this.selectMode
+                    if (this.selectMode) {
+                        this.changeAllSelectStatus(false, item.uuid)
+                    }
+                },
+            },
+            {
+                value: '发送到邮箱',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+                action: () => {
+                }
+            },
+            {
+                value: '删除消息',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
+                action: () => {
+                    this.deleteByUUID(item.uuid)
+                },
+            },
+        ]
+    }
+
+    /** 聊天内容气泡的背景颜色 */
+    makeBubbleBGColor(item: MessageData): ResourceColor {
+        switch (item.role) {
+            case 'user':
+                return Color.Pink
+            default:
+                return 'rgba(220,220,220,0.3)'
+        }
     }
 
     handleSendMessage() {
@@ -211,19 +427,34 @@ export struct Page {
             selected: false,
         })
         this.inputValue = ''
-        scrollToBottom(this.scroller)
+        scrollToBottom(this.messageListScroller)
     }
 
-    /**
-     * 右上角菜单项配置
-     */
+    /** 右上角菜单项配置 */
     getMenuItems(): NavigationMenuItem[] {
         return this.selectMode ? [] : [
             {
                 value: '清空当前聊天记录',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
                 action: () => {
-                    this.messageDataList = this.messageDataList.slice(0, 1)
+                    AlertDialog.show({
+                        title: '提示',
+                        message: '确定要删除当前窗口的所有聊天记录？',
+                        buttons: [
+                            {
+                                value: '取消',
+                                action() {
+                                }
+                            },
+                            {
+                                value: '确定',
+                                action: () => {
+                                    this.messageDataList = this.getDefaultMessageDataList()
+                                },
+                                fontColor: Color.Red
+                            }
+                        ]
+                    })
                 }
             },
             {
@@ -233,15 +464,22 @@ export struct Page {
         ]
     }
 
-    /**
-     * 当前可见项目是否全部选中状态（不包含 `hidden=true` 和 `role=info` 的项目）
-     * @param component
-     * @returns
-     */
-    isAllSelected() {
-        return this.messageDataList.filter(item => {
-            return !item.selected && item.role != 'info' && !item.hidden
-        }).length == 0
+    /** 设置全选或全不选，将例外项将设置为相反的值 */
+    changeAllSelectStatus(selected: boolean, ...excepts: string[]) {
+        this.messageDataList = this.messageDataList.map(item => {
+            item.selected = excepts.includes(item.uuid) ? !selected : selected
+            return item
+        })
+    }
+
+    /** 删除指定 `UUID` 的消息 */
+    deleteByUUID(uuid: string) {
+        for (let i = 0; i < this.messageDataList.length; i++) {
+            if (this.messageDataList[i].uuid == uuid) {
+                this.messageDataList.splice(i, 1)
+                return
+            }
+        }
     }
 }
 
