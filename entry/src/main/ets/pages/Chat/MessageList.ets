@@ -1,7 +1,5 @@
 import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
-import { it } from '@ohos/hypium'
 import { Page as ChatPage } from './Page'
-import { scrollToBottom } from './util'
 
 @Component
 export struct MessageList {
@@ -185,10 +183,9 @@ export struct MessageList {
                 value: this.selectMode ? '退出多选' : '批量选择',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
                 action: () => {
+                    this.selectMode = !this.selectMode
                     if (this.selectMode) {
-                        quitSelectMode(this)
-                    } else {
-                        openSelectMode(this)
+                        changeAllSelectStatus(this, false, item.uuid)
                     }
                 },
             },
@@ -246,25 +243,15 @@ export interface MessageData {
  * 设置全选或全不选，并设置全部是否处于多选模式
  * @param component
  * @param selected
- * @param selectMode
+ * @param excepts 例外项，将设置为相反的值
  */
-export function changeAllSelectStatus(component: MessageList | ChatPage, selected: boolean) {
+export function changeAllSelectStatus(component: MessageList | ChatPage, selected: boolean, ...excepts: string[]) {
     component.messageDataList = component.messageDataList.map(item => {
-        item.selected = selected
+        item.selected = excepts.includes(item.uuid) ? !selected : selected
         return item
     })
 }
 
-/** 进入多选模式 */
-function openSelectMode(component: MessageList | ChatPage) {
-    component.selectMode = true
-}
-
-/** 退出多选模式 */
-export function quitSelectMode(component: MessageList | ChatPage) {
-    component.selectMode = false
-    changeAllSelectStatus(component, false)
-}
 
 /** 删除指定 `UUID` 的消息 */
 export function deleteByUUID(component: MessageList | ChatPage, uuid: string) {
@@ -274,15 +261,4 @@ export function deleteByUUID(component: MessageList | ChatPage, uuid: string) {
             return
         }
     }
-}
-
-/**
- * 当前可见项目是否全部选中状态（不包含 `hidden=true` 和 `role=info` 的项目）
- * @param component
- * @returns
- */
-export function isAllSelected(component: MessageList | ChatPage) {
-    return component.messageDataList.filter(item => {
-        return !item.selected && item.role != 'info' && !item.hidden
-    }).length == 0
 }

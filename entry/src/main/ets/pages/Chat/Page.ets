@@ -1,12 +1,5 @@
-import { LengthMetrics, SymbolGlyphModifier, promptAction } from '@kit.ArkUI'
-import {
-    changeAllSelectStatus,
-    deleteByUUID,
-    isAllSelected,
-    MessageData,
-    MessageList,
-    quitSelectMode
-} from './MessageList'
+import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { changeAllSelectStatus, deleteByUUID, MessageData, MessageList, } from './MessageList'
 import { util } from '@kit.ArkTS'
 import { scrollToBottom } from './util'
 
@@ -118,15 +111,15 @@ export struct Page {
 
     @Builder
     SelectPanel() {
-        Button(isAllSelected(this) ? '全不选' : '全选',
+        Button(this.isAllSelected() ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
-            changeAllSelectStatus(this, !isAllSelected(this))
+            changeAllSelectStatus(this, !this.isAllSelected())
         })
         Button('退出多选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).fontColor(Color.Red).onClick(() => {
-            quitSelectMode(this)
+            this.selectMode = false
         })
         Button('选中项操作').bindMenu([
             {
@@ -238,6 +231,17 @@ export struct Page {
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus'))
             },
         ]
+    }
+
+    /**
+     * 当前可见项目是否全部选中状态（不包含 `hidden=true` 和 `role=info` 的项目）
+     * @param component
+     * @returns
+     */
+    isAllSelected() {
+        return this.messageDataList.filter(item => {
+            return !item.selected && item.role != 'info' && !item.hidden
+        }).length == 0
     }
 }
 
