@@ -18,7 +18,6 @@ export struct Page {
     /** 消息列表数据 */
     @State messageDataList: MessageData[] = this.getDefaultMessageDataList()
     systemPasteboard = pasteboard.getSystemPasteboard()
-    @State textAreaLineCount: number = 0
 
     async aboutToAppear() {
         const context = getContext()
@@ -192,7 +191,6 @@ export struct Page {
             .enableKeyboardOnFocus(false)
             .onChange(value => {
                 this.inputValue = value
-                this.textAreaLineCount = this.textAreaController.getTextContentLineCount()
             })
             .onEditChange(_isEditing => {
                 if (_isEditing) {
@@ -210,19 +208,14 @@ export struct Page {
     /** 消息发送按钮 */
     @Builder
     SendButton() {
-        Column({ space: 10 }) {
-            if (this.textAreaLineCount > 4) {
-                Text(`${this.inputValue.trim().length}字`)
-            }
-            Button($r('app.string.ChatPage_send'), {
-                stateEffect: this.inputValue.trim() != '',
-                buttonStyle: this.inputValue.trim() != '' ? ButtonStyleMode.EMPHASIZED : ButtonStyleMode.NORMAL
+        Button($r('app.string.ChatPage_send'), {
+            stateEffect: this.inputValue.trim() != '',
+            buttonStyle: this.inputValue.trim() != '' ? ButtonStyleMode.EMPHASIZED : ButtonStyleMode.NORMAL
+        })
+            .onClick(() => {
+                this.handleSendMessage()
             })
-                .onClick(() => {
-                    this.handleSendMessage()
-                })
-        }
-        .flexShrink(0)
+            .flexShrink(0)
     }
 
     /** 消息列表中的头像 */
