@@ -1,6 +1,5 @@
 import { LengthMetrics, SymbolGlyphModifier, promptAction } from '@kit.ArkUI'
-import { MessageData, MessageList } from './MessageList'
-import { inputMethod } from '@kit.IMEKit'
+import { changeAllSelectStatus, deleteByUUID, MessageData, MessageList, quitSelectMode } from './MessageList'
 import { util } from '@kit.ArkTS'
 
 @Component
@@ -11,6 +10,8 @@ export struct Page {
     @State inputValue: string = ''
     scroller = new Scroller()
     @State chatRequesting: boolean = false
+    @State selectMode: boolean = false
+    textAreaController = new TextAreaController()
 
     // 默认的消息列表数据
     getDefaultMessageDataList(): MessageData[] {
@@ -22,6 +23,10 @@ export struct Page {
                 uuid: util.generateRandomUUID(false)
             }
         ]
+    }
+
+    isAllSelected() {
+        return this.messageDataList.filter(item =>!item.selected).length == 0
     }
 
     /** 消息列表数据 */
@@ -85,20 +90,77 @@ export struct Page {
             Flex({ direction: FlexDirection.Column }) {
                 MessageList({
                     scroller: this.scroller,
-                    messageDataList: this.messageDataList
+                    messageDataList: this.messageDataList,
+                    selectMode: this.selectMode,
+                    textAreaController: this.textAreaController
                 }).flexGrow(1)
-                Flex({ space: { main: LengthMetrics.vp(10) } }) {
-                    this.MessageInput()
-                    this.SendButton()
+                Flex({
+                    space: { main: LengthMetrics.vp(10) },
+                    justifyContent: FlexAlign.Center
+                }) {
+                    if (this.selectMode) {
+                        this.SelectPanel()
+                    } else {
+                        this.MessageInput()
+                        this.SendButton()
+                    }
                 }
                 .padding(10)
             }
         }
         .title(this.title)
-        .menus(this.menuItems)
+        .menus(this.getMenuItems())
         .onShown(() => {
             this.scroller.scrollEdge(Edge.Bottom)
         })
+    }
+
+    @Builder
+    SelectPanel() {
+        Button(this.isAllSelected() ? '全不选' : '全选',
+            { buttonStyle: ButtonStyleMode.NORMAL }
+        ).onClick(() => {
+            changeAllSelectStatus(this, !this.isAllSelected())
+        })
+        Button('退出多选',
+            { buttonStyle: ButtonStyleMode.NORMAL }
+        ).fontColor(Color.Red).onClick(() => {
+            quitSelectMode(this)
+        })
+        Button('选中项操作').bindMenu([
+            {
+                value: '复制文本',
+                icon: $r('app.media.copy'),
+                action: () => {
+
+                }
+            },
+            {
+                value: '分享文本',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+                action: () => {
+
+                },
+            },
+            {
+                value: '删除消息',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
+                action: () => {
+                    this.messageDataList.filter(item => item.selected)
+                        .forEach(item => {
+                            if (item.selected) {
+                                deleteByUUID(this, item.uuid)
+                            }
+                        })
+                }
+            },
+            {
+                value: '发送到邮箱',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+                action: () => {
+                }
+            },
+        ])
     }
 
     /**
@@ -109,10 +171,22 @@ export struct Page {
         TextArea({
             placeholder: $r("app.string.ChatPage_placeholder"),
             text: this.inputValue,
+            controller: this.textAreaController
         })
             .enableKeyboardOnFocus(false)
             .onChange(value => {
                 this.inputValue = value
+            })
+            .onEditChange(_isEditing => {
+                if (_isEditing) {
+                    // 进入编辑状态后，取消多选状态
+                    this.selectMode = false
+                }
+                // 这里是个隐患，在软键盘抬起的同时让滚动区域滚到底部，需要设置一个时间去等待软键盘完全抬起，否则将无法正常跳转底部
+                // 稳妥的做法是等待软键盘完全抬起，再滚动到底部，否则在软键盘完全抬起之前会滚动到错误的底部，软件就以为那里就是最底部了
+                setTimeout(() => {
+                    this.scroller.scrollEdge(Edge.Bottom)
+                }, 200)
             })
     }
 
@@ -123,7 +197,7 @@ export struct Page {
     SendButton() {
         Button($r('app.string.ChatPage_send'), {
             stateEffect: this.inputValue.trim() != '',
-            buttonStyle: ButtonStyleMode.EMPHASIZED
+            buttonStyle: this.inputValue.trim() != '' ? ButtonStyleMode.EMPHASIZED : ButtonStyleMode.NORMAL
         }).flexShrink(0)
             .onClick(() => {
                 this.handleSendMessage()
@@ -147,29 +221,31 @@ export struct Page {
     /**
      * 右上角菜单项配置
      */
-    menuItems: NavigationMenuItem[] = [
-        {
-            value: '清空当前聊天记录',
-            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
-            action: () => {
-                this.messageDataList = this.messageDataList.slice(0, 1)
-            }
-        },
-        {
-            value: '创建新对话',
-            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus'))
-        },
-    ]
+    getMenuItems(): NavigationMenuItem[] {
+        return this.selectMode ? [] : [
+            {
+                value: '清空当前聊天记录',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
+                action: () => {
+                    this.messageDataList = this.messageDataList.slice(0, 1)
+                }
+            },
+            {
+                value: '创建新对话',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus'))
+            },
+        ]
+    }
 }
 
 /**
  * 滚动到底部
  * @param scroller
  */
-function scrollToBottom(scroller: Scroller) {
+function scrollToBottom(scroller: Scroller, animation = true) {
     scroller.scrollTo({
         xOffset: 0,
         yOffset: scroller.getItemRect(0).height,
-        animation: true
+        animation
     })
 }
