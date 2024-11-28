@@ -4,10 +4,10 @@ export struct Page {
 
     build() {
         NavDestination() {
-            Button('分享生活').onClick(() => {
+            Button('聊天助手').onClick(() => {
                 console.log('iuroc', this.pathInfos.getAllPathName())
             })
         }
-        .title('分享生活')
+        .title('聊天助手')
     }
 }

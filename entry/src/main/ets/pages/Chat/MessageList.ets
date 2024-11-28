@@ -1,6 +1,7 @@
 import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
 import { it } from '@ohos/hypium'
 import { Page as ChatPage } from './Page'
+import { scrollToBottom } from './util'
 
 @Component
 export struct MessageList {
@@ -11,7 +12,14 @@ export struct MessageList {
     textAreaController = new TextAreaController()
 
     aboutToAppear(): void {
+        console.log('MessageList aboutToAppear')
+    }
 
+    onDidBuild(): void {
+        console.log('MessageList onDidBuild')
+        setTimeout(() => {
+            this.scroller.scrollEdge(Edge.Bottom)
+        }, 150)
     }
 
     build() {
@@ -23,14 +31,9 @@ export struct MessageList {
             }
             .margin(20)
         }
-        .onTouch((event) => {
-            if (event.type == 0) {
-                // const controller = inputMethod.getController()
-                // controller.hideTextInput()
-            }
-        })
         .align(Alignment.Top)
         .height('100%')
+        .edgeEffect(EdgeEffect.Spring)
     }
 
     /**
@@ -60,14 +63,11 @@ export struct MessageList {
             justifyContent: this.makeJustifyContent(item),
         }) {
             if (this.selectMode && item.role != 'info') {
-                Checkbox().flexShrink(0).select(item.selected)
-                    .onChange(value => {
-                        for (let i = 0; i < this.messageDataList.length; i++) {
-                            if (item.uuid == this.messageDataList[i].uuid) {
-                                this.messageDataList[i].selected = value
-                                this.messageDataList[i] = JSON.parse(JSON.stringify(this.messageDataList[i]))
-                            }
-                        }
+                Checkbox()
+                    .flexShrink(0)
+                    .select(item.selected)
+                    .onChange(() => {
+                        this.toggleSelected(item.uuid)
                     })
                     .shape(CheckBoxShape.ROUNDED_SQUARE)
                 Blank()
@@ -78,6 +78,21 @@ export struct MessageList {
             } else {
                 this.Avatar(item)
                 this.Bubble(item)
+            }
+        }
+        .onClick(() => {
+            if (this.selectMode) {
+                this.toggleSelected(item.uuid)
+            }
+        })
+    }
+
+    toggleSelected(uuid: string) {
+        for (let i = 0; i < this.messageDataList.length; i++) {
+            if (uuid == this.messageDataList[i].uuid) {
+                this.messageDataList[i].selected = !this.messageDataList[i].selected
+                this.messageDataList[i] = JSON.parse(JSON.stringify(this.messageDataList[i]))
+                return
             }
         }
     }
@@ -118,24 +133,37 @@ export struct MessageList {
             .padding(10)
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor(item))
-            .bindMenu(this.makeBubbleMenuElements(item))
+            .bindMenu(this.BubbleMenu(item))
             .onTouch(event => {
                 if (event.type == TouchType.Down) {
                     this.textAreaController.stopEditing()
                 }
             })
+            .onClick(() => {
+                if (this.selectMode) {
+                    this.toggleSelected(item.uuid)
+                }
+            })
+    }
+
+    @Builder
+    BubbleMenu(item: MessageData) {
+        if (item.role != 'info' && !this.selectMode)
+        Menu() {
+            ForEach(this.makeBubbleMenuElements(item), (element: MenuElement) => {
+                MenuItem({
+                    content: element.value,
+                    symbolStartIcon: element.symbolIcon,
+                    startIcon: element.icon,
+                }).onClick(() => {
+                    element.action()
+                })
+            })
+        }
     }
 
     /** 聊天内容气泡的菜单配置 */
     makeBubbleMenuElements(item: MessageData): MenuElement[] {
-        if (item.role == 'info') {
-            return []
-        }
-
-        if (this.selectMode) {
-            return []
-        }
-
         return [
             {
                 value: '复制文本',
@@ -170,12 +198,18 @@ export struct MessageList {
                 },
             },
             {
+                value: '发送到邮箱',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+                action: () => {
+                }
+            },
+            {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
                     deleteByUUID(this, item.uuid)
                 },
-            }
+            },
         ]
     }
 
@@ -213,7 +247,12 @@ export interface MessageData {
     selected?: boolean
 }
 
-/** 全选或全不选 */
+/**
+ * 设置全选或全不选，并设置全部是否处于多选模式
+ * @param component
+ * @param selected
+ * @param selectMode
+ */
 export function changeAllSelectStatus(component: MessageList | ChatPage, selected: boolean) {
     component.messageDataList = component.messageDataList.map(item => {
         item.selected = selected
@@ -248,5 +287,7 @@ export function deleteByUUID(component: MessageList | ChatPage, uuid: string) {
  * @returns
  */
 export function isAllSelected(component: MessageList | ChatPage) {
-    return component.messageDataList.filter(item =>!item.selected && item.role != 'info' && !item.hidden).length == 0
+    return component.messageDataList.filter(item => {
+        return !item.selected && item.role != 'info' && !item.hidden
+    }).length == 0
 }
