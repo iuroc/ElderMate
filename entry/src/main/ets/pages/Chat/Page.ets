@@ -3,6 +3,7 @@ import { util } from '@kit.ArkTS'
 import {
     changeAllSelectStatus,
     deleteByUUID,
+    getSelectableItems,
     getSelectedItems,
     isAllSelected,
     mergedMessageForSharing,
@@ -17,21 +18,21 @@ import { MessageList } from './MessageList'
 @Component
 export struct Page {
     @Consume pathInfos: NavPathStack
-    title: string = ''
+    @State title: string = ''
     /** 消息输入框内容 */
     @State inputValue: string = ''
     messageListScroller = new Scroller()
     /** 是否正在请求生成内容 */
     @State chatRequesting: boolean = false
     /** 是否处于多选模式 */
-    @State selectMode: boolean = false
+    @State isSelectMode: boolean = false
     textAreaController = new TextAreaController()
     /** 消息列表数据 */
-    @State messageDataList: MessageData[] = this.getDefaultMessageDataList()
+    @State messageDataList: MessageData[] = this.makeDefaultMessageDataList()
     systemPasteboard = pasteboard.getSystemPasteboard()
     @State isModalShow: boolean = false
     @State textSelectModalText: string = ''
-    textShareTitle: string = ''
+    @State textShareTitle: string = ''
 
     async aboutToAppear() {
         const context = getContext()
@@ -40,7 +41,6 @@ export struct Page {
         this.textShareTitle = await resourceManager.getStringValue(
             $r('app.string.ChatPage_TextSelectModal_text_share_title')
         )
-        this.messageDataList.push(...this.tempAdds)
     }
 
     onDidBuild(): void {
@@ -55,16 +55,17 @@ export struct Page {
                 MessageList({
                     messageDataList: this.messageDataList,
                     textSelectModalText: this.textSelectModalText,
-                    selectMode: this.selectMode,
+                    isSelectMode: this.isSelectMode,
                     isModalShow: this.isModalShow,
-                    scroller: this.messageListScroller
+                    scroller: this.messageListScroller,
+                    textShareTitle: this.textShareTitle
                 })
                 Flex({
                     space: { main: LengthMetrics.vp(10) },
                     justifyContent: FlexAlign.Center,
                     alignItems: ItemAlign.End
                 }) {
-                    if (this.selectMode) {
+                    if (this.isSelectMode) {
                         this.SelectPanel()
                     } else {
                         this.MessageInput()
@@ -75,7 +76,7 @@ export struct Page {
             }
         }
         .title(this.title)
-        .menus(this.getMenuItems())
+        .menus(this.makeNavigationMenuItems())
         .bindSheet($$this.isModalShow, this.TextSelectModal(), {
             title: {
                 title: '选择文本'
@@ -102,7 +103,7 @@ export struct Page {
         Button('退出多选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).fontColor(Color.Red).onClick(() => {
-            this.selectMode = false
+            this.isSelectMode = false
         })
         Button('选中项操作').bindMenu(this.selectPanelMenuElements)
     }
@@ -124,7 +125,7 @@ export struct Page {
                         promptAction.showToast({ message: `复制失败：${error.message}` })
                     })
                     .finally(() => {
-                        this.selectMode = false // 退出多选模式
+                        this.isSelectMode = false // 退出多选模式
                     })
             }
         },
@@ -140,7 +141,7 @@ export struct Page {
                 ).catch((error: BusinessError) => {
                     promptAction.showToast({ message: `分享失败：${error.message}` })
                 }).finally(() => {
-                    this.selectMode = false // 退出多选模式
+                    this.isSelectMode = false // 退出多选模式
                 })
             },
         },
@@ -162,9 +163,9 @@ export struct Page {
                         backgroundColor: Color.Red,
                         action: () => {
                             getSelectedItems(this.messageDataList).forEach(item => {
-                                deleteByUUID(this, item.uuid)
+                                deleteByUUID(this.messageDataList, item.uuid)
                             })
-                            this.selectMode = false
+                            this.isSelectMode = false
                         }
                     }
                 })
@@ -193,7 +194,7 @@ export struct Page {
             .onEditChange(_isEditing => {
                 if (_isEditing) {
                     // 进入编辑状态后，取消多选状态
-                    this.selectMode = false
+                    this.isSelectMode = false
                 }
                 // 这里是个隐患，在软键盘抬起的同时让滚动区域滚到底部，需要设置一个时间去等待软键盘完全抬起，否则将无法正常跳转底部
                 // 稳妥的做法是等待软键盘完全抬起，再滚动到底部，否则在软键盘完全抬起之前会滚动到错误的底部，软件就以为那里就是最底部了
@@ -207,16 +208,16 @@ export struct Page {
     @Builder
     SendButton() {
         Button($r("app.string.ChatPage_button_text_send"), {
-            stateEffect: this.inputValue.trim() != '',
-            buttonStyle: this.inputValue.trim() != '' ? ButtonStyleMode.EMPHASIZED : ButtonStyleMode.NORMAL
+            buttonStyle: ButtonStyleMode.EMPHASIZED
         })
+            .enabled(this.inputValue.trim() != '')
             .onClick(() => {
                 this.handleSendMessage()
             })
             .flexShrink(0)
     }
 
-    getDefaultMessageDataList(): MessageData[] {
+    makeDefaultMessageDataList(): MessageData[] {
         return [
             {
                 role: 'info',
@@ -226,8 +227,6 @@ export struct Page {
             }
         ]
     }
-
-    richEditorController = new RichEditorController()
 
     handleSendMessage() {
         if (this.inputValue.trim() == '') {
@@ -246,11 +245,15 @@ export struct Page {
     }
 
     /** 右上角菜单项配置 */
-    getMenuItems(): NavigationMenuItem[] {
-        return this.selectMode ? [] : [
+    makeNavigationMenuItems(): NavigationMenuItem[] {
+        if (this.isSelectMode) {
+            return []
+        }
+        return [
             {
                 value: '清空当前聊天记录',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
+                isEnabled: getSelectableItems(this.messageDataList).length != 0,
                 action: () => {
                     AlertDialog.show({
                         title: $r('app.string.title_text_tip'),
@@ -260,7 +263,7 @@ export struct Page {
                             style: DialogButtonStyle.HIGHLIGHT,
                             backgroundColor: Color.Red,
                             action: () => {
-                                this.messageDataList = this.getDefaultMessageDataList()
+                                this.messageDataList = this.makeDefaultMessageDataList()
                             }
                         },
                         primaryButton: {
@@ -275,53 +278,21 @@ export struct Page {
                 value: '创建新对话',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus'))
             },
+            {
+                value: '查看 Messages JSON',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.map')),
+
+            },
+            {
+                value: '关于本项目',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.info_circle')),
+                action: () => {
+                    AlertDialog.show({
+                        title: '关于本项目',
+                        message: $r('app.string.about_project')
+                    })
+                }
+            }
         ]
     }
-
-    tempAdds: MessageData[] = [
-        {
-            role: 'system',
-            content: '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。',
-            createTime: new Date(),
-            hidden: true,
-            uuid: util.generateRandomUUID(false),
-        },
-        {
-            role: 'user',
-            content: '今天的天气怎么样？',
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-        },
-        {
-            role: 'assistant',
-            content: '今天阳光明媚，气温在25度左右，非常适合外出活动。',
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-        },
-        {
-            role: 'user',
-            content: '你有没有推荐的好书或者电影，可以分享一下你的感受吗？',
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-        },
-        {
-            role: 'assistant',
-            content: '最近我读了一本很不错的书，叫《追风筝的人》。这本书讲述了友谊和背叛的故事，情感非常细腻，让我感触很深。我推荐你也去看看。同时，最近看的电影《摔跤吧！爸爸》也很有启发性，它展现了一个父亲为了支持女儿追求梦想所付出的努力，非常感人。',
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-        },
-        {
-            role: 'user',
-            content: '你平时喜欢做哪些运动来保持健康？',
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-        },
-        {
-            role: 'assistant',
-            content: '我平时最喜欢的运动是跑步和游泳。每周我都会尽量去跑步三次，大约30分钟到一个小时，感觉非常放松。而游泳则是我喜欢的夏季运动，它不仅锻炼全身肌肉，还能让我在水中感受到凉爽，尤其是在炎热的天气里。',
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-        }
-    ]
 }
-

@@ -14,9 +14,9 @@ export struct MessageList {
     @Link messageDataList: MessageData[]
     @Link textSelectModalText: string
     /** 是否处于多选模式 */
-    @Link selectMode: boolean
+    @Link isSelectMode: boolean
     @Link isModalShow: boolean
-    @Prop textShareTitle: string = ''
+    @Require @Prop textShareTitle: string = ''
 
     build() {
         Scroll(this.scroller) {
@@ -46,7 +46,7 @@ export struct MessageList {
             space: { main: LengthMetrics.vp(10) },
             justifyContent: this.makeJustifyContent(item),
         }) {
-            if (this.selectMode && item.role != 'info') {
+            if (this.isSelectMode && item.role != 'info') {
                 this.MessageCheckbox(item)
                 Blank()
             }
@@ -58,7 +58,7 @@ export struct MessageList {
                 this.MessageBubble(item)
             }
         }.onClick(() => {
-            if (this.selectMode) {
+            if (this.isSelectMode) {
                 this.toggleSelected(item.uuid)
             }
         })
@@ -84,7 +84,7 @@ export struct MessageList {
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor(item))
             .onClick(() => {
-                if (this.selectMode) {
+                if (this.isSelectMode) {
                     this.toggleSelected(item.uuid)
                 }
             })
@@ -95,7 +95,7 @@ export struct MessageList {
 
     @Builder
     MessageBubbleMenu(item: MessageData) {
-        if (item.role != 'info' && !this.selectMode)
+        if (item.role != 'info' && !this.isSelectMode)
         Menu() {
             ForEach(this.makeBubbleMenuElements(item), (element: MenuElement) => {
                 MenuItem({
@@ -146,11 +146,11 @@ export struct MessageList {
                 },
             },
             {
-                value: this.selectMode ? '退出多选' : '批量选择',
+                value: this.isSelectMode ? '退出多选' : '批量选择',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
                 action: () => {
-                    this.selectMode = !this.selectMode
-                    if (this.selectMode) {
+                    this.isSelectMode = !this.isSelectMode
+                    if (this.isSelectMode) {
                         changeAllSelectStatus(this, false, item.uuid)
                     }
                 },
@@ -165,7 +165,7 @@ export struct MessageList {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
-                    deleteByUUID(this, item.uuid)
+                    deleteByUUID(this.messageDataList, item.uuid)
                 },
             },
         ]
