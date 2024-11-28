@@ -2,6 +2,9 @@ import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
 import { getSelectableItems, getSelectedItems, isAllSelected, MessageData, scrollToBottom } from './util'
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
+import { systemShare } from '@kit.ShareKit'
+import { uniformTypeDescriptor as utd } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
 
 @Component
 export struct Page {
@@ -24,52 +27,13 @@ export struct Page {
         const resourceManager = context.resourceManager
         this.title = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
 
-        const tempAdds: MessageData[] = [
-            {
-                role: 'system',
-                content: '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。',
-                createTime: new Date(),
-                hidden: true,
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'user',
-                content: '今天的天气怎么样？',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'assistant',
-                content: '今天阳光明媚，气温在25度左右，非常适合外出活动。',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'user',
-                content: '你有没有推荐的好书或者电影，可以分享一下你的感受吗？',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'assistant',
-                content: '最近我读了一本很不错的书，叫《追风筝的人》。这本书讲述了友谊和背叛的故事，情感非常细腻，让我感触很深。我推荐你也去看看。同时，最近看的电影《摔跤吧！爸爸》也很有启发性，它展现了一个父亲为了支持女儿追求梦想所付出的努力，非常感人。',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'user',
-                content: '你平时喜欢做哪些运动来保持健康？',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'assistant',
-                content: '我平时最喜欢的运动是跑步和游泳。每周我都会尽量去跑步三次，大约30分钟到一个小时，感觉非常放松。而游泳则是我喜欢的夏季运动，它不仅锻炼全身肌肉，还能让我在水中感受到凉爽，尤其是在炎热的天气里。',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            }
-        ]
-        this.messageDataList.push(...tempAdds)
+        this.messageDataList.push(...this.tempAdds)
+    }
+
+    onDidBuild(): void {
+        setTimeout(() => {
+            this.messageListScroller.scrollEdge(Edge.Bottom)
+        }, 200)
     }
 
     build() {
@@ -93,6 +57,8 @@ export struct Page {
         }
         .title(this.title)
         .menus(this.getMenuItems())
+        .onShown(() => {
+        })
     }
 
     /** 消息列表容器 */
@@ -218,6 +184,13 @@ export struct Page {
             .flexShrink(0)
     }
 
+    @State isShow: boolean = false
+
+    @Builder
+    Modal() {
+        Text('Hello World')
+    }
+
     /** 消息列表中的头像 */
     @Builder
     MessageAvatar(item: MessageData) {
@@ -250,11 +223,6 @@ export struct Page {
                 this.MessageBubble(item)
             }
         }
-        .onClick(() => {
-            if (this.selectMode) {
-                this.toggleSelected(item.uuid)
-            }
-        })
     }
 
     /** 消息多选项 */
@@ -276,12 +244,12 @@ export struct Page {
             .padding(10)
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor(item))
-            .bindMenu(this.BubbleMenu(item))
             .onClick(() => {
                 if (this.selectMode) {
                     this.toggleSelected(item.uuid)
                 }
             })
+            .bindContextMenu(this.BubbleMenu(item), ResponseType.LongPress)
     }
 
     @Builder
@@ -354,7 +322,12 @@ export struct Page {
                 value: '复制文本',
                 icon: $r('app.media.copy'),
                 action: () => {
-
+                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, item.content)
+                    this.systemPasteboard.setData(data).then(() => {
+                        promptAction.showToast({ message: '复制成功' })
+                    }).catch((error: BusinessError) => {
+                        promptAction.showToast({ message: `复制失败：${error.message}` })
+                    })
                 }
             },
             {
@@ -367,8 +340,22 @@ export struct Page {
             {
                 value: '分享文本',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
-                action: () => {
-
+                action: async () => {
+                    const sharedData = new systemShare.SharedData({
+                        utd: utd.UniformDataType.TEXT,
+                        content: item.content,
+                        title: '智能聊天助手文本分享',
+                    })
+                    const controller = new systemShare.ShareController(sharedData)
+                    const context = getContext(this) as common.UIAbilityContext
+                    controller.show(context, {
+                        selectionMode: systemShare.SelectionMode.SINGLE,
+                        previewMode: systemShare.SharePreviewMode.DETAIL,
+                    }).then(() => {
+                        console.debug('ShareController show success')
+                    }).catch((error: BusinessError) => {
+                        console.error(error.message)
+                    })
                 },
             },
             {
@@ -432,23 +419,21 @@ export struct Page {
                 action: () => {
                     AlertDialog.show({
                         title: '提示',
-                        message: '确定要删除当前窗口的所有聊天记录？',
-                        buttons: [
-                            {
-                                value: '取消',
-                                action() {
-                                }
-                            },
-                            {
-                                value: '确定',
-                                action: () => {
-                                    this.messageDataList = this.getDefaultMessageDataList()
-                                },
-                                fontColor: Color.Red
+                        message: '确定要清空当前聊天列表吗？',
+                        secondaryButton: {
+                            value: '确定',
+                            style: DialogButtonStyle.HIGHLIGHT,
+                            action: () => {
+                                this.messageDataList = this.getDefaultMessageDataList()
                             }
-                        ]
+                        },
+                        primaryButton: {
+                            value: ' 取消',
+                            action: () => {
+                            }
+                        }
                     })
-                }
+                },
             },
             {
                 value: '创建新对话',
@@ -474,5 +459,51 @@ export struct Page {
             }
         }
     }
+
+    tempAdds: MessageData[] = [
+        {
+            role: 'system',
+            content: '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。',
+            createTime: new Date(),
+            hidden: true,
+            uuid: util.generateRandomUUID(false),
+        },
+        {
+            role: 'user',
+            content: '今天的天气怎么样？',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+        },
+        {
+            role: 'assistant',
+            content: '今天阳光明媚，气温在25度左右，非常适合外出活动。',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+        },
+        {
+            role: 'user',
+            content: '你有没有推荐的好书或者电影，可以分享一下你的感受吗？',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+        },
+        {
+            role: 'assistant',
+            content: '最近我读了一本很不错的书，叫《追风筝的人》。这本书讲述了友谊和背叛的故事，情感非常细腻，让我感触很深。我推荐你也去看看。同时，最近看的电影《摔跤吧！爸爸》也很有启发性，它展现了一个父亲为了支持女儿追求梦想所付出的努力，非常感人。',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+        },
+        {
+            role: 'user',
+            content: '你平时喜欢做哪些运动来保持健康？',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+        },
+        {
+            role: 'assistant',
+            content: '我平时最喜欢的运动是跑步和游泳。每周我都会尽量去跑步三次，大约30分钟到一个小时，感觉非常放松。而游泳则是我喜欢的夏季运动，它不仅锻炼全身肌肉，还能让我在水中感受到凉爽，尤其是在炎热的天气里。',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+        }
+    ]
 }
 
