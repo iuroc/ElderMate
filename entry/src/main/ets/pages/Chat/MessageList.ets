@@ -11,12 +11,7 @@ export struct MessageList {
     @Link selectMode: boolean
     textAreaController = new TextAreaController()
 
-    aboutToAppear(): void {
-        console.log('MessageList aboutToAppear')
-    }
-
     onDidBuild(): void {
-        console.log('MessageList onDidBuild')
         setTimeout(() => {
             this.scroller.scrollEdge(Edge.Bottom)
         }, 150)
