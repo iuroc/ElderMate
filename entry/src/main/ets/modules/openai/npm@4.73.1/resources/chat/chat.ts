@@ -15,7 +15,6 @@ import {
     ChatCompletionCreateParamsNonStreaming,
     ChatCompletionCreateParamsStreaming,
     ChatCompletionFunctionCallOption,
-    ChatCompletionFunctionMessageParam,
     ChatCompletionMessage,
     ChatCompletionMessageParam,
     ChatCompletionMessageToolCall,
@@ -30,11 +29,7 @@ import {
     ChatCompletionToolChoiceOption,
     ChatCompletionToolMessageParam,
     ChatCompletionUserMessageParam,
-    CompletionCreateParams,
-    CompletionCreateParamsNonStreaming,
-    CompletionCreateParamsStreaming,
     Completions,
-    CreateChatCompletionRequestMessage,
 } from './completions';
 
 export type ChatModel =
@@ -89,7 +84,6 @@ export declare namespace Chat {
         type ChatCompletionContentPartRefusal as ChatCompletionContentPartRefusal,
         type ChatCompletionContentPartText as ChatCompletionContentPartText,
         type ChatCompletionFunctionCallOption as ChatCompletionFunctionCallOption,
-        type ChatCompletionFunctionMessageParam as ChatCompletionFunctionMessageParam,
         type ChatCompletionMessage as ChatCompletionMessage,
         type ChatCompletionMessageParam as ChatCompletionMessageParam,
         type ChatCompletionMessageToolCall as ChatCompletionMessageToolCall,
@@ -104,12 +98,8 @@ export declare namespace Chat {
         type ChatCompletionToolChoiceOption as ChatCompletionToolChoiceOption,
         type ChatCompletionToolMessageParam as ChatCompletionToolMessageParam,
         type ChatCompletionUserMessageParam as ChatCompletionUserMessageParam,
-        type CreateChatCompletionRequestMessage as CreateChatCompletionRequestMessage,
         type ChatCompletionCreateParams as ChatCompletionCreateParams,
-        type CompletionCreateParams as CompletionCreateParams,
         type ChatCompletionCreateParamsNonStreaming as ChatCompletionCreateParamsNonStreaming,
-        type CompletionCreateParamsNonStreaming as CompletionCreateParamsNonStreaming,
         type ChatCompletionCreateParamsStreaming as ChatCompletionCreateParamsStreaming,
-        type CompletionCreateParamsStreaming as CompletionCreateParamsStreaming,
     };
 }

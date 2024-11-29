@@ -1,23 +1,15 @@
 import { ChatCompletions } from './ChatCompletions'
-
-interface OpenAIOptions {
-    /** https://api.openai.com/v1 */
-    baseURL?: string
-    apiKey?: string
-    organization?: string
-    project?: string
-}
-
+import { ClientOptions } from './npm@4.73.1'
 
 // 原则：全力沿用官方标识符命名和文件目录结构，可对原版进行删减
 
 export class OpenAI {
-    private options: OpenAIOptions = {}
+    public options: ClientOptions = {}
     public chat: Chat = {
         completions: new ChatCompletions(this)
     }
 
-    constructor(options?: OpenAIOptions) {
+    constructor(options?: ClientOptions) {
         this.options.apiKey = options?.apiKey
         this.options.baseURL = options?.baseURL || 'https://api.openai.com/v1'
         this.options.organization = options?.organization

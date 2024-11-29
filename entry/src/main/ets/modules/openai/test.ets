@@ -1,4 +1,4 @@
-import { OpenAI } from "./OpenAI";
+import { OpenAI } from './OpenAI'
 
 export function testOpenAI() {
     const openai = new OpenAI({
@@ -8,7 +8,10 @@ export function testOpenAI() {
 
     openai.chat.completions.create({
         model: 'gpt-4o-mini',
-        messages: [],
+        messages: [
+            { role: 'system', content: '' },
+            { role: 'user', content: '' },
+        ],
         stream: true
     })
 }
