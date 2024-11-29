@@ -1,5 +1,6 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit'
 import { window, KeyboardAvoidMode } from '@kit.ArkUI'
+import { testOpenAI } from '../modules/openai/test'
 
 export default class EntryAbility extends UIAbility {
     onCreate(_want: Want, _launchParam: AbilityConstant.LaunchParam): void {
@@ -32,5 +33,8 @@ export default class EntryAbility extends UIAbility {
         const mainWindow = await windowStage.getMainWindow()
         const uiContext = mainWindow.getUIContext()
         uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
+
+        // 测试完成后记得删除这一行代码
+        testOpenAI()
     }
 }
