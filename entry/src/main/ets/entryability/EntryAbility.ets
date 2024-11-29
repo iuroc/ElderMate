@@ -1,48 +1,36 @@
-import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit'
 import { window, KeyboardAvoidMode } from '@kit.ArkUI'
 
 export default class EntryAbility extends UIAbility {
-    onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-        this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-        hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    onCreate(_want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+        const applicationContext = this.context.getApplicationContext()
+        applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
     }
 
     onDestroy(): void {
-        hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
     }
 
-    onWindowStageCreate(windowStage: window.WindowStage): void {
-        // Main window is created, set main page for this ability
-        hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
-
-        windowStage.loadContent('pages/Index/Page', async (err) => {
-            if (err.code) {
-                hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s',
-                    JSON.stringify(err) ?? '');
-                return;
-            }
-            hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
-
-
-            const mainWindow = await windowStage.getMainWindow()
-            const uiContext = mainWindow.getUIContext()
-            uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
-        });
+    async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
+        try {
+            await windowStage.loadContent('pages/Index/Page')
+            await this.contentLoaded(windowStage)
+        } catch (error) {
+            console.error(JSON.stringify(error))
+        }
     }
 
     onWindowStageDestroy(): void {
-        // Main window is destroyed, release UI related resources
-        hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
     }
 
     onForeground(): void {
-        // Ability has brought to foreground
-        hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onForeground');
     }
 
     onBackground(): void {
-        // Ability has back to background
-        hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onBackground');
+    }
+
+    async contentLoaded(windowStage: window.WindowStage) {
+        const mainWindow = await windowStage.getMainWindow()
+        const uiContext = mainWindow.getUIContext()
+        uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
     }
 }

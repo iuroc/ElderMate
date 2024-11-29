@@ -9,7 +9,7 @@ import { NavigationContent } from './NavigationContent'
 export struct AppNavigation {
     private toolbarItems = this.makeToolbarItems()
     private menuItems = this.makeMenuItems()
-    @Provide('AppNavigation') pathInfos: NavPathStack = new NavPathStack()
+    @Provide('pathInfos') pathInfos: NavPathStack = new NavPathStack()
     /** 首页列表滚动控制器 */
     private appScroller = new Scroller()
 
