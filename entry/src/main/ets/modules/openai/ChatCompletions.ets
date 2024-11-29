@@ -9,7 +9,7 @@ import { rcp } from '@kit.RemoteCommunicationKit'
 import { buffer } from '@kit.ArkTS'
 
 export class ChatCompletions {
-    client: OpenAI
+    private client: OpenAI
 
     get apiURL() {
         return this.client.options.baseURL + `/chat/completions`

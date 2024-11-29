@@ -14,6 +14,8 @@ import {
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 import { TextSelectModal } from './TextSelectModal'
 import { MessageList } from './MessageList'
+import { ChatCompletionMessageParam } from '../../modules/openai/npm@4.73.1/resources/chat'
+import { OpenAI } from '../../modules/openai/OpenAI'
 
 @Component
 export struct Page {
@@ -58,7 +60,8 @@ export struct Page {
                     isSelectMode: this.isSelectMode,
                     isModalShow: this.isModalShow,
                     scroller: this.messageListScroller,
-                    textShareTitle: this.textShareTitle
+                    textShareTitle: this.textShareTitle,
+                    textAreaController: this.textAreaController
                 })
                 Flex({
                     space: { main: LengthMetrics.vp(10) },
@@ -207,14 +210,32 @@ export struct Page {
     /** 消息发送按钮 */
     @Builder
     SendButton() {
-        Button($r("app.string.ChatPage_button_text_send"), {
-            buttonStyle: ButtonStyleMode.EMPHASIZED
-        })
-            .enabled(this.inputValue.trim() != '')
-            .onClick(() => {
-                this.handleSendMessage()
+        if (this.chatRequesting) {
+            Button('取消生成', {
+                buttonStyle: ButtonStyleMode.NORMAL,
             })
-            .flexShrink(0)
+                .fontColor(Color.Red)
+                .onClick(() => {
+                    this.chatRequesting = false
+                    const lestItemIndex = this.messageDataList.length - 1
+                    const lestItem = this.messageDataList[lestItemIndex]
+                    if (lestItem.content == '' || lestItem.content == '正在思考~') {
+                        lestItem.role = 'info'
+                        lestItem.content = '已停止回答'
+                    }
+                    this.messageDataList[lestItemIndex] = JSON.parse(JSON.stringify(lestItem))
+                })
+                .flexShrink(0)
+        } else {
+            Button($r("app.string.ChatPage_button_text_send"), {
+                buttonStyle: ButtonStyleMode.EMPHASIZED
+            })
+                .enabled(this.inputValue.trim() != '')
+                .onClick(() => {
+                    this.handleSendMessage()
+                })
+                .flexShrink(0)
+        }
     }
 
     makeDefaultMessageDataList(): MessageData[] {
@@ -223,6 +244,13 @@ export struct Page {
                 role: 'info',
                 content: '我是智能聊天助手，您可以问我任何问题~',
                 createTime: new Date(),
+                uuid: util.generateRandomUUID(false),
+            },
+            {
+                role: 'system',
+                content: '专门面向老年人的生活智能助手，用简单有趣的语言帮助老人解答各种问题。',
+                createTime: new Date(),
+                hidden: true,
                 uuid: util.generateRandomUUID(false),
             }
         ]
@@ -242,6 +270,46 @@ export struct Page {
         })
         this.inputValue = ''
         scrollToBottom(this.messageListScroller)
+
+        // 开始请求
+        this.chatRequesting = true
+        const requestMessages = this.messageDataList
+            .map<ChatCompletionMessageParam | undefined>(item => {
+                return item.role != 'info' ? {
+                    role: item.role,
+                    content: item.content,
+                } : undefined
+            }).filter(item => item) as ChatCompletionMessageParam[]
+
+        const response: MessageData = {
+            role: 'assistant',
+            content: '正在思考~',
+            createTime: new Date(),
+            uuid: util.generateRandomUUID(false),
+            hidden: false,
+            selected: false,
+        }
+        this.messageDataList.push(response)
+        const openai = new OpenAI({
+            apiKey: `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`,
+            baseURL: `https://openkey.cloud/v1`
+        })
+        let allContent = ''
+        openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: requestMessages,
+            stream: true
+        }, async chunks => {
+            if (!this.chatRequesting) {
+                return // 中途手动停止了
+            }
+            allContent += chunks.map(chunk => chunk.choices[0].delta.content || '').join('')
+            response.content = allContent
+            this.messageDataList[this.messageDataList.length - 1] = JSON.parse(JSON.stringify(response))
+            scrollToBottom(this.messageListScroller)
+        }).then(() => {
+            this.chatRequesting = false
+        })
     }
 
     /** 右上角菜单项配置 */

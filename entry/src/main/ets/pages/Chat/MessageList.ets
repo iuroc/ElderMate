@@ -28,6 +28,7 @@ export struct MessageList {
             .margin(20)
         }
         .onTouch(event => {
+            console.log('hello')
             if (event.type == TouchType.Down) {
                 this.textAreaController.stopEditing()
             }

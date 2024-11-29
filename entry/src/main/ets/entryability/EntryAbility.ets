@@ -33,8 +33,5 @@ export default class EntryAbility extends UIAbility {
         const mainWindow = await windowStage.getMainWindow()
         const uiContext = mainWindow.getUIContext()
         uiContext.setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE)
-
-        // 测试完成后记得删除这一行代码
-        testOpenAI()
     }
 }
