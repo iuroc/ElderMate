@@ -4,7 +4,7 @@ import { ClientOptions } from './npm@4.73.1'
 // 原则：全力沿用官方标识符命名和文件目录结构，可对原版进行删减
 
 export class OpenAI {
-    public options: ClientOptions = {}
+    options: ClientOptions = {}
     public chat: Chat = {
         completions: new ChatCompletions(this)
     }

@@ -42,7 +42,9 @@ export struct TextSelectModal {
                             console.error(error.message)
                         })
                     })
-            }.padding(20)
+            }
+            .padding(20)
+            .width('100%')
         }
         .height('100%')
         .align(Alignment.Top)
