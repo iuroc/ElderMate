@@ -1,4 +1,4 @@
-import { ChatCompletionCreateParamsStreaming } from './npm/resources/chat';
+import { ChatCompletionCreateParamsStreaming } from './npm@4.73.1/resources/chat'
 import type { OpenAI } from './OpenAI'
 
 export class ChatCompletions {
@@ -7,6 +7,6 @@ export class ChatCompletions {
     }
 
     create(body: ChatCompletionCreateParamsStreaming) {
-
+        console.log(JSON.stringify(body))
     }
 }
