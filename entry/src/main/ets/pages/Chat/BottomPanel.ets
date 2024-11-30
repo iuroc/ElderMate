@@ -27,6 +27,7 @@ export struct BottomPanel {
     @Require messageListScroller = new Scroller()
     @Require textAreaController = new TextAreaController()
     systemPasteboard = pasteboard.getSystemPasteboard()
+    requestStartTip = '正在思考~'
 
     build() {
         Flex({
@@ -177,7 +178,7 @@ export struct BottomPanel {
                 this.chatRequesting = false
                 const lestItemIndex = this.messageDataList.length - 1
                 const lestItem = this.messageDataList[lestItemIndex]
-                if (lestItem.content == '' || lestItem.content == '正在思考~') {
+                if (lestItem.content == '' || lestItem.content == this.requestStartTip) {
                     lestItem.role = 'info'
                     lestItem.content = '已停止回答'
                 }
@@ -226,7 +227,7 @@ export struct BottomPanel {
 
         const response: MessageData = {
             role: 'assistant',
-            content: '正在思考~',
+            content: this.requestStartTip,
             createTime: new Date(),
             uuid: util.generateRandomUUID(false),
             hidden: false,
@@ -237,7 +238,7 @@ export struct BottomPanel {
             apiKey: `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`,
             baseURL: `https://openkey.cloud/v1`
         })
-        let allContent = ''
+        let contentCache = ''
         openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: requestMessages,
@@ -246,10 +247,10 @@ export struct BottomPanel {
             if (!this.chatRequesting) {
                 return // 中途手动停止了
             }
-            allContent += chunks.map(chunk => chunk.choices[0].delta.content || '').join('')
-            response.content = allContent
+            contentCache += chunks.map(chunk => chunk.choices[0].delta.content || '').join('')
+            response.content = contentCache
             this.messageDataList[this.messageDataList.length - 1] = JSON.parse(JSON.stringify(response))
-            scrollToBottom(this.messageListScroller)
+            this.messageListScroller.scrollEdge(Edge.Bottom)
         }).then(() => {
             this.chatRequesting = false
         })
