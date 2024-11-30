@@ -80,11 +80,9 @@ export struct MessageItem {
     /** 切换选中状态，非多选模式或 `role=info` 将忽略操作 */
     toggleSelected() {
         if (this.isSelectMode && this.data.role != 'info') {
-            console.debug('toggleSelected run')
             this.data.selected = !this.data.selected
             this.messageDataList = [...this.messageDataList]
         } else {
-            console.debug('toggleSelected ignore')
         }
     }
 
