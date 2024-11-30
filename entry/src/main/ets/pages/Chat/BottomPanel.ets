@@ -12,6 +12,7 @@ import {
 } from './util'
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 import { OpenAI } from '../../modules/openai/OpenAI'
+import { rcp } from '@kit.RemoteCommunicationKit'
 
 @Component
 export struct BottomPanel {
@@ -29,6 +30,7 @@ export struct BottomPanel {
      * 改值在每次新请求开始时变为 `true`，第一次接收到流数据后变为 `false` */
     private showRequestStartTip = false
     private requestStartTip = '正在思考~'
+    private requestSession?: rcp.Session
 
     build() {
         Flex({
@@ -105,6 +107,7 @@ export struct BottomPanel {
             .fontColor(Color.Black)
             .onClick(() => {
                 this.chatRequesting = false
+                this.requestSession?.cancel()
                 const lestItemIndex = this.messageDataList.length - 1
                 const lastItem = this.messageDataList[lestItemIndex]
                 if (this.showRequestStartTip) {
@@ -226,15 +229,12 @@ export struct BottomPanel {
             apiKey: `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`,
             baseURL: `https://openkey.cloud/v1`
         })
-        openai.chat.completions.create({
+        const result = openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: requestBodyMessages,
             stream: true
         }, async chunks => {
             const chunkContent = chunks.map(chunk => chunk.choices[0].delta.content || '').join('')
-            if (!this.chatRequesting) {
-                return // 中途手动停止了
-            }
             if (this.showRequestStartTip) {
                 this.showRequestStartTip = false
                 responseMessage.content = chunkContent
@@ -242,7 +242,9 @@ export struct BottomPanel {
                 responseMessage.content += chunkContent
             }
             scrollToBottom(this.messageListScroller)
-        }).then(() => {
+        })
+        this.requestSession = result.session
+        result.response.then(() => {
             this.chatRequesting = false
         })
     }

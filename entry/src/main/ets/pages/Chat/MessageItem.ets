@@ -115,8 +115,9 @@ export struct MessageItem {
                     systemShareText(
                         getContext() as common.UIAbilityContext,
                         await getTextShareTitle(),
-                        this.messageData.content).catch((error: BusinessError) => {
-                        console.error(error.message)
+                        this.messageData.content
+                    ).catch((error: BusinessError) => {
+                        AlertDialog.show({ message: `分享失败：${error.message}` })
                     })
                 },
             },

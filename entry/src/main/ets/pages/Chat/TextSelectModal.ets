@@ -38,7 +38,9 @@ export struct TextSelectModal {
                             this.shareTextTitle,
                             this.text.slice(this.start, this.end),
                         ).catch((error: BusinessError) => {
-                            console.error(error.message)
+                            AlertDialog.show({
+                                message: `分享失败：${error.message}`
+                            })
                         })
                     })
             }

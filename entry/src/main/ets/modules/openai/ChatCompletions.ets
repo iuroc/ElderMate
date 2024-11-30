@@ -23,25 +23,25 @@ export class ChatCompletions {
         this.client = client
     }
 
-    async create(
+    create(
         body: ChatCompletionCreateParamsNonStreaming,
         onData?: (chunk: ChatCompletionChunk[]) => Promise<void | number>
-    ): Promise<rcp.Response>
+    ): ChatCompletionsReturnType
 
-    async create(
+    create(
         body: ChatCompletionCreateParamsStreaming,
         onData?: (chunk: ChatCompletionChunk[]) => Promise<void | number>
-    ): Promise<rcp.Response>
+    ): ChatCompletionsReturnType
 
-    async create(
+    create(
         body: ChatCompletionCreateParamsBase,
         onData?: (chunk: ChatCompletionChunk[]) => Promise<void | number>
-    ): Promise<rcp.Response>
+    ): ChatCompletionsReturnType
 
-    async create(
+    create(
         body: ChatCompletionCreateParams,
         onData?: (chunk: ChatCompletionChunk[]) => Promise<void | number>
-    ): Promise<rcp.Response> {
+    ): ChatCompletionsReturnType {
         const headers: rcp.RequestHeaders = {
             'content-type': 'application/json',
             'authorization': `Bearer ${this.apiKey}`
@@ -74,6 +74,17 @@ export class ChatCompletions {
                     }
                 }
             } : undefined
-        return session.post(this.apiURL, JSON.stringify(body), destination)
+        return {
+            session,
+            response: session.post(this.apiURL, JSON.stringify(body), destination).finally(() => {
+                console.log('session.close()', session)
+                session.close()
+            })
+        }
     }
+}
+
+interface ChatCompletionsReturnType {
+    session: rcp.Session
+    response: Promise<rcp.Response>
 }
