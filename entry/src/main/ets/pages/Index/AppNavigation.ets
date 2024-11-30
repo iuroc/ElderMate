@@ -1,8 +1,4 @@
 import { SymbolGlyphModifier } from '@kit.ArkUI'
-import { Page as SharePage } from '../Share/Page'
-import { Page as ChatPage } from '../Chat/Page'
-import { Page as MorePage } from '../More/Page'
-import { Page as UserPage } from '../User/Page'
 import { NavigationContent } from './NavigationContent'
 
 @Component
