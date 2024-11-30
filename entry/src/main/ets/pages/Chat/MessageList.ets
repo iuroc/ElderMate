@@ -18,6 +18,8 @@ export struct MessageList {
     @Link isSelectMode: boolean
     @Link isModalShow: boolean
     @Require @Prop textShareTitle: string = ''
+    /** Scroll 是否已经执行过 onSizeChange 回调 */
+    hasInitSizeChange: boolean = false
 
     build() {
         Scroll(this.scroller) {
@@ -37,6 +39,15 @@ export struct MessageList {
         .height('100%')
         .edgeEffect(EdgeEffect.Spring)
         .flexGrow(1)
+        .onSizeChange(event => {
+            if (this.hasInitSizeChange) {
+                return
+            }
+            if (event.height && event.height > 0) {
+                this.hasInitSizeChange = true
+                this.scroller.scrollEdge(Edge.Bottom)
+            }
+        })
     }
 
     /** 消息列表项，包含头像和消息气泡 */
@@ -248,7 +259,6 @@ export struct MessageList {
                 return 'rgba(220,220,220,0.3)'
         }
     }
-
 
     makeDefaultMessageDataList(): MessageData[] {
         return [
