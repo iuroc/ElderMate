@@ -25,7 +25,6 @@ export struct AppNavigation {
         .hideBackButton(true)
         .menus(this.menuItems)
         .toolbarConfiguration(this.toolbarItems)
-        // .navDestination(this.PageMap)
         .titleMode(NavigationTitleMode.Free)
         .onAppear(() => {
             this.pathInfos.pushPath({ name: 'Chat' })
