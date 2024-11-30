@@ -60,8 +60,12 @@ struct Page {
     /** 生成默认的消息列表 */
     makeDefaultMessageDataList(): MessageData[] {
         return [
-            new MessageData('info', '我是智能聊天助手，您可以问我任何问题~'),
-            new MessageData('system', '专门面向老年人的生活智能助手，用简单有趣的语言帮助老人解答各种问题。')
+            new MessageData({ role: 'info', content: '我是智能聊天助手，您可以问我任何问题~' }),
+            new MessageData({
+                role: 'system',
+                content: '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。',
+                hidden: true,
+            })
         ]
     }
 

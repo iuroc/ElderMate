@@ -27,15 +27,15 @@ export struct MessageItem {
                 Blank()
             }
             if (this.messageData.role == 'user') {
-                this.MessageBubble()
-                this.MessageAvatar()
+                this.Bubble()
+                this.Avatar()
             } else {
-                this.MessageAvatar()
-                this.MessageBubble()
+                this.Avatar()
+                this.Bubble()
             }
         }.onClick(() => {
             if (this.isSelectMode) {
-                this.toggleSelected(this.messageData.uuid)
+                this.toggleSelected()
             }
         })
     }
@@ -47,21 +47,21 @@ export struct MessageItem {
             .flexShrink(0)
             .select(this.messageData.selected)
             .onChange(() => {
-                this.toggleSelected(this.messageData.uuid)
+                this.toggleSelected()
             })
             .shape(CheckBoxShape.ROUNDED_SQUARE)
     }
 
     /** 消息列表中的消息气泡 */
     @Builder
-    MessageBubble() {
+    Bubble() {
         Text(this.messageData.content)
             .padding(10)
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor())
             .onClick(() => {
                 if (this.isSelectMode) {
-                    this.toggleSelected(this.messageData.uuid)
+                    this.toggleSelected()
                 }
             })
             .bindMenu(this.MessageBubbleMenu())
@@ -148,7 +148,7 @@ export struct MessageItem {
 
     /** 消息列表中的头像 */
     @Builder
-    MessageAvatar() {
+    Avatar() {
         SymbolGlyph(this.makeAvatarSymbolResource())
             .fontSize(30)// .avatarStyles()
             .fontColor([this.makeAvatarSymbolFontColor()])
@@ -202,9 +202,9 @@ export struct MessageItem {
         }
     }
 
-    toggleSelected(uuid: string) {
+    toggleSelected() {
         for (let i = 0; i < this.dataList.length; i++) {
-            if (uuid == this.dataList[i].uuid) {
+            if (this.messageData.uuid == this.dataList[i].uuid) {
                 this.dataList[i].selected = !this.dataList[i].selected
                 this.dataList[i] = JSON.parse(JSON.stringify(this.dataList[i]))
                 return

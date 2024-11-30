@@ -26,7 +26,6 @@ export struct TextSelectModal {
                     .selection(this.start, this.end)
                     .lineSpacing(LengthMetrics.vp(8))
                     .letterSpacing(1)
-                    .textAlign(TextAlign.JUSTIFY)
                     .onTextSelectionChange((start, end) => {
                         this.start = start
                         this.end = end

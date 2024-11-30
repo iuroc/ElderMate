@@ -2,35 +2,24 @@ import { systemShare } from '@kit.ShareKit'
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { common } from '@kit.AbilityKit'
 import { util } from '@kit.ArkTS'
-
-/** 消息列表项数据 */
-// export interface MessageData {
-//     /** 消息角色，如果是 `info
-//      ` 则不会参与文本生成 */
-//     role: 'user' | 'assistant' | 'system' | 'info'
-//     content: string
-//     /** 默认请设置为 `new Date()` */
-//     createTime: Date
-//     hidden?: boolean
-//     /** 请使用 `util.generateRandomUUID(false)` 生成 */
-//     uuid: string
-//     selected?: boolean
-// }
-
-type MessageRole = 'user' | 'assistant' | 'system' | 'info'
+import { IMessageData, MessageDataInit, MessageRole } from './types'
 
 @Observed
-export class MessageData {
+export class MessageData implements IMessageData {
     role: MessageRole
     content: string
-    createTime: Date = new Date()
-    hidden: boolean = false
-    selected: boolean = false
-    uuid: string = util.generateRandomUUID(false)
+    createTime: Date
+    hidden: boolean
+    selected: boolean
+    uuid: string
 
-    constructor(role: MessageRole, content: string) {
-        this.role = role
-        this.content = content
+    constructor(init: MessageDataInit) {
+        this.role = init.role
+        this.content = init.content.trim()
+        this.createTime = init.createTime ?? new Date()
+        this.hidden = init.hidden ?? false
+        this.selected = init.selected ?? false
+        this.uuid = init.uuid ?? util.generateRandomUUID(false)
     }
 }
 
@@ -44,17 +33,17 @@ export function scrollToBottom(scroller: Scroller, animation = true) {
 }
 
 /** 获取可见且可选的消息记录 */
-export function getSelectableItems(messageDataList: MessageData[]): MessageData[] {
+export function getSelectableItems(messageDataList: IMessageData[]): IMessageData[] {
     return messageDataList.filter(item => item.role != 'info' && !item.hidden)
 }
 
 /** 获取选中的可见消息记录 */
-export function getSelectedItems(messageDataList: MessageData[]): MessageData[] {
+export function getSelectedItems(messageDataList: IMessageData[]): IMessageData[] {
     return messageDataList.filter(item => item.selected && item.role != 'info' && !item.hidden)
 }
 
 /** 判断当前消息列表是否被全选 */
-export function isAllSelected(messageDataList: MessageData[]): boolean {
+export function isAllSelected(messageDataList: IMessageData[]): boolean {
     return messageDataList.filter(item =>!item.selected && item.role != 'info' && !item.hidden).length == 0
 }
 
@@ -85,14 +74,14 @@ export async function systemShareText(
  * @param items
  * @returns
  */
-export function mergedMessageForSharing(items: MessageData[]) {
+export function mergedMessageForSharing(items: IMessageData[]) {
     return items.map(item => {
         return `【${item.role}】\n${item.content.trim()}`
     }).join(`\n${'-'.repeat(20)}\n`)
 }
 
 /** 删除指定 `UUID` 的消息 */
-export function deleteByUUID(list: MessageData[], uuid: string): void {
+export function deleteByUUID(list: IMessageData[], uuid: string): void {
     for (let i = 0; i < list.length; i++) {
         if (list[i].uuid == uuid) {
             list.splice(i, 1)
@@ -102,7 +91,7 @@ export function deleteByUUID(list: MessageData[], uuid: string): void {
 }
 
 /** 设置全选或全不选，将例外项将设置为相反的值，返回新的数组 */
-export function changeAllSelectStatus(list: MessageData[], selected: boolean, ...excepts: string[]) {
+export function changeAllSelectStatus(list: IMessageData[], selected: boolean, ...excepts: string[]) {
     return list.map(item => {
         item.selected = excepts.includes(item.uuid) ? !selected : selected
         return item
@@ -113,18 +102,33 @@ export function changeAllSelectStatus(list: MessageData[], selected: boolean, ..
  * 演示消息列表数据
  */
 export function makeTempAdds(): MessageData[] {
-    return [
-        new MessageData('system',
-            '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。'),
-        new MessageData('user', '今天的天气怎么样？'),
-        new MessageData('assistant', '今天阳光明媚，气温在25度左右，非常适合外出活动。'),
-        new MessageData('user', '你有没有推荐的好书或者电影，可以分享一下你的感受吗？'),
-        new MessageData('assistant',
-            '最近我读了一本很不错的书，叫《追风筝的人》。这本书讲述了友谊和背叛的故事，情感非常细腻，让我感触很深。我推荐你也去看看。同时，最近看的电影《摔跤吧！爸爸》也很有启发性，它展现了一个父亲为了支持女儿追求梦想所付出的努力，非常感人。'),
-        new MessageData('user', '你平时喜欢做哪些运动来保持健康？'),
-        new MessageData('assistant',
-            '我平时最喜欢的运动是跑步和游泳。每周我都会尽量去跑步三次，大约30分钟到一个小时，感觉非常放松。而游泳则是我喜欢的夏季运动，它不仅锻炼全身肌肉，还能让我在水中感受到凉爽，尤其是在炎热的天气里。')
+    const dataList: MessageDataInit[] = [
+        {
+            role: 'user',
+            content: '今天的天气怎么样？'
+        },
+        {
+            role: 'assistant',
+            content: '今天阳光明媚，气温在25度左右，非常适合外出活动。'
+        },
+        {
+            role: 'user',
+            content: '你有没有推荐的好书或者电影，可以分享一下你的感受吗？'
+        },
+        {
+            role: 'assistant',
+            content: '最近我读了一本很不错的书，叫《追风筝的人》。这本书讲述了友谊和背叛的故事，情感非常细腻，让我感触很深。我推荐你也去看看。同时，最近看的电影《摔跤吧！爸爸》也很有启发性，它展现了一个父亲为了支持女儿追求梦想所付出的努力，非常感人。'
+        },
+        {
+            role: 'user',
+            content: '你平时喜欢做哪些运动来保持健康？'
+        },
+        {
+            role: 'assistant',
+            content: '我平时最喜欢的运动是跑步和游泳。每周我都会尽量去跑步三次，大约30分钟到一个小时，感觉非常放松。而游泳则是我喜欢的夏季运动，它不仅锻炼全身肌肉，还能让我在水中感受到凉爽，尤其是在炎热的天气里。'
+        }
     ]
+    return dataList.map(item => new MessageData(item))
 }
 
 export async function getTextShareTitle() {
