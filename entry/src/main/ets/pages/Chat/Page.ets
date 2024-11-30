@@ -1,5 +1,4 @@
 import { SymbolGlyphModifier } from '@kit.ArkUI'
-import { util } from '@kit.ArkTS'
 import { getSelectableItems, makeTempAdds, MessageData, } from './util'
 import { TextSelectModal } from './TextSelectModal'
 import { MessageList } from './MessageList'
@@ -24,6 +23,8 @@ struct Page {
         const resourceManager = context.resourceManager
         this.navTitle = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
         this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
+
+        this.pathInfos.pushPath({ name: 'Test' })
     }
 
     build() {
@@ -48,6 +49,7 @@ struct Page {
         })
     }
 
+    /** 文本选择面板 */
     @Builder
     TextSelectModal() {
         RelativeContainer() {
@@ -57,21 +59,11 @@ struct Page {
         }
     }
 
+    /** 生成默认的消息列表 */
     makeDefaultMessageDataList(): MessageData[] {
         return [
-            {
-                role: 'info',
-                content: '我是智能聊天助手，您可以问我任何问题~',
-                createTime: new Date(),
-                uuid: util.generateRandomUUID(false),
-            },
-            {
-                role: 'system',
-                content: '专门面向老年人的生活智能助手，用简单有趣的语言帮助老人解答各种问题。',
-                createTime: new Date(),
-                hidden: true,
-                uuid: util.generateRandomUUID(false),
-            }
+            new MessageData('info', '我是智能聊天助手，您可以问我任何问题~'),
+            new MessageData('system', '专门面向老年人的生活智能助手，用简单有趣的语言帮助老人解答各种问题。')
         ]
     }
 

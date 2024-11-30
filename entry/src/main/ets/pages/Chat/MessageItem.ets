@@ -2,115 +2,78 @@ import { changeAllSelectStatus, deleteByUUID, getTextShareTitle, MessageData, sy
 import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 import { common } from '@kit.AbilityKit'
-import { MessageItem } from './MessageItem'
 
 /**
  * 消息列表容器
  */
 @Component
-export struct MessageList {
-    scroller = new Scroller()
-    textAreaController = new TextAreaController()
+export struct MessageItem {
     systemPasteboard = pasteboard.getSystemPasteboard()
     @Consume('messageDataList') dataList: MessageData[]
     @Consume textSelectModalText: string
     /** 是否处于多选模式 */
     @Consume isSelectMode: boolean
     @Consume isModalShow: boolean
-    /** Scroll 是否已经执行过 onSizeChange 回调 */
-    hasInitSizeChange: boolean = false
+    @ObjectLink messageData: MessageData
 
     build() {
-        Scroll(this.scroller) {
-            Column({ space: 20 }) {
-                ForEach(this.dataList, (item: MessageData) => {
-                    MessageItem({
-                        messageData: item
-                    })
-                })
-            }
-            .margin(20)
-        }
-        .onTouch(event => {
-            if (event.type == TouchType.Down) {
-                this.textAreaController.stopEditing()
-            }
-        })
-        .align(Alignment.Top)
-        .height('100%')
-        .edgeEffect(EdgeEffect.Spring)
-        .flexGrow(1)
-        .onSizeChange(event => {
-            if (this.hasInitSizeChange) {
-                return
-            }
-            if (event.height && event.height > 0) {
-                this.hasInitSizeChange = true
-                this.scroller.scrollEdge(Edge.Bottom)
-            }
-        })
-    }
-
-    /** 消息列表项，包含头像和消息气泡 */
-    @Builder
-    MessageItem(item: MessageData) {
-        if (!item.hidden)
+        if (!this.messageData.hidden)
         Flex({
             space: { main: LengthMetrics.vp(10) },
-            justifyContent: this.makeJustifyContent(item),
+            justifyContent: this.makeJustifyContent(),
         }) {
-            if (this.isSelectMode && item.role != 'info') {
-                this.MessageCheckbox(item)
+            if (this.isSelectMode && this.messageData.role != 'info') {
+                this.MessageCheckbox()
                 Blank()
             }
-            if (item.role == 'user') {
-                this.MessageBubble(item)
-                this.MessageAvatar(item)
+            if (this.messageData.role == 'user') {
+                this.MessageBubble()
+                this.MessageAvatar()
             } else {
-                this.MessageAvatar(item)
-                this.MessageBubble(item)
+                this.MessageAvatar()
+                this.MessageBubble()
             }
         }.onClick(() => {
             if (this.isSelectMode) {
-                this.toggleSelected(item.uuid)
+                this.toggleSelected(this.messageData.uuid)
             }
         })
     }
 
     /** 消息多选项 */
     @Builder
-    MessageCheckbox(item: MessageData) {
+    MessageCheckbox() {
         Checkbox()
             .flexShrink(0)
-            .select(item.selected)
+            .select(this.messageData.selected)
             .onChange(() => {
-                this.toggleSelected(item.uuid)
+                this.toggleSelected(this.messageData.uuid)
             })
             .shape(CheckBoxShape.ROUNDED_SQUARE)
     }
 
     /** 消息列表中的消息气泡 */
     @Builder
-    MessageBubble(item: MessageData) {
-        Text(item.content)
+    MessageBubble() {
+        Text(this.messageData.content)
             .padding(10)
             .borderRadius(10)
-            .backgroundColor(this.makeBubbleBGColor(item))
+            .backgroundColor(this.makeBubbleBGColor())
             .onClick(() => {
                 if (this.isSelectMode) {
-                    this.toggleSelected(item.uuid)
+                    this.toggleSelected(this.messageData.uuid)
                 }
             })
-            .bindMenu(this.MessageBubbleMenu(item))
+            .bindMenu(this.MessageBubbleMenu())
             .lineSpacing(LengthMetrics.vp(5))
             .letterSpacing(1)
     }
 
     @Builder
-    MessageBubbleMenu(item: MessageData) {
-        if (item.role != 'info' && !this.isSelectMode)
+    MessageBubbleMenu() {
+        if (this.messageData.role != 'info' && !this.isSelectMode)
         Menu() {
-            ForEach(this.makeBubbleMenuElements(item), (element: MenuElement) => {
+            ForEach(this.makeBubbleMenuElements(), (element: MenuElement) => {
                 MenuItem({
                     content: element.value,
                     symbolStartIcon: element.symbolIcon,
@@ -123,13 +86,13 @@ export struct MessageList {
     }
 
     /** 聊天内容气泡的菜单配置 */
-    makeBubbleMenuElements(item: MessageData): MenuElement[] {
+    makeBubbleMenuElements(): MenuElement[] {
         return [
             {
                 value: '复制文本',
                 icon: $r('app.media.copy'),
                 action: () => {
-                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, item.content)
+                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.messageData.content)
                     this.systemPasteboard.setData(data).then(() => {
                         promptAction.showToast({ message: '复制成功' })
                     }).catch((error: BusinessError) => {
@@ -142,7 +105,7 @@ export struct MessageList {
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
                 action: () => {
                     this.isModalShow = true
-                    this.textSelectModalText = item.content
+                    this.textSelectModalText = this.messageData.content
                 },
             },
             {
@@ -152,7 +115,7 @@ export struct MessageList {
                     systemShareText(
                         getContext() as common.UIAbilityContext,
                         await getTextShareTitle(),
-                        item.content).catch((error: BusinessError) => {
+                        this.messageData.content).catch((error: BusinessError) => {
                         console.error(error.message)
                     })
                 },
@@ -163,7 +126,7 @@ export struct MessageList {
                 action: () => {
                     this.isSelectMode = !this.isSelectMode
                     if (this.isSelectMode) {
-                        this.dataList = changeAllSelectStatus(this.dataList, false, item.uuid)
+                        this.dataList = changeAllSelectStatus(this.dataList, false, this.messageData.uuid)
                     }
                 },
             },
@@ -177,7 +140,7 @@ export struct MessageList {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
-                    deleteByUUID(this.dataList, item.uuid)
+                    deleteByUUID(this.dataList, this.messageData.uuid)
                 },
             },
         ]
@@ -185,11 +148,10 @@ export struct MessageList {
 
     /** 消息列表中的头像 */
     @Builder
-    MessageAvatar(item: MessageData) {
-        SymbolGlyph(this.makeAvatarSymbolResource(item))
-            .fontSize(30)
-            .avatarStyles()
-            .fontColor([this.makeAvatarSymbolFontColor(item)])
+    MessageAvatar() {
+        SymbolGlyph(this.makeAvatarSymbolResource())
+            .fontSize(30)// .avatarStyles()
+            .fontColor([this.makeAvatarSymbolFontColor()])
     }
 
     @Styles
@@ -201,8 +163,8 @@ export struct MessageList {
         .shadow({ radius: 10, color: $r('sys.color.ohos_id_color_list_separator') })
     }
 
-    makeAvatarSymbolResource(item: MessageData): Resource {
-        switch (item.role) {
+    makeAvatarSymbolResource(): Resource {
+        switch (this.messageData.role) {
             case 'user':
                 return $r('sys.symbol.person_crop_circle_fill_1')
             case 'info':
@@ -216,8 +178,8 @@ export struct MessageList {
         }
     }
 
-    makeAvatarSymbolFontColor(item: MessageData): ResourceColor {
-        switch (item.role) {
+    makeAvatarSymbolFontColor(): ResourceColor {
+        switch (this.messageData.role) {
             case 'user':
                 return Color.Pink
             case 'info':
@@ -231,8 +193,8 @@ export struct MessageList {
         }
     }
 
-    makeJustifyContent(item: MessageData) {
-        switch (item.role) {
+    makeJustifyContent() {
+        switch (this.messageData.role) {
             case 'user':
                 return FlexAlign.End
             default:
@@ -251,8 +213,8 @@ export struct MessageList {
     }
 
     /** 聊天内容气泡的背景颜色 */
-    makeBubbleBGColor(item: MessageData): ResourceColor {
-        switch (item.role) {
+    makeBubbleBGColor(): ResourceColor {
+        switch (this.messageData.role) {
             case 'user':
                 return Color.Pink
             default:
@@ -260,5 +222,3 @@ export struct MessageList {
         }
     }
 }
-
-

@@ -57,10 +57,14 @@ export struct BottomPanel {
         Button(isAllSelected(this.messageDataList) ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
-            this.messageDataList = changeAllSelectStatus(
-                this.messageDataList,
-                !isAllSelected(this.messageDataList)
-            )
+            // this.messageDataList = changeAllSelectStatus(
+            //     this.messageDataList,
+            //     !isAllSelected(this.messageDataList)
+            // )
+            let newSelectedStatus = !isAllSelected(this.messageDataList)
+            this.messageDataList.forEach(item => {
+                item.selected = newSelectedStatus
+            })
         })
         Button('退出多选',
             { buttonStyle: ButtonStyleMode.NORMAL }
@@ -147,13 +151,10 @@ export struct BottomPanel {
     MessageInput() {
         TextArea({
             placeholder: $r("app.string.ChatPage_placeholder"),
-            text: this.inputValue,
+            text: $$this.inputValue,
             controller: this.textAreaController
         })
             .enableKeyboardOnFocus(false)
-            .onChange(value => {
-                this.inputValue = value
-            })
             .onAppear(async () => {
                 const lastWindow = await window.getLastWindow(getContext())
                 const handle = (data: number) => {
@@ -202,14 +203,7 @@ export struct BottomPanel {
         if (this.inputValue.trim() == '') {
             return
         }
-        this.messageDataList.push({
-            role: 'user',
-            content: this.inputValue.trim(),
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-            hidden: false,
-            selected: false,
-        })
+        this.messageDataList.push(new MessageData('user', this.inputValue.trim()))
         this.inputValue = ''
         scrollToBottom(this.messageListScroller)
 
@@ -223,14 +217,7 @@ export struct BottomPanel {
                 } : undefined
             }).filter(item => item) as ChatCompletionMessageParam[]
 
-        const response: MessageData = {
-            role: 'assistant',
-            content: this.requestStartTip,
-            createTime: new Date(),
-            uuid: util.generateRandomUUID(false),
-            hidden: false,
-            selected: false,
-        }
+        const response = new MessageData('assistant', this.requestStartTip)
         this.messageDataList.push(response)
         const openai = new OpenAI({
             apiKey: `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`,
@@ -247,7 +234,6 @@ export struct BottomPanel {
             }
             contentCache += chunks.map(chunk => chunk.choices[0].delta.content || '').join('')
             response.content = contentCache
-            this.messageDataList[this.messageDataList.length - 1] = JSON.parse(JSON.stringify(response))
             scrollToBottom(this.messageListScroller)
         }).then(() => {
             this.chatRequesting = false
