@@ -64,7 +64,7 @@ export struct MessageItem {
     /** 消息列表中的消息气泡 */
     @Builder
     Bubble() {
-        Text(this.data.content + this.data.selected)
+        Text(this.data.content)
             .padding(10)
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor())
