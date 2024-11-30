@@ -248,7 +248,7 @@ export struct BottomPanel {
             contentCache += chunks.map(chunk => chunk.choices[0].delta.content || '').join('')
             response.content = contentCache
             this.messageDataList[this.messageDataList.length - 1] = JSON.parse(JSON.stringify(response))
-            this.messageListScroller.scrollEdge(Edge.Bottom)
+            scrollToBottom(this.messageListScroller)
         }).then(() => {
             this.chatRequesting = false
         })
