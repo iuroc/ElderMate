@@ -131,7 +131,7 @@ export struct BottomPanel {
     /** 多选模式下，对选中项进行的操作菜单 */
     selectPanelMenuElements: MenuElement[] = [
         {
-            value: '复制文本' + this.messageDataList.length,
+            value: '复制文本' + getSelectedItems(this.messageDataList).length,
             icon: $r('app.media.copy'),
             enabled: getSelectedItems(this.messageDataList).length > 0,
             action: () => {
@@ -187,7 +187,7 @@ export struct BottomPanel {
                             getSelectedItems(this.messageDataList).forEach(item => {
                                 deleteByUUID(this.messageDataList, item.uuid)
                             })
-                            // this.isSelectMode = false
+                            this.isSelectMode = false
                         }
                     }
                 })
