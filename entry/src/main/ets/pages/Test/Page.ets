@@ -52,7 +52,6 @@ struct Page {
     BottomPanel() {
         Row() {
             Button('随机更新')
-                .colorBlend(Color.Green)
                 .width('50%')
                 .onClick(() => {
                     this.persons.forEach(person => randomUpdate(person))
@@ -102,11 +101,11 @@ class Person implements PersonInfo {
 
     constructor(name: string, age: number, fontColor: ResourceColor)
 
-    constructor(nameOrInfo: string | PersonInfo, age?: number, fontColor?: ResourceColor) {
+    constructor(nameOrInfo: string | PersonInfo, age?: number, color?: ResourceColor) {
         if (typeof nameOrInfo == 'string') {
             this.name = nameOrInfo
             this.age = age!
-            this.color = fontColor!
+            this.color = color!
         } else {
             this.name = nameOrInfo.name
             this.age = nameOrInfo.age

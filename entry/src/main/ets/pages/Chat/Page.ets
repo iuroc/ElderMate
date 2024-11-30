@@ -23,8 +23,6 @@ struct Page {
         const resourceManager = context.resourceManager
         this.navTitle = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
         this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
-
-        this.pathInfos.pushPath({ name: 'Test' })
     }
 
     build() {
