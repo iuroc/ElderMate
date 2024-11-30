@@ -1,6 +1,7 @@
 import { LengthMetrics, promptAction, SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { ChatCompletionMessageParam } from '../../modules/openai/npm@4.73.1/resources/chat'
 import {
+    changeAllSelectStatus,
     deleteByUUID,
     getSelectedItems,
     getTextShareTitle,
@@ -58,14 +59,11 @@ export struct BottomPanel {
 
     @Builder
     SelectPanel() {
-        Button(isAllSelected(this.messageDataList) ? '全不选' : '全选',
+        Button((isAllSelected(this.messageDataList) ? '全不选' : '全选'),
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
             let newSelectedStatus = !isAllSelected(this.messageDataList)
-            this.messageDataList = this.messageDataList.map(item => {
-                item.selected = newSelectedStatus
-                return item
-            })
+            this.messageDataList = changeAllSelectStatus(this.messageDataList, newSelectedStatus)
         })
             .fontColor(isAllSelected(this.messageDataList) ? Color.Orange : Color.Blue)
         Button('退出多选',

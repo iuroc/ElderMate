@@ -23,18 +23,18 @@ struct Page {
         const context = getContext()
         const resourceManager = context.resourceManager
         this.navTitle = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
-        // this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
-
-        this.pathInfos.pushPath({ name: 'Test' })
+        // this.pathInfos.pushPath({ name: 'Test' })
     }
 
     build() {
         NavDestination() {
             Flex({ direction: FlexDirection.Column }) {
+                // 消息列表
                 MessageList({
                     scroller: this.messageListScroller,
                     textAreaController: this.messageInputController
                 })
+                // 底部操作面板
                 BottomPanel({
                     messageListScroller: this.messageListScroller,
                     textAreaController: this.messageInputController,

@@ -8,15 +8,13 @@ import { MessageItem } from './MessageItem'
 @Component
 export struct MessageList {
     scroller = new Scroller()
-    textAreaController = new TextAreaController()
+    /** 消息输入框控制器 */
+    @Require textAreaController = new TextAreaController()
     systemPasteboard = pasteboard.getSystemPasteboard()
     @Consume messageDataList: MessageData[]
-    /** 文本选择面板要显示的文本 */
-    @Consume textSelectModalText: string
-    /** 是否处于多选模式 */
-    @Consume isSelectMode: boolean
-    @Consume isModalShow: boolean
-    /** Scroll 是否已经执行过 onSizeChange 回调 */
+    /** Scroll 是否已经执行过 onSizeChange 回调
+     *
+     * 用于初始进入页面自动滚动到消息列表底部 */
     hasInitSizeChange: boolean = false
 
     build() {
@@ -34,14 +32,15 @@ export struct MessageList {
             }
         })
         .align(Alignment.Top)
-        .height('100%')
         .edgeEffect(EdgeEffect.Spring)
         .flexGrow(1)
         .onSizeChange(event => {
             if (this.hasInitSizeChange) {
+                // 判断之前已经执行过了，不再执行
                 return
             }
             if (event.height && event.height > 0) {
+                // 判断键盘完全拉起，执行滚动到列表底部
                 this.hasInitSizeChange = true
                 this.scroller.scrollEdge(Edge.Bottom)
             }

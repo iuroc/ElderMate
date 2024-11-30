@@ -4,9 +4,7 @@ import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 import { common } from '@kit.AbilityKit'
 import { util } from '@kit.ArkTS'
 
-/**
- * 消息列表容器
- */
+/** 消息列表项 */
 @Component
 export struct MessageItem {
     systemPasteboard = pasteboard.getSystemPasteboard()
@@ -36,9 +34,7 @@ export struct MessageItem {
                 this.Bubble()
             }
         }.onClick(() => {
-            if (this.isSelectMode) {
-                this.data.selected = !this.data.selected
-            }
+            this.toggleSelected()
         }).gesture(LongPressGesture().onAction(() => {
             if (!this.isSelectMode) {
                 this.showTextSelectModal()
@@ -57,8 +53,11 @@ export struct MessageItem {
     Checkbox() {
         Checkbox()
             .flexShrink(0)
-            .select($$this.data.selected)
+            .select(this.data.selected)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
+            .onClick(() => {
+                this.toggleSelected()
+            })
     }
 
     /** 消息列表中的消息气泡 */
@@ -74,11 +73,19 @@ export struct MessageItem {
             .lineSpacing(LengthMetrics.vp(5))
             .letterSpacing(1)
             .onClick(() => {
-                if (this.isSelectMode) {
-                    this.data.selected = !this.data.selected
-                    this.messageDataList = [...this.messageDataList]
-                }
+                this.toggleSelected()
             })
+    }
+
+    /** 切换选中状态，非多选模式或 `role=info` 将忽略操作 */
+    toggleSelected() {
+        if (this.isSelectMode && this.data.role != 'info') {
+            console.debug('toggleSelected run')
+            this.data.selected = !this.data.selected
+            this.messageDataList = [...this.messageDataList]
+        } else {
+            console.debug('toggleSelected ignore')
+        }
     }
 
     @Builder
