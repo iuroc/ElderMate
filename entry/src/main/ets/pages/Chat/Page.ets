@@ -1,4 +1,4 @@
-import { SymbolGlyphModifier, window } from '@kit.ArkUI'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
 import { getSelectableItems, makeTempAdds, MessageData, } from './util'
 import { TextSelectModal } from './TextSelectModal'
@@ -10,24 +10,19 @@ export struct Page {
     @Consume pathInfos: NavPathStack
     @State navTitle: string = ''
     /** 消息输入框内容 */
-    @State inputValue: string = ''
     messageListScroller = new Scroller()
     /** 是否处于多选模式 */
-    @State isSelectMode: boolean = false
-    textAreaController = new TextAreaController()
+    @Provide isSelectMode: boolean = false
+    messageInputController = new TextAreaController()
     /** 消息列表数据 */
-    @State messageDataList: MessageData[] = []
-    @State isModalShow: boolean = false
-    @State textSelectModalText: string = ''
-    @State textShareTitle: string = ''
+    @Provide('messageDataList') messageDataList: MessageData[] = []
+    @Provide isModalShow: boolean = false
+    @Provide textSelectModalText: string = ''
 
     async aboutToAppear() {
         const context = getContext()
         const resourceManager = context.resourceManager
         this.navTitle = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
-        this.textShareTitle = await resourceManager.getStringValue(
-            $r('app.string.ChatPage_TextSelectModal_text_share_title')
-        )
         this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
     }
 
@@ -35,21 +30,12 @@ export struct Page {
         NavDestination() {
             Flex({ direction: FlexDirection.Column }) {
                 MessageList({
-                    dataList: this.messageDataList,
-                    textSelectModalText: this.textSelectModalText,
-                    isSelectMode: this.isSelectMode,
-                    isModalShow: this.isModalShow,
                     scroller: this.messageListScroller,
-                    textShareTitle: this.textShareTitle,
-                    textAreaController: this.textAreaController
+                    textAreaController: this.messageInputController
                 })
                 BottomPanel({
-                    messageDataList: this.messageDataList,
-                    isSelectMode: this.isSelectMode,
-                    textShareTitle: this.textShareTitle,
-                    inputValue: this.inputValue,
                     messageListScroller: this.messageListScroller,
-                    textAreaController: this.textAreaController
+                    textAreaController: this.messageInputController
                 })
             }
         }

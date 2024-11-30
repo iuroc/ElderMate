@@ -142,3 +142,7 @@ export function makeTempAdds(): MessageData[] {
         }
     ]
 }
+
+export async function getTextShareTitle() {
+    return getContext().resourceManager.getStringValue($r('app.string.ChatPage_TextSelectModal_text_share_title'))
+}

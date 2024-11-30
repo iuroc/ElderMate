@@ -4,6 +4,7 @@ import {
     changeAllSelectStatus,
     deleteByUUID,
     getSelectedItems,
+    getTextShareTitle,
     isAllSelected,
     mergedMessageForSharing,
     MessageData,
@@ -19,15 +20,13 @@ export struct BottomPanel {
     /** 是否正在请求生成内容 */
     @State chatRequesting: boolean = false
     /** 是否处于多选模式 */
-    @Link isSelectMode: boolean
+    @Consume isSelectMode: boolean
     /** 当前消息列表 */
-    @Link messageDataList: MessageData[]
-    @Prop inputValue: string = ''
-    @Require @Prop textShareTitle: string = ''
+    @Consume('messageDataList') messageDataList: MessageData[]
+    @State inputValue: string = ''
     @Require messageListScroller = new Scroller()
-    @Require textAreaController = new TextAreaController()
-    systemPasteboard = pasteboard.getSystemPasteboard()
-    requestStartTip = '正在思考~'
+    textAreaController = new TextAreaController()
+    private requestStartTip = '正在思考~'
 
     build() {
         Flex({
@@ -80,7 +79,8 @@ export struct BottomPanel {
                 const selectedItems = getSelectedItems(this.messageDataList)
                 const text = mergedMessageForSharing(selectedItems)
                 const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
-                this.systemPasteboard.setData(data)
+                pasteboard.getSystemPasteboard()
+                    .setData(data)
                     .then(() => {
                         promptAction.showToast({ message: `复制成功` })
                     })
@@ -95,11 +95,11 @@ export struct BottomPanel {
         {
             value: '分享文本',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
-            action: () => {
+            action: async () => {
                 const selectedItems = getSelectedItems(this.messageDataList)
                 systemShareText(
                     getContext(),
-                    this.textShareTitle,
+                    await getTextShareTitle(),
                     mergedMessageForSharing(selectedItems)
                 ).catch((error: BusinessError) => {
                     promptAction.showToast({ message: `分享失败：${error.message}` })
