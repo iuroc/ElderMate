@@ -1,6 +1,6 @@
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { util } from '@kit.ArkTS'
-import { getSelectableItems, MessageData, } from './util'
+import { getSelectableItems, makeTempAdds, MessageData, } from './util'
 import { TextSelectModal } from './TextSelectModal'
 import { MessageList } from './MessageList'
 import { BottomPanel } from './BottomPanel'
@@ -16,7 +16,7 @@ export struct Page {
     @State isSelectMode: boolean = false
     textAreaController = new TextAreaController()
     /** 消息列表数据 */
-    @State messageDataList: MessageData[] = this.makeDefaultMessageDataList()
+    @State messageDataList: MessageData[] = []
     @State isModalShow: boolean = false
     @State textSelectModalText: string = ''
     @State textShareTitle: string = ''
@@ -28,12 +28,7 @@ export struct Page {
         this.textShareTitle = await resourceManager.getStringValue(
             $r('app.string.ChatPage_TextSelectModal_text_share_title')
         )
-    }
-
-    onDidBuild(): void {
-        setTimeout(() => {
-            this.messageListScroller.scrollEdge(Edge.Bottom)
-        }, 200)
+        this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
     }
 
     build() {

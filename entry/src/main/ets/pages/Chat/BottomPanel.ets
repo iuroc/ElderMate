@@ -1,4 +1,4 @@
-import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
+import { LengthMetrics, promptAction, SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { ChatCompletionMessageParam } from '../../modules/openai/npm@4.73.1/resources/chat'
 import {
     changeAllSelectStatus,
@@ -154,16 +154,14 @@ export struct BottomPanel {
             .onChange(value => {
                 this.inputValue = value
             })
-            .onEditChange(_isEditing => {
-                if (_isEditing) {
-                    // 进入编辑状态后，取消多选状态
-                    this.isSelectMode = false
+            .onAppear(async () => {
+                const lastWindow = await window.getLastWindow(getContext())
+                const handle = (data: number) => {
+                    if (data > 0) {
+                        this.messageListScroller.scrollEdge(Edge.Bottom)
+                    }
                 }
-                // 这里是个隐患，在软键盘抬起的同时让滚动区域滚到底部，需要设置一个时间去等待软键盘完全抬起，否则将无法正常跳转底部
-                // 稳妥的做法是等待软键盘完全抬起，再滚动到底部，否则在软键盘完全抬起之前会滚动到错误的底部，软件就以为那里就是最底部了
-                setTimeout(() => {
-                    this.messageListScroller.scrollEdge(Edge.Bottom)
-                }, 150)
+                lastWindow.on('keyboardHeightChange', handle)
             })
     }
 
