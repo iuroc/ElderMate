@@ -19,5 +19,5 @@ export async function testOpenAI() {
         chunks.forEach(chunk => {
             console.log(chunk.choices[0].delta.content)
         })
-    })
+    }).response
 }

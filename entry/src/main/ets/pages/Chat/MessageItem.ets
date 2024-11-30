@@ -76,6 +76,7 @@ export struct MessageItem {
             .onClick(() => {
                 if (this.isSelectMode) {
                     this.data.selected = !this.data.selected
+                    this.messageDataList = [...this.messageDataList]
                 }
             })
     }

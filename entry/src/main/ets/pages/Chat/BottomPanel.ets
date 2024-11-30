@@ -58,21 +58,23 @@ export struct BottomPanel {
 
     @Builder
     SelectPanel() {
-        Text(this.messageDataList.filter(item =>!item.selected).length.toString())
         Button(isAllSelected(this.messageDataList) ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
             let newSelectedStatus = !isAllSelected(this.messageDataList)
-            this.messageDataList.forEach(item => {
+            this.messageDataList = this.messageDataList.map(item => {
                 item.selected = newSelectedStatus
+                return item
             })
         })
+            .fontColor(isAllSelected(this.messageDataList) ? Color.Orange : Color.Blue)
         Button('退出多选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).fontColor(Color.Red).onClick(() => {
             this.isSelectMode = false
         })
-        Button('选中项操作').bindMenu(this.selectPanelMenuElements)
+        Button('选中项操作').bindMenu(this.selectPanelMenuElements())
+            .enabled(getSelectedItems(this.messageDataList).length > 0)
     }
 
     /** 消息输入框 */
@@ -129,77 +131,78 @@ export struct BottomPanel {
     }
 
     /** 多选模式下，对选中项进行的操作菜单 */
-    selectPanelMenuElements: MenuElement[] = [
-        {
-            value: '复制文本' + getSelectedItems(this.messageDataList).length,
-            icon: $r('app.media.copy'),
-            enabled: getSelectedItems(this.messageDataList).length > 0,
-            action: () => {
-                const selectedItems = getSelectedItems(this.messageDataList)
-                const text = mergedMessageForSharing(selectedItems)
-                const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
-                pasteboard.getSystemPasteboard()
-                    .setData(data)
-                    .then(() => {
-                        promptAction.showToast({ message: `复制成功` })
-                    })
-                    .catch((error: BusinessError) => {
-                        promptAction.showToast({ message: `复制失败：${error.message}` })
-                    })
-                    .finally(() => {
+    selectPanelMenuElements(): MenuElement[] {
+        return [
+            {
+                value: '复制文本',
+                icon: $r('app.media.copy'),
+                action: () => {
+                    const selectedItems = getSelectedItems(this.messageDataList)
+                    const text = mergedMessageForSharing(selectedItems)
+                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
+                    pasteboard.getSystemPasteboard()
+                        .setData(data)
+                        .then(() => {
+                            promptAction.showToast({ message: `复制成功` })
+                        })
+                        .catch((error: BusinessError) => {
+                            promptAction.showToast({ message: `复制失败：${error.message}` })
+                        })
+                        .finally(() => {
+                            this.isSelectMode = false // 退出多选模式
+                        })
+                }
+            },
+            {
+                value: '分享文本',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+                action: async () => {
+                    const selectedItems = getSelectedItems(this.messageDataList)
+                    systemShareText(
+                        getContext(),
+                        await getTextShareTitle(),
+                        mergedMessageForSharing(selectedItems)
+                    ).catch((error: BusinessError) => {
+                        promptAction.showToast({ message: `分享失败：${error.message}` })
+                    }).finally(() => {
                         this.isSelectMode = false // 退出多选模式
                     })
-            }
-        },
-        {
-            value: '分享文本',
-            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
-            action: async () => {
-                const selectedItems = getSelectedItems(this.messageDataList)
-                systemShareText(
-                    getContext(),
-                    await getTextShareTitle(),
-                    mergedMessageForSharing(selectedItems)
-                ).catch((error: BusinessError) => {
-                    promptAction.showToast({ message: `分享失败：${error.message}` })
-                }).finally(() => {
-                    this.isSelectMode = false // 退出多选模式
-                })
+                },
             },
-        },
-        {
-            value: '删除消息',
-            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
-            action: () => {
-                AlertDialog.show({
-                    message: $r('app.string.ChatPage_delete_selected_messages_tip'),
-                    title: $r('app.string.title_text_tip'),
-                    primaryButton: {
-                        value: $r('app.string.button_text_cancel'),
-                        action() {
+            {
+                value: '删除消息',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
+                action: () => {
+                    AlertDialog.show({
+                        message: $r('app.string.ChatPage_delete_selected_messages_tip'),
+                        title: $r('app.string.title_text_tip'),
+                        primaryButton: {
+                            value: $r('app.string.button_text_cancel'),
+                            action() {
+                            }
+                        },
+                        secondaryButton: {
+                            value: $r('app.string.button_text_confirm'),
+                            style: DialogButtonStyle.HIGHLIGHT,
+                            backgroundColor: Color.Red,
+                            action: () => {
+                                getSelectedItems(this.messageDataList).forEach(item => {
+                                    deleteByUUID(this.messageDataList, item.uuid)
+                                })
+                                this.isSelectMode = false
+                            }
                         }
-                    },
-                    secondaryButton: {
-                        value: $r('app.string.button_text_confirm'),
-                        style: DialogButtonStyle.HIGHLIGHT,
-                        backgroundColor: Color.Red,
-                        action: () => {
-                            getSelectedItems(this.messageDataList).forEach(item => {
-                                deleteByUUID(this.messageDataList, item.uuid)
-                            })
-                            this.isSelectMode = false
-                        }
-                    }
-                })
-            }
-        },
-        {
-            value: '发送到邮箱',
-            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
-            action: () => {
-            }
-        },
-    ]
+                    })
+                }
+            },
+            {
+                value: '发送到邮箱',
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+                action: () => {
+                }
+            },
+        ]
+    }
 
     handleSendMessage() {
         if (this.inputValue.trim() == '') {
