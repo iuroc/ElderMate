@@ -21,7 +21,7 @@ export struct BottomPanel {
     /** 是否处于多选模式 */
     @Consume isSelectMode: boolean
     /** 当前消息列表 */
-    @Consume('messageDataList') messageDataList: MessageData[]
+    @Consume messageDataList: MessageData[]
     @State inputValue: string = ''
     @Require messageListScroller = new Scroller()
     textAreaController = new TextAreaController()
@@ -58,6 +58,7 @@ export struct BottomPanel {
 
     @Builder
     SelectPanel() {
+        Text(this.messageDataList.filter(item =>!item.selected).length.toString())
         Button(isAllSelected(this.messageDataList) ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
@@ -130,8 +131,9 @@ export struct BottomPanel {
     /** 多选模式下，对选中项进行的操作菜单 */
     selectPanelMenuElements: MenuElement[] = [
         {
-            value: '复制文本',
+            value: '复制文本' + this.messageDataList.length,
             icon: $r('app.media.copy'),
+            enabled: getSelectedItems(this.messageDataList).length > 0,
             action: () => {
                 const selectedItems = getSelectedItems(this.messageDataList)
                 const text = mergedMessageForSharing(selectedItems)
@@ -185,7 +187,7 @@ export struct BottomPanel {
                             getSelectedItems(this.messageDataList).forEach(item => {
                                 deleteByUUID(this.messageDataList, item.uuid)
                             })
-                            this.isSelectMode = false
+                            // this.isSelectMode = false
                         }
                     }
                 })

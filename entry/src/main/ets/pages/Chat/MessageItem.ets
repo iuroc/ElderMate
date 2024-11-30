@@ -10,7 +10,7 @@ import { util } from '@kit.ArkTS'
 @Component
 export struct MessageItem {
     systemPasteboard = pasteboard.getSystemPasteboard()
-    @Consume('messageDataList') dataList: MessageData[]
+    @Consume messageDataList: MessageData[]
     /** 文本选择面板要显示的文本 */
     @Consume textSelectModalText: string
     /** 是否处于多选模式 */
@@ -57,14 +57,14 @@ export struct MessageItem {
     Checkbox() {
         Checkbox()
             .flexShrink(0)
-            .select(this.data.selected)
+            .select($$this.data.selected)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
     }
 
     /** 消息列表中的消息气泡 */
     @Builder
     Bubble() {
-        Text(this.data.content)
+        Text(this.data.content + this.data.selected)
             .padding(10)
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor())
@@ -138,11 +138,11 @@ export struct MessageItem {
                     if (this.isSelectMode) {
                         // 这里重复赋值，并且重置了全部的 UUID，是为了保证列表中每一项组件都得到刷新，从而刷新菜单项
                         // 但是这样是不优雅的，需要寻求新的办法去解决
-                        this.dataList = this.dataList.map(item => {
+                        this.messageDataList = this.messageDataList.map(item => {
                             item.uuid = util.generateRandomUUID(false)
                             return item
                         })
-                        changeAllSelectStatus(this.dataList, false, this.data.uuid)
+                        changeAllSelectStatus(this.messageDataList, false, this.data.uuid)
                     }
                 },
             },
@@ -156,7 +156,7 @@ export struct MessageItem {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
-                    deleteByUUID(this.dataList, this.data.uuid)
+                    deleteByUUID(this.messageDataList, this.data.uuid)
                 },
             },
         ]

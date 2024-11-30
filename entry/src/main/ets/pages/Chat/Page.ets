@@ -10,11 +10,11 @@ struct Page {
     @State navTitle: string = ''
     /** 消息输入框内容 */
     messageListScroller = new Scroller()
+    messageInputController = new TextAreaController()
     /** 是否处于多选模式 */
     @Provide isSelectMode: boolean = false
-    messageInputController = new TextAreaController()
     /** 消息列表数据 */
-    @Provide('messageDataList') messageDataList: MessageData[] = []
+    @Provide messageDataList: MessageData[] = []
     @Provide isModalShow: boolean = false
     /** 文本选择面板要显示的文本 */
     @Provide textSelectModalText: string = ''
@@ -37,7 +37,7 @@ struct Page {
                 })
                 BottomPanel({
                     messageListScroller: this.messageListScroller,
-                    textAreaController: this.messageInputController
+                    textAreaController: this.messageInputController,
                 })
             }
         }

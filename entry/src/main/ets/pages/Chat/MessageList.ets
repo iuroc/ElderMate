@@ -10,7 +10,7 @@ export struct MessageList {
     scroller = new Scroller()
     textAreaController = new TextAreaController()
     systemPasteboard = pasteboard.getSystemPasteboard()
-    @Consume('messageDataList') dataList: MessageData[]
+    @Consume messageDataList: MessageData[]
     /** 文本选择面板要显示的文本 */
     @Consume textSelectModalText: string
     /** 是否处于多选模式 */
@@ -22,7 +22,7 @@ export struct MessageList {
     build() {
         Scroll(this.scroller) {
             Column({ space: 20 }) {
-                ForEach(this.dataList, (item: MessageData) => {
+                ForEach(this.messageDataList, (item: MessageData) => {
                     MessageItem({ data: item })
                 })
             }
