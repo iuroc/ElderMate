@@ -125,9 +125,9 @@ export interface ClientOptions {
     dangerouslyAllowBrowser?: boolean;
 }
 
-OpenAI.Chat = Chat;
+OpenAINamespace.Chat = Chat;
 
-export declare namespace OpenAI {
+export declare namespace OpenAINamespace {
     export {
         Completions as Completions,
         type Completion as Completion,
@@ -211,4 +211,4 @@ export interface AzureClientOptions extends ClientOptions {
 // ---------------------- End Azure ----------------------
 
 
-export default OpenAI;
+export default OpenAINamespace;

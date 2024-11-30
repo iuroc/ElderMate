@@ -21,10 +21,10 @@ export struct TextSelectModal {
         Scroll() {
             Column({ space: 20 }) {
                 Text(this.text, { controller: this.controller })
-                    .fontSize(20)
+                    .fontSize(18)
                     .copyOption(CopyOptions.InApp)
                     .selection(this.start, this.end)
-                    .lineSpacing(LengthMetrics.vp(10))
+                    .lineSpacing(LengthMetrics.vp(8))
                     .letterSpacing(1)
                     .textAlign(TextAlign.JUSTIFY)
                     .onTextSelectionChange((start, end) => {
@@ -43,7 +43,7 @@ export struct TextSelectModal {
                         })
                     })
             }
-            .padding(20)
+            .padding(15)
             .width('100%')
         }
         .height('100%')

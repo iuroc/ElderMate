@@ -2,6 +2,7 @@ import { changeAllSelectStatus, deleteByUUID, MessageData, systemShareText } fro
 import { LengthMetrics, promptAction, SymbolGlyphModifier } from "@kit.ArkUI"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 import { common } from "@kit.AbilityKit"
+import { util } from "@kit.ArkTS"
 
 /**
  * 消息列表容器
@@ -11,7 +12,7 @@ export struct MessageList {
     scroller = new Scroller()
     textAreaController = new TextAreaController()
     systemPasteboard = pasteboard.getSystemPasteboard()
-    @Link messageDataList: MessageData[]
+    @Link dataList: MessageData[]
     @Link textSelectModalText: string
     /** 是否处于多选模式 */
     @Link isSelectMode: boolean
@@ -21,7 +22,7 @@ export struct MessageList {
     build() {
         Scroll(this.scroller) {
             Column({ space: 20 }) {
-                ForEach(this.messageDataList, (item: MessageData) => {
+                ForEach(this.dataList, (item: MessageData) => {
                     this.MessageItem(item)
                 })
             }
@@ -152,7 +153,7 @@ export struct MessageList {
                 action: () => {
                     this.isSelectMode = !this.isSelectMode
                     if (this.isSelectMode) {
-                        changeAllSelectStatus(this, false, item.uuid)
+                        this.dataList = changeAllSelectStatus(this.dataList, false, item.uuid)
                     }
                 },
             },
@@ -166,7 +167,7 @@ export struct MessageList {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
-                    deleteByUUID(this.messageDataList, item.uuid)
+                    deleteByUUID(this.dataList, item.uuid)
                 },
             },
         ]
@@ -230,10 +231,10 @@ export struct MessageList {
     }
 
     toggleSelected(uuid: string) {
-        for (let i = 0; i < this.messageDataList.length; i++) {
-            if (uuid == this.messageDataList[i].uuid) {
-                this.messageDataList[i].selected = !this.messageDataList[i].selected
-                this.messageDataList[i] = JSON.parse(JSON.stringify(this.messageDataList[i]))
+        for (let i = 0; i < this.dataList.length; i++) {
+            if (uuid == this.dataList[i].uuid) {
+                this.dataList[i].selected = !this.dataList[i].selected
+                this.dataList[i] = JSON.parse(JSON.stringify(this.dataList[i]))
                 return
             }
         }
@@ -247,5 +248,24 @@ export struct MessageList {
             default:
                 return 'rgba(220,220,220,0.3)'
         }
+    }
+
+
+    makeDefaultMessageDataList(): MessageData[] {
+        return [
+            {
+                role: 'info',
+                content: '我是智能聊天助手，您可以问我任何问题~',
+                createTime: new Date(),
+                uuid: util.generateRandomUUID(false),
+            },
+            {
+                role: 'system',
+                content: '专门面向老年人的生活智能助手，用简单有趣的语言帮助老人解答各种问题。',
+                createTime: new Date(),
+                hidden: true,
+                uuid: util.generateRandomUUID(false),
+            }
+        ]
     }
 }

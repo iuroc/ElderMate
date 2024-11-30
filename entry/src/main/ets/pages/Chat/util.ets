@@ -74,10 +74,6 @@ export function mergedMessageForSharing(items: MessageData[]) {
     }).join(`\n${'-'.repeat(20)}\n`)
 }
 
-interface HasMessageDataList {
-    messageDataList: MessageData[]
-}
-
 /** 删除指定 `UUID` 的消息 */
 export function deleteByUUID(list: MessageData[], uuid: string): void {
     for (let i = 0; i < list.length; i++) {
@@ -88,9 +84,9 @@ export function deleteByUUID(list: MessageData[], uuid: string): void {
     }
 }
 
-/** 设置全选或全不选，将例外项将设置为相反的值 */
-export function changeAllSelectStatus(that: HasMessageDataList, selected: boolean, ...excepts: string[]) {
-    that.messageDataList = that.messageDataList.map(item => {
+/** 设置全选或全不选，将例外项将设置为相反的值，返回新的数组 */
+export function changeAllSelectStatus(list: MessageData[], selected: boolean, ...excepts: string[]) {
+    return list.map(item => {
         item.selected = excepts.includes(item.uuid) ? !selected : selected
         return item
     })
