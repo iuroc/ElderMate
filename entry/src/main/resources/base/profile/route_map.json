@@ -19,6 +19,11 @@
             "name": "User",
             "pageSourceFile": "src/main/ets/pages/User/Page.ets",
             "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "Test",
+            "pageSourceFile": "src/main/ets/pages/Test/Page.ets",
+            "buildFunction": "PageBuilder"
         }
     ]
 }

@@ -1,5 +1,5 @@
 @Component
-export struct Page {
+struct Page {
     @Consume pathInfos: NavPathStack
 
     build() {

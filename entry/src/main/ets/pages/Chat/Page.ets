@@ -6,7 +6,7 @@ import { MessageList } from './MessageList'
 import { BottomPanel } from './BottomPanel'
 
 @Component
-export struct Page {
+struct Page {
     @Consume pathInfos: NavPathStack
     @State navTitle: string = ''
     /** 消息输入框内容 */
