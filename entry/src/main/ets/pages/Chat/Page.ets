@@ -14,7 +14,7 @@ struct Page {
     /** 是否处于多选模式 */
     @Provide isSelectMode: boolean = false
     /** 消息列表数据 */
-    @Provide messageDataList: MessageData[] = this.makeDefaultMessageDataList().concat(makeTempAdds())
+    @Provide messageDataList: MessageData[] = []
     @Provide isModalShow: boolean = false
     /** 文本选择面板要显示的文本 */
     @Provide textSelectModalText: string = ''
@@ -24,6 +24,7 @@ struct Page {
         const resourceManager = context.resourceManager
         this.navTitle = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
         // this.pathInfos.pushPath({ name: 'Test' })
+        this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
     }
 
     build() {
