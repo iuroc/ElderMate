@@ -1,7 +1,6 @@
 import { LengthMetrics, promptAction, SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { ChatCompletionMessageParam } from '../../modules/openai/npm@4.73.1/resources/chat'
 import {
-    changeAllSelectStatus,
     deleteByUUID,
     getSelectedItems,
     getTextShareTitle,
@@ -12,7 +11,6 @@ import {
     systemShareText
 } from './util'
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
-import { util } from '@kit.ArkTS'
 import { OpenAI } from '../../modules/openai/OpenAI'
 
 @Component

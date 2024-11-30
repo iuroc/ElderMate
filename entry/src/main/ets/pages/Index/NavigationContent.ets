@@ -33,9 +33,10 @@ struct HomeList {
                 }
             })
         }
-        .width('auto')
-        .height('auto')
+        .width('100%')
+        .height('100%')
         .padding(10)
+        .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     }
 
     private makeListItems(): ListItem[] {
