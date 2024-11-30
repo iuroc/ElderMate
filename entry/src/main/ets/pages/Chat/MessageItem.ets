@@ -2,6 +2,7 @@ import { changeAllSelectStatus, deleteByUUID, getTextShareTitle, MessageData, sy
 import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
 import { common } from '@kit.AbilityKit'
+import { util } from '@kit.ArkTS'
 
 /**
  * 消息列表容器
@@ -10,23 +11,24 @@ import { common } from '@kit.AbilityKit'
 export struct MessageItem {
     systemPasteboard = pasteboard.getSystemPasteboard()
     @Consume('messageDataList') dataList: MessageData[]
+    /** 文本选择面板要显示的文本 */
     @Consume textSelectModalText: string
     /** 是否处于多选模式 */
     @Consume isSelectMode: boolean
     @Consume isModalShow: boolean
-    @ObjectLink messageData: MessageData
+    @ObjectLink data: MessageData
 
     build() {
-        if (!this.messageData.hidden)
+        if (!this.data.hidden)
         Flex({
             space: { main: LengthMetrics.vp(10) },
             justifyContent: this.makeJustifyContent(),
         }) {
-            if (this.isSelectMode && this.messageData.role != 'info') {
-                this.MessageCheckbox()
+            if (this.isSelectMode && this.data.role != 'info') {
+                this.Checkbox()
                 Blank()
             }
-            if (this.messageData.role == 'user') {
+            if (this.data.role == 'user') {
                 this.Bubble()
                 this.Avatar()
             } else {
@@ -35,43 +37,51 @@ export struct MessageItem {
             }
         }.onClick(() => {
             if (this.isSelectMode) {
-                this.toggleSelected()
+                this.data.selected = !this.data.selected
             }
-        })
+        }).gesture(LongPressGesture().onAction(() => {
+            if (!this.isSelectMode) {
+                this.showTextSelectModal()
+            }
+        }))
+    }
+
+    /** 进入文本选择模式，打开半屏模态框 */
+    showTextSelectModal() {
+        this.isModalShow = true
+        this.textSelectModalText = this.data.content
     }
 
     /** 消息多选项 */
     @Builder
-    MessageCheckbox() {
+    Checkbox() {
         Checkbox()
             .flexShrink(0)
-            .select(this.messageData.selected)
-            .onChange(() => {
-                this.toggleSelected()
-            })
+            .select(this.data.selected)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
     }
 
     /** 消息列表中的消息气泡 */
     @Builder
     Bubble() {
-        Text(this.messageData.content)
+        Text(this.data.content)
             .padding(10)
             .borderRadius(10)
             .backgroundColor(this.makeBubbleBGColor())
-            .onClick(() => {
-                if (this.isSelectMode) {
-                    this.toggleSelected()
-                }
-            })
-            .bindMenu(this.MessageBubbleMenu())
+            .bindMenu(
+                this.data.role != 'info' && !this.isSelectMode
+                    ? this.MessageBubbleMenu() : undefined)
             .lineSpacing(LengthMetrics.vp(5))
             .letterSpacing(1)
+            .onClick(() => {
+                if (this.isSelectMode) {
+                    this.data.selected = !this.data.selected
+                }
+            })
     }
 
     @Builder
     MessageBubbleMenu() {
-        if (this.messageData.role != 'info' && !this.isSelectMode)
         Menu() {
             ForEach(this.makeBubbleMenuElements(), (element: MenuElement) => {
                 MenuItem({
@@ -92,7 +102,7 @@ export struct MessageItem {
                 value: '复制文本',
                 icon: $r('app.media.copy'),
                 action: () => {
-                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.messageData.content)
+                    const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.data.content)
                     this.systemPasteboard.setData(data).then(() => {
                         promptAction.showToast({ message: '复制成功' })
                     }).catch((error: BusinessError) => {
@@ -104,8 +114,7 @@ export struct MessageItem {
                 value: '选择文本',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
                 action: () => {
-                    this.isModalShow = true
-                    this.textSelectModalText = this.messageData.content
+                    this.showTextSelectModal()
                 },
             },
             {
@@ -115,7 +124,7 @@ export struct MessageItem {
                     systemShareText(
                         getContext() as common.UIAbilityContext,
                         await getTextShareTitle(),
-                        this.messageData.content
+                        this.data.content
                     ).catch((error: BusinessError) => {
                         AlertDialog.show({ message: `分享失败：${error.message}` })
                     })
@@ -127,7 +136,13 @@ export struct MessageItem {
                 action: () => {
                     this.isSelectMode = !this.isSelectMode
                     if (this.isSelectMode) {
-                        this.dataList = changeAllSelectStatus(this.dataList, false, this.messageData.uuid)
+                        // 这里重复赋值，并且重置了全部的 UUID，是为了保证列表中每一项组件都得到刷新，从而刷新菜单项
+                        // 但是这样是不优雅的，需要寻求新的办法去解决
+                        this.dataList = this.dataList.map(item => {
+                            item.uuid = util.generateRandomUUID(false)
+                            return item
+                        })
+                        changeAllSelectStatus(this.dataList, false, this.data.uuid)
                     }
                 },
             },
@@ -141,7 +156,7 @@ export struct MessageItem {
                 value: '删除消息',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')),
                 action: () => {
-                    deleteByUUID(this.dataList, this.messageData.uuid)
+                    deleteByUUID(this.dataList, this.data.uuid)
                 },
             },
         ]
@@ -151,7 +166,8 @@ export struct MessageItem {
     @Builder
     Avatar() {
         SymbolGlyph(this.makeAvatarSymbolResource())
-            .fontSize(30)// .avatarStyles()
+            .fontSize(30)
+            .avatarStyles()
             .fontColor([this.makeAvatarSymbolFontColor()])
     }
 
@@ -165,7 +181,7 @@ export struct MessageItem {
     }
 
     makeAvatarSymbolResource(): Resource {
-        switch (this.messageData.role) {
+        switch (this.data.role) {
             case 'user':
                 return $r('sys.symbol.person_crop_circle_fill_1')
             case 'info':
@@ -180,7 +196,7 @@ export struct MessageItem {
     }
 
     makeAvatarSymbolFontColor(): ResourceColor {
-        switch (this.messageData.role) {
+        switch (this.data.role) {
             case 'user':
                 return Color.Pink
             case 'info':
@@ -195,7 +211,7 @@ export struct MessageItem {
     }
 
     makeJustifyContent() {
-        switch (this.messageData.role) {
+        switch (this.data.role) {
             case 'user':
                 return FlexAlign.End
             default:
@@ -203,19 +219,9 @@ export struct MessageItem {
         }
     }
 
-    toggleSelected() {
-        for (let i = 0; i < this.dataList.length; i++) {
-            if (this.messageData.uuid == this.dataList[i].uuid) {
-                this.dataList[i].selected = !this.dataList[i].selected
-                this.dataList[i] = JSON.parse(JSON.stringify(this.dataList[i]))
-                return
-            }
-        }
-    }
-
     /** 聊天内容气泡的背景颜色 */
     makeBubbleBGColor(): ResourceColor {
-        switch (this.messageData.role) {
+        switch (this.data.role) {
             case 'user':
                 return Color.Pink
             default:

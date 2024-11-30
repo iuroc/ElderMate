@@ -61,10 +61,6 @@ export struct BottomPanel {
         Button(isAllSelected(this.messageDataList) ? '全不选' : '全选',
             { buttonStyle: ButtonStyleMode.NORMAL }
         ).onClick(() => {
-            // this.messageDataList = changeAllSelectStatus(
-            //     this.messageDataList,
-            //     !isAllSelected(this.messageDataList)
-            // )
             let newSelectedStatus = !isAllSelected(this.messageDataList)
             this.messageDataList.forEach(item => {
                 item.selected = newSelectedStatus

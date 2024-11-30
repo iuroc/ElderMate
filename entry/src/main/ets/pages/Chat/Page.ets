@@ -16,6 +16,7 @@ struct Page {
     /** 消息列表数据 */
     @Provide('messageDataList') messageDataList: MessageData[] = []
     @Provide isModalShow: boolean = false
+    /** 文本选择面板要显示的文本 */
     @Provide textSelectModalText: string = ''
 
     async aboutToAppear() {
@@ -23,6 +24,8 @@ struct Page {
         const resourceManager = context.resourceManager
         this.navTitle = await resourceManager.getStringValue($r('app.string.ChatPage_title'))
         this.messageDataList = this.makeDefaultMessageDataList().concat(makeTempAdds())
+
+        // this.pathInfos.pushPath({ name: 'Test' })
     }
 
     build() {
@@ -106,7 +109,9 @@ struct Page {
             {
                 value: '查看 Messages JSON',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.map')),
-
+                action: () => {
+                    this.pathInfos.pushPath({ name: 'Test' })
+                }
             }
         ]
     }

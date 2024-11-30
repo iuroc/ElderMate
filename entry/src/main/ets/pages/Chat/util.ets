@@ -33,18 +33,18 @@ export function scrollToBottom(scroller: Scroller, animation = true) {
 }
 
 /** 获取可见且可选的消息记录 */
-export function getSelectableItems(messageDataList: IMessageData[]): IMessageData[] {
+export function getSelectableItems(messageDataList: MessageData[]): MessageData[] {
     return messageDataList.filter(item => item.role != 'info' && !item.hidden)
 }
 
 /** 获取选中的可见消息记录 */
-export function getSelectedItems(messageDataList: IMessageData[]): IMessageData[] {
+export function getSelectedItems(messageDataList: MessageData[]): MessageData[] {
     return messageDataList.filter(item => item.selected && item.role != 'info' && !item.hidden)
 }
 
 /** 判断当前消息列表是否被全选 */
-export function isAllSelected(messageDataList: IMessageData[]): boolean {
-    return messageDataList.filter(item =>!item.selected && item.role != 'info' && !item.hidden).length == 0
+export function isAllSelected(list: MessageData[]): boolean {
+    return list.filter(item =>!item.selected && item.role != 'info' && !item.hidden).length == 0
 }
 
 /**
@@ -74,14 +74,14 @@ export async function systemShareText(
  * @param items
  * @returns
  */
-export function mergedMessageForSharing(items: IMessageData[]) {
+export function mergedMessageForSharing(items: MessageData[]) {
     return items.map(item => {
         return `【${item.role}】\n${item.content.trim()}`
     }).join(`\n${'-'.repeat(20)}\n`)
 }
 
 /** 删除指定 `UUID` 的消息 */
-export function deleteByUUID(list: IMessageData[], uuid: string): void {
+export function deleteByUUID(list: MessageData[], uuid: string): void {
     for (let i = 0; i < list.length; i++) {
         if (list[i].uuid == uuid) {
             list.splice(i, 1)
@@ -91,7 +91,7 @@ export function deleteByUUID(list: IMessageData[], uuid: string): void {
 }
 
 /** 设置全选或全不选，将例外项将设置为相反的值，返回新的数组 */
-export function changeAllSelectStatus(list: IMessageData[], selected: boolean, ...excepts: string[]) {
+export function changeAllSelectStatus(list: MessageData[], selected: boolean, ...excepts: string[]) {
     return list.map(item => {
         item.selected = excepts.includes(item.uuid) ? !selected : selected
         return item
