@@ -11,6 +11,8 @@ struct Index {
 
     async aboutToAppear() {
         this.navTitle = await getGreeting()
+
+        // this.pathInfos.pushPath({ name: 'Chat' })
     }
 
     build() {

@@ -1,5 +1,5 @@
 @Component
-export struct ChatPage {
+export struct MainPage {
     @State navTitle: string = ''
 
     async aboutToAppear() {

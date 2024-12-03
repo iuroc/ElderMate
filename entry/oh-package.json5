@@ -1,10 +1,13 @@
 {
-    "name": "entry",
-    "version": "1.0.0",
-    "description": "Please describe the basic information.",
-    "main": "",
-    "author": "",
-    "license": "",
-    "dependencies": {}
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "chat_page": "file:../chat_page"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
 }
-

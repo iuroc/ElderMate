@@ -1,13 +1,6 @@
-@Component
-struct Page {
-    build() {
-        NavDestination() {
-
-        }
-    }
-}
+import { ChatPage } from 'chat_page'
 
 @Builder
 export function PageBuilder() {
-    Page()
+    ChatPage()
 }

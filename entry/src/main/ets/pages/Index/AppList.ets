@@ -5,19 +5,32 @@ export struct AppList {
     @Consume pathInfos: NavPathStack
     scroller = new Scroller()
 
+    aboutToAppear(): void {
+        this.listItemDataList = this.listItemDataList.concat(this.listItemDataList)
+    }
+
     build() {
         List({ scroller: this.scroller }) {
-            ForEach(this.listItemDataList.concat(this.listItemDataList), (listItemData: ListItemData) => {
+            ForEach(this.listItemDataList, (listItemData: ListItemData, index) => {
                 ListItem() {
                     ComposeListItem({
                         contentItem: listItemData.contentItem,
                         operateItem: listItemData.operateItem
                     }).onClick(listItemData.onClick)
+                        .margin({
+                            bottom: index == this.listItemDataList.length - 1 ? 20 : 0,
+                            left: 10,
+                            right: 10
+                        })
                 }
             })
         }
         .width('100%')
         .height('100%')
+        // .padding({
+        //     left: 10,
+        //     right: 10,
+        // })
         .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     }
 
