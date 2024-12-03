@@ -13,44 +13,24 @@
             "value": "ElderMate"
         },
         {
-            "name": "ChatPage_button_text_send",
-            "value": "Send"
+            "name": "greeting_good_night",
+            "value": "Good night~"
         },
         {
-            "name": "ChatPage_placeholder",
-            "value": "Ask me anything."
+            "name": "greeting_good_morning",
+            "value": "Good morning~"
         },
         {
-            "name": "ChatPage_title",
-            "value": "Chat Assistant"
+            "name": "greeting_good_noon",
+            "value": "Good noon~"
         },
         {
-            "name": "ChatPage_TextSelectModal_text_share_title",
-            "value": "Text shared by the intelligent assistant"
+            "name": "greeting_good_afternoon",
+            "value": "Good afternoon~"
         },
         {
-            "name": "ChatPage_clean_messages_tip",
-            "value": "Are you sure you want to clear the message list?"
-        },
-        {
-            "name": "ChatPage_delete_selected_messages_tip",
-            "value": "Are you sure you want to delete the selected messages?"
-        },
-        {
-            "name": "button_text_confirm",
-            "value": "Confirm"
-        },
-        {
-            "name": "button_text_cancel",
-            "value": "Cancel"
-        },
-        {
-            "name": "title_text_tip",
-            "value": "Tip"
-        },
-        {
-            "name": "about_project",
-            "value": "周依露 © 毕业设计作品\n\n2024 年 11 月\n\n中文论文题目：基于鸿蒙系统的老年人智能生活助手设计与实现\n英文论文题目：Design and Implementation of an Intelligent Living Assistant for the Elderly Based on HarmonyOS\n中文软件名称：智老同行\n英文软件名称：ElderMate"
+            "name": "greeting_good_evening",
+            "value": "Good evening~"
         }
     ]
 }

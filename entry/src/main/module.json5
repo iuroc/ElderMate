@@ -9,6 +9,7 @@
             "tablet",
             "2in1"
         ],
+        "routerMap": "$profile:router_map",
         "deliveryWithInstall": true,
         "installationFree": false,
         "pages": "$profile:main_pages",
@@ -17,7 +18,7 @@
                 "name": "EntryAbility",
                 "srcEntry": "./ets/entryability/EntryAbility.ets",
                 "description": "$string:EntryAbility_desc",
-                "icon": "$media:icon",
+                "icon": "$media:layered_image",
                 "label": "$string:EntryAbility_label",
                 "startWindowIcon": "$media:icon_startwindow",
                 "startWindowBackground": "$color:start_window_background",
@@ -32,7 +33,7 @@
                         ]
                     }
                 ]
-            }
+            },
         ],
         "extensionAbilities": [
             {
@@ -45,14 +46,8 @@
                         "name": "ohos.extension.backup",
                         "resource": "$profile:backup_config"
                     }
-                ]
-            }
-        ],
-        "routerMap": "$profile:route_map",
-        "requestPermissions": [
-            {
-                "name": "ohos.permission.INTERNET"
+                ],
             }
         ]
-    }
+    },
 }

@@ -1,0 +1,13 @@
+{
+  "name": "demo02",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@iuroc/openai": "file:../../ohpm-openai/library/build/default/outputs/default/library.har"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
+}

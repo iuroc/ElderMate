@@ -1,0 +1,28 @@
+{
+    "module": {
+        "name": "demo02",
+        "type": "feature",
+        "description": "$string:module_desc",
+        "mainElement": "Demo02Ability",
+        "deviceTypes": [
+            "phone",
+            "tablet",
+            "2in1"
+        ],
+        "deliveryWithInstall": true,
+        "installationFree": false,
+        "pages": "$profile:main_pages",
+        "abilities": [
+            {
+                "name": "Demo02Ability",
+                "srcEntry": "./ets/demo02ability/Demo02Ability.ets",
+                "description": "$string:Demo02Ability_desc",
+                "icon": "$media:layered_image",
+                "label": "$string:Demo02Ability_label",
+                "startWindowIcon": "$media:startIcon",
+                "startWindowBackground": "$color:start_window_background",
+                "exported": true
+            }
+        ]
+    }
+}
