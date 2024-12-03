@@ -27,10 +27,6 @@ export struct AppList {
         }
         .width('100%')
         .height('100%')
-        // .padding({
-        //     left: 10,
-        //     right: 10,
-        // })
         .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     }
 
