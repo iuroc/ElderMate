@@ -106,7 +106,7 @@ export struct MessageItem {
         return [
             {
                 value: '复制文本',
-                icon: $r('app.media.copy'),
+                icon: $r('app.media.person_shield_fill'),
                 action: () => {
                     const data = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.data.content)
                     this.systemPasteboard.setData(data).then(() => {

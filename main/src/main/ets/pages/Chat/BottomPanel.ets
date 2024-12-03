@@ -133,7 +133,7 @@ export struct BottomPanel {
         return [
             {
                 value: '复制文本',
-                icon: $r('app.media.copy'),
+                icon: $r('app.media.person_shield_fill'),
                 action: () => {
                     const selectedItems = getSelectedItems(this.messageDataList)
                     const text = mergedMessageForSharing(selectedItems)
