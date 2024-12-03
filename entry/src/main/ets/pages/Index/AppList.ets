@@ -3,10 +3,11 @@ import { IconType, ContentItem, OperateItem, ComposeListItem, } from '@kit.ArkUI
 @Component
 export struct AppList {
     @Consume pathInfos: NavPathStack
+    scroller = new Scroller()
 
     build() {
-        List() {
-            ForEach(this.listItemDataList, (listItemData: ListItemData) => {
+        List({ scroller: this.scroller }) {
+            ForEach(this.listItemDataList.concat(this.listItemDataList), (listItemData: ListItemData) => {
                 ListItem() {
                     ComposeListItem({
                         contentItem: listItemData.contentItem,

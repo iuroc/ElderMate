@@ -1,5 +1,5 @@
 import { getGreeting } from './utils'
-import { SymbolGlyphModifier } from '@kit.ArkUI'
+import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
 import { AppList } from './AppList'
 
 @Entry
@@ -15,7 +15,7 @@ struct Index {
 
     build() {
         Navigation(this.pathInfos) {
-            AppList()
+            AppList({ scroller: this.scroller })
         }
         .title(this.navTitle)
         .toolbarConfiguration(this.toolbarItems)
@@ -27,7 +27,7 @@ struct Index {
             value: '智老同行',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.house_fill')),
             action: () => {
-                this.scroller.scrollTo({ xOffset: 0, yOffset: 0, animation: true })
+                this.scroller.scrollToIndex(0, true)
             }
         },
         {
