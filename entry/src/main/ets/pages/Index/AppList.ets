@@ -18,7 +18,7 @@ export struct AppList {
                         operateItem: listItemData.operateItem
                     }).onClick(listItemData.onClick)
                         .margin({
-                            bottom: index == this.listItemDataList.length - 1 ? 20 : 0,
+                            bottom: index == this.listItemDataList.length - 1 ? 10 : 0,
                             left: 10,
                             right: 10
                         })
