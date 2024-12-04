@@ -1,6 +1,6 @@
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 import { BSColor } from "@iuroc/bootstrap5-color/Index"
-import { promptAction, SymbolGlyphModifier, window } from "@kit.ArkUI"
+import { SymbolGlyphModifier, window } from "@kit.ArkUI"
 import {
     BooleanValue,
     copyTextWithToast,
@@ -10,7 +10,6 @@ import {
     systemShareTextWithToast
 } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
-import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 
 @Component
 export struct BottomPanel {
@@ -109,6 +108,12 @@ export struct BottomPanel {
                     this.quitSelectMode()
                 })
             },
+        },
+        {
+            value: '发送到邮箱',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+            action: () => {
+            }
         },
         {
             value: '删除消息',
