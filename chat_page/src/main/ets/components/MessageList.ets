@@ -1,6 +1,4 @@
-import { BSColor } from '@iuroc/bootstrap5-color'
 import { MessageData, MessageListItem } from './MessageListItem'
-import { inputMethod } from '@kit.IMEKit'
 import { BooleanValue } from '../utils/utils'
 
 @Component
