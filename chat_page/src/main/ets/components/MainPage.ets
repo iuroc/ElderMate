@@ -7,6 +7,7 @@ import { MessageData } from './MessageListItem'
 import { BooleanValue } from '../utils/utils'
 import { TextSelectModal } from './TextSelectModal'
 import { navigationMenuItems } from '../config/navigationMenuItems'
+import { SettingDialog } from './SettingDialog'
 
 @Component
 export struct MainPage {
@@ -26,6 +27,9 @@ export struct MainPage {
     textAreaController = new TextAreaController()
     @Provide isTextSelectModalShow: boolean = false
     @Provide textSelectModalText: string = ''
+    settingDialogController = new CustomDialogController({
+        builder: SettingDialog({}),
+    })
 
     async aboutToAppear() {
         this.navTitle = await getContext().resourceManager.getStringValue($r('app.string.chat_assistant'))

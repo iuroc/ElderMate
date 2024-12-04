@@ -28,6 +28,13 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                     }
                 })
             }
+        },
+        {
+            value: '设置',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
+            action: () => {
+                that.settingDialogController.open()
+            }
         }
     ]
 }

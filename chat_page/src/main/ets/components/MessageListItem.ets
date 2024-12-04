@@ -1,14 +1,7 @@
 import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
-import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { LengthMetrics } from '@kit.ArkUI'
 import { bubbleMenuElements } from '../config/bubbleMenuElements'
-import {
-    copyTextWithToast,
-    getShareTextTitle,
-    selectableItems,
-    sendMailWithToast,
-    systemShareTextWithToast
-} from '../utils/utils'
 
 @Component
 export struct MessageListItem {
