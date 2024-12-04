@@ -1,7 +1,14 @@
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 import { BSColor } from "@iuroc/bootstrap5-color/Index"
 import { promptAction, SymbolGlyphModifier, window } from "@kit.ArkUI"
-import { BooleanValue, copyTextWithToast, isAllSelected, selectedItems } from "../utils/utils"
+import {
+    BooleanValue,
+    copyTextWithToast,
+    getShareTextTitle,
+    isAllSelected,
+    selectedItems,
+    systemShareTextWithToast
+} from "../utils/utils"
 import { MessageData } from "./MessageListItem"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 
@@ -89,14 +96,56 @@ export struct BottomPanel {
             value: '复制文本',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
             action: () => {
-                const text = selectedItems(this.messageDataList)
-                    .map(item => `【${item.role}】\n${item.content}`).join('\n')
-                copyTextWithToast(text).then(() => {
+                copyTextWithToast(this.mergeSelectedContent()).then(() => {
                     this.quitSelectMode()
                 })
             }
-        }
+        },
+        {
+            value: '分享文本',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+            action: async () => {
+                systemShareTextWithToast(await getShareTextTitle(), this.mergeSelectedContent()).then(() => {
+                    this.quitSelectMode()
+                })
+            },
+        },
+        {
+            value: '删除消息',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
+            action: () => {
+                AlertDialog.show({
+                    title: '操作提示',
+                    primaryButton: {
+                        value: '确定', fontColor: BSColor.danger, action: () => {
+                            selectedItems(this.messageDataList).forEach(needDeleteItem => {
+                                this.messageDataList.splice(
+                                    this.messageDataList.findIndex(item => item.id == needDeleteItem.id),
+                                    1
+                                )
+                            })
+                            this.quitSelectMode()
+                        }
+                    },
+                    secondaryButton: {
+                        value: '取消', action: () => {
+                        }
+                    },
+                    message: '确定要删除所选的消息吗？'
+                })
+                // this.messageDataList.forEach((item, index) => {
+                //     if (item.id == this.messageData?.id) {
+                //         this.messageDataList.splice(index, 1)
+                //     }
+                // })
+            },
+        },
     ]
+
+    mergeSelectedContent() {
+        return selectedItems(this.messageDataList)
+            .map(item => `【${item.role}】\n${item.content}`).join('\n')
+    }
 
     /** 消息输入框 */
     @Builder

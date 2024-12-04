@@ -15,6 +15,10 @@
       {
           "name": "placeholder",
           "value": "您可以问我任何问题"
+      },
+      {
+          "name": "text_share_title",
+          "value": "来自聊天助手的文本分享"
       }
   ]
 }

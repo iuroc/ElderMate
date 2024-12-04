@@ -1,6 +1,9 @@
 import { MessageData } from "../components/MessageListItem"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 import { promptAction } from "@kit.ArkUI"
+import { systemShare } from "@kit.ShareKit"
+import { uniformTypeDescriptor as utd } from '@kit.ArkData'
+import { common } from "@kit.AbilityKit"
 
 export class BooleanValue {
     value: boolean
@@ -33,4 +36,51 @@ export async function copyTextWithToast(text: string) {
     }).catch((error: BusinessError) => {
         promptAction.showToast({ message: `复制失败：${error.message}` })
     })
+}
+
+/**
+ * 调用系统能力分享文本，并显示 Toast 提示
+ * @param record 需要分享的数据
+ * @throws { BusinessError } 401 - Parameter error.
+ */
+export async function systemShareTextWithToast(
+    title: string,
+    content: string
+): Promise<void> {
+    try {
+        const sharedData = new systemShare.SharedData({
+            utd: utd.UniformDataType.TEXT,
+            title, content,
+        })
+        const controller = new systemShare.ShareController(sharedData)
+        await controller.show(getContext() as common.UIAbilityContext, {
+            selectionMode: systemShare.SelectionMode.SINGLE,
+            previewMode: systemShare.SharePreviewMode.DETAIL,
+        })
+    } catch (error) {
+        promptAction.showToast({ message: `分享失败：${(error as BusinessError).message}` })
+    }
+}
+
+/** 调用系统文本分享时的标题 */
+export async function getShareTextTitle() {
+    return getContext().resourceManager.getStringValue($r('app.string.text_share_title'))
+}
+
+
+@ObservedV2
+export class MenuElementObservedV2 implements MenuElement {
+    @Trace value: ResourceStr
+    @Trace icon?: ResourceStr
+    @Trace symbolIcon?: SymbolGlyphModifier
+    @Trace enabled?: boolean
+    @Trace action: () => void
+
+    constructor(menuElement: MenuElement) {
+        this.value = menuElement.value
+        this.icon = menuElement.icon
+        this.symbolIcon = menuElement.symbolIcon
+        this.enabled = menuElement.enabled
+        this.action = menuElement.action
+    }
 }
