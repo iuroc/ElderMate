@@ -4,6 +4,11 @@ import { window } from '@kit.ArkUI'
 import { selectPanelMenuElements } from '../config/selectPanelMenuElements'
 import { BooleanValue, isAllSelected, selectedItems, } from '../utils/utils'
 import { MessageData } from './MessageListItem'
+import { preferences } from '@kit.ArkData'
+import { rcp } from '@kit.RemoteCommunicationKit'
+import { OpenAI } from '@iuroc/openai/src/main/ets/OpenAI'
+import { ChatCompletionMessageParam } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
+import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
 
 @Component
 export struct BottomPanel {
@@ -13,9 +18,16 @@ export struct BottomPanel {
     @Consume themeColor: BSColorNameMap
     @Consume pathInfos: NavPathStack
     @Consume isSelectMode: boolean
-    @Require messageListScroller = new Scroller()
-    @Require nextSizeChangeNeedScrollToBottom = new BooleanValue(false)
-    @Require textAreaController = new TextAreaController()
+    @Require messageListScroller: Scroller = Object()
+    @Require textAreaController: TextAreaController = Object()
+    @State isChatRequesting: boolean = false
+    private openai: OpenAI = Object()
+    /** 流式输出的第一次输出是否已经完成
+     *
+     * 该值在每次新请求开始时变为 `true`，第一次接收到流数据后变为 `false` */
+    private showRequestStartTip = false
+    private requestStartTip = '正在思考~'
+    private requestSession: rcp.Session = Object()
 
     async aboutToAppear() {
         const lastWindow = await window.getLastWindow(getContext())
@@ -28,6 +40,12 @@ export struct BottomPanel {
                 this.messageListScroller.scrollEdge(Edge.Bottom)
             }
         })
+
+        // 载入 OpenAI 配置
+        const dataPreferences = await preferences.getPreferences(getContext(), 'openai')
+        const apiKey = await dataPreferences.get('apiKey', '') as string
+        const baseURL = await dataPreferences.get('baseURL', '') as string
+        this.openai = new OpenAI({ apiKey, baseURL })
     }
 
     build() {
@@ -105,15 +123,51 @@ export struct BottomPanel {
             .enabled(this.inputMessage.trim() != '')
             .backgroundColor(getColorGroup(this.themeColor).main)
             .onClick(() => {
-                const messageWillSend = this.inputMessage.trim()
-                this.inputMessage = ''
-                this.nextSizeChangeNeedScrollToBottom.value = true
-                this.messageDataList.push(new MessageData({
-                    role: 'user',
-                    content: messageWillSend,
-                    inRequest: true,
-                }))
+                this.handleMessageSend()
             })
             .alignSelf(ItemAlign.End)
+    }
+
+    handleMessageSend() {
+        const messageWillSend = this.inputMessage.trim()
+        this.inputMessage = ''
+        this.messageDataList.push(new MessageData({
+            role: 'user',
+            content: messageWillSend,
+            inRequest: true,
+        }))
+        const responseMessageData = new MessageData({
+            role: 'assistant',
+            content: this.requestStartTip,
+            inRequest: true,
+        })
+        this.messageDataList.push(responseMessageData)
+        /** 开始请求中状态 */
+        this.isChatRequesting = true
+        /** 显示正在思考 */
+        this.showRequestStartTip = true
+        let textContent = ''
+
+        const onData: OnDataCallback = chunks => {
+            const newContent = chunks.map(chunk => chunk.choices[0].delta.content).join('')
+            if (this.showRequestStartTip) {
+                textContent = newContent
+                this.showRequestStartTip = false
+            } else {
+                textContent += newContent
+            }
+            responseMessageData.content = textContent
+        }
+
+        const result = this.openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: this.messageDataList.filter(item => item.role).map(item => {
+                return {
+                    role: item.role,
+                    content: item.content
+                } as ChatCompletionMessageParam
+            }),
+            stream: true
+        }, onData)
     }
 }

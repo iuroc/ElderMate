@@ -8,7 +8,6 @@ import { BooleanValue } from '../utils/utils'
 import { TextSelectModal } from './TextSelectModal'
 import { navigationMenuItems } from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
-import { testOpenAI } from '@iuroc/openai/src/main/ets/test'
 
 @Component
 export struct MainPage {
@@ -20,11 +19,6 @@ export struct MainPage {
     /** 页面是否被触摸，从第一次触摸开始，该值由 `false` 变为 `true` */
     pageHasTouch = new BooleanValue()
     messageListScroller = new Scroller()
-    /** 下一次的消息列表内容的尺寸变化后，是否需要滚动到列表底部
-     *
-     * 如果需要在列表高度更新后自动滚动到底部，则需要在更新高度前将该值设置为 `true`，在自动滚动底部完成后将自动变回 `false`
-     */
-    nextSizeChangeNeedScrollToBottom = new BooleanValue()
     textAreaController = new TextAreaController()
     @Provide isTextSelectModalShow: boolean = false
     @Provide textSelectModalText: string = ''
@@ -34,17 +28,14 @@ export struct MainPage {
 
     async aboutToAppear() {
         this.navTitle = await getContext().resourceManager.getStringValue($r('app.string.chat_assistant'))
-
         this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
-
-        testOpenAI()
     }
 
     build() {
         NavDestination() {
             MessageList({
                 messageListScroller: this.messageListScroller,
-                nextSizeChangeNeedScrollToBottom: this.nextSizeChangeNeedScrollToBottom,
+                // nextSizeChangeNeedScrollToBottom: this.nextSizeChangeNeedScrollToBottom,
                 textAreaController: this.textAreaController,
                 pageHasTouch: this.pageHasTouch
             }).layoutWeight(1)
@@ -52,7 +43,7 @@ export struct MainPage {
                 messageListScroller: this.messageListScroller,
                 inputMessage: this.inputMessage,
                 textAreaController: this.textAreaController,
-                nextSizeChangeNeedScrollToBottom: this.nextSizeChangeNeedScrollToBottom
+                // nextSizeChangeNeedScrollToBottom: this.nextSizeChangeNeedScrollToBottom
             })
         }
         .title(this.navTitle)

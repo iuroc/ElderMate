@@ -28,7 +28,7 @@ export struct BottomPanel {
     textAreaController = new TextAreaController()
     /** 流式输出的第一次输出是否已经完成
      *
-     * 改值在每次新请求开始时变为 `true`，第一次接收到流数据后变为 `false` */
+     * 该值在每次新请求开始时变为 `true`，第一次接收到流数据后变为 `false` */
     private showRequestStartTip = false
     private requestStartTip = '正在思考~'
     private requestSession?: rcp.Session
