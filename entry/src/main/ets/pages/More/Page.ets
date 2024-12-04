@@ -1,9 +1,30 @@
+import { webview } from '@kit.ArkWeb'
+
 @Component
 struct Page {
+    controller = new webview.WebviewController()
+
+    aboutToAppear(): void {
+
+    }
+
     build() {
         NavDestination() {
-            TextArea()
-        }
+            Web({
+                src: 'http://books.apee.top',
+                controller: this.controller
+            })
+                .width('100%')
+                .height('100%')
+                .onAppear(() => {
+                    this.controller.enableSafeBrowsing(false)
+                })
+                .onProgressChange(event => {
+                    console.log(JSON.stringify(event))
+                    console.log(this.controller.getTitle())
+                })
+                .domStorageAccess(true)
+        }.hideTitleBar(true)
     }
 }
 
