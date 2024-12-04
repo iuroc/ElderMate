@@ -2,7 +2,7 @@ import { BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { BSColor } from '@iuroc/bootstrap5-color/Index'
 import { window } from '@kit.ArkUI'
 import { selectPanelMenuElements } from '../config/selectPanelMenuElements'
-import { BooleanValue, isAllSelected, selectedItems, } from '../utils/utils'
+import { isAllSelected, selectedItems, } from '../utils/utils'
 import { MessageData } from './MessageListItem'
 import { preferences } from '@kit.ArkData'
 import { rcp } from '@kit.RemoteCommunicationKit'
@@ -56,8 +56,13 @@ export struct BottomPanel {
             } else {
                 // 消息输入框
                 this.MessageInput()
-                // 消息发送按钮
-                this.SendButton()
+                if (this.isChatRequesting) {
+                    // 取消生成按钮
+                    this.CancelGenerate()
+                } else {
+                    // 消息发送按钮
+                    this.SendButton()
+                }
             }
         }
         .padding({
@@ -128,6 +133,26 @@ export struct BottomPanel {
             .alignSelf(ItemAlign.End)
     }
 
+    /** 停止生成按钮 */
+    @Builder
+    CancelGenerate() {
+        Button('取消生成', {
+            buttonStyle: ButtonStyleMode.NORMAL,
+        })
+            .fontColor(Color.Black)
+            .onClick(() => {
+                this.isChatRequesting = false
+                this.requestSession.cancel()
+                const lestItemIndex = this.messageDataList.length - 1
+                const lastItem = this.messageDataList[lestItemIndex]
+                if (this.showRequestStartTip) {
+                    lastItem.role = null
+                    lastItem.content = '已停止回答'
+                }
+            })
+            .flexShrink(0)
+    }
+
     handleMessageSend() {
         const messageWillSend = this.inputMessage.trim()
         this.inputMessage = ''
@@ -169,5 +194,10 @@ export struct BottomPanel {
             }),
             stream: true
         }, onData)
+
+        this.requestSession = result.session
+        result.response.then(() => {
+            this.isChatRequesting = false
+        })
     }
 }
