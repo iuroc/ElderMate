@@ -1,5 +1,6 @@
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { NavigationContent } from './NavigationContent'
+import { PageMap } from './PageMap'
 
 @Component
 export struct AppNavigation {
@@ -25,6 +26,7 @@ export struct AppNavigation {
         .onAppear(() => {
             this.pathInfos.pushPath({ name: 'Chat' })
         })
+        .navDestination(PageMap)
     }
 
     /** 右上角菜单配置 */

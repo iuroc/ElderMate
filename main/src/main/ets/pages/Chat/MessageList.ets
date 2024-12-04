@@ -33,7 +33,7 @@ export struct MessageList {
         })
         .align(Alignment.Top)
         .edgeEffect(EdgeEffect.Spring)
-        .flexGrow(1)
+        .layoutWeight(1)
         .onSizeChange(event => {
             if (this.hasInitSizeChange) {
                 // 判断之前已经执行过了，不再执行

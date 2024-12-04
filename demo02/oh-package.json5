@@ -6,7 +6,6 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "@iuroc/openai": "file:../../ohpm-openai/library/build/default/outputs/default/library.har"
   },
   "devDependencies": {},
   "dynamicDependencies": {}

@@ -29,7 +29,7 @@ struct Page {
 
     build() {
         NavDestination() {
-            Flex({ direction: FlexDirection.Column }) {
+            Column() {
                 // 消息列表
                 MessageList({
                     scroller: this.messageListScroller,

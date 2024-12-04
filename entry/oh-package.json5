@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "chat_page": "file:../chat_page"
+    "@iuroc/chat-page": "file:../chat_page"
   },
   "devDependencies": {},
   "dynamicDependencies": {}

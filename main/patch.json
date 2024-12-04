@@ -5,7 +5,7 @@
     "versionCode": 1000000
   },
   "module": {
-    "name": "entry",
+    "name": "main",
     "type": "hotreload"
   }
 }

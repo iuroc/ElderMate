@@ -36,7 +36,7 @@
         ],
         "extensionAbilities": [
             {
-                "name": "EntryBackupAbility",
+                "name": "MainBackupAbility",
                 "srcEntry": "./ets/mainbackupability/MainBackupAbility.ets",
                 "type": "backup",
                 "exported": false,
@@ -48,11 +48,12 @@
                 ]
             }
         ],
-        "routerMap": "$profile:route_map",
+        // feature 中使用 routerMap 系统路由表会闪退，不知道具体原因，等待探索解决，目前先用组件内路由解决。
+        // "routerMap": "$profile:route_map",
         "requestPermissions": [
             {
                 "name": "ohos.permission.INTERNET"
             }
-        ]
-    }
+        ],
+    },
 }

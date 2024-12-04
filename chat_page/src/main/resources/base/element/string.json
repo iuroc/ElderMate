@@ -7,6 +7,14 @@
     {
       "name": "chat_assistant",
       "value": "Chat Assistant"
+    },
+    {
+      "name": "button_send",
+      "value": "Send"
+    },
+    {
+      "name": "placeholder",
+      "value": "Ask me anything."
     }
   ]
 }

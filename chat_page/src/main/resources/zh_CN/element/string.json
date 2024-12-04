@@ -7,6 +7,14 @@
       {
           "name": "chat_assistant",
           "value": "聊天助手"
+      },
+      {
+          "name": "button_send",
+          "value": "发送"
+      },
+      {
+          "name": "placeholder",
+          "value": "您可以问我任何问题"
       }
   ]
 }

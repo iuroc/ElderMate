@@ -2,7 +2,7 @@
 struct Page {
     build() {
         NavDestination() {
-
+            TextArea()
         }
     }
 }

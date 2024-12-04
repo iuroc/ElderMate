@@ -1,4 +1,4 @@
-import { ChatPage } from 'chat_page'
+import { ChatPage } from '@iuroc/chat-page'
 
 @Builder
 export function PageBuilder() {
