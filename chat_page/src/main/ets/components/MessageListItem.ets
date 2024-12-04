@@ -1,6 +1,7 @@
 import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
 import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { bubbleMenuElements } from '../config/bubbleMenuElements'
 import {
     copyTextWithToast,
     getShareTextTitle,
@@ -16,6 +17,8 @@ export struct MessageListItem {
     @Require messageData: MessageData = Object()
     @Consume isSelectMode: boolean
     @State showMenu: boolean = false
+    @Consume isTextSelectModalShow: boolean
+    @Consume textSelectModalText: string
 
     build() {
         if (!this.messageData.hidden && (!this.isSelectMode || this.messageData.role)) {
@@ -84,6 +87,7 @@ export struct MessageListItem {
             .maxLines(15)
             .borderRadius(10)
             .margin(this.makeBubbleMargin())
+            .fontSize(15)
             .fontColor(this.makeBubbleFontColor())
             .backgroundColor(this.makeBubbleBGColor())
             .lineSpacing(LengthMetrics.vp(5))
@@ -99,86 +103,13 @@ export struct MessageListItem {
                 }
             })
             .bindMenu(this.showMenu,
-                this.bubbleMenuElements(),
+                bubbleMenuElements(this),
                 {
                     enableArrow: true,
                     aboutToDisappear: () => {
                         this.showMenu = false
                     },
                 })
-    }
-
-    /**
-     * @deprecated
-     */
-    @Builder
-    BubbleMenu() {
-        Menu() {
-            ForEach(this.bubbleMenuElements(), (menuElement: MenuElement) => {
-                MenuItem({
-                    symbolStartIcon: menuElement.symbolIcon,
-                    content: menuElement.value,
-                }).onClick(menuElement.action)
-            })
-        }
-    }
-
-    /** 消息气泡的绑定菜单配置 */
-    bubbleMenuElements(): MenuElement[] {
-        return [
-            {
-                value: '复制文本',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
-                action: () => {
-                    copyTextWithToast(this.messageData.content)
-                }
-            },
-            {
-                value: '选择文本',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
-                action: () => {
-                }
-            },
-            {
-                value: '分享文本',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
-                action: async () => {
-                    systemShareTextWithToast(
-                        await getShareTextTitle(),
-                        this.messageData.content
-                    )
-                },
-            },
-            {
-                value: '多选模式',
-                enabled: selectableItems(this.messageDataList).length > 1,
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
-                action: () => {
-                    this.isSelectMode = true
-                    this.messageData.selected = true
-                }
-            },
-            {
-                value: '发送到邮箱',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
-
-                action: async () => {
-                    await sendMailWithToast(await getShareTextTitle(), this.messageData.content)
-                }
-            },
-            {
-                value: '删除消息',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
-                action: () => {
-                    this.messageDataList.forEach((item, index) => {
-                        if (item.id == this.messageData.id) {
-                            this.messageDataList.splice(index, 1)
-                        }
-                    })
-                    this.messageDataList = [...this.messageDataList]
-                },
-            },
-        ]
     }
 
     toggleSelected() {

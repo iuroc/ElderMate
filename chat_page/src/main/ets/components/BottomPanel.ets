@@ -1,16 +1,9 @@
-import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
-import { BSColor } from "@iuroc/bootstrap5-color/Index"
-import { SymbolGlyphModifier, window } from "@kit.ArkUI"
-import {
-    BooleanValue,
-    copyTextWithToast,
-    getShareTextTitle,
-    isAllSelected,
-    selectedItems,
-    sendMailWithToast,
-    systemShareTextWithToast
-} from "../utils/utils"
-import { MessageData } from "./MessageListItem"
+import { BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
+import { BSColor } from '@iuroc/bootstrap5-color/Index'
+import { window } from '@kit.ArkUI'
+import { selectPanelMenuElements } from '../config/selectPanelMenuElements'
+import { BooleanValue, isAllSelected, selectedItems, } from '../utils/utils'
+import { MessageData } from './MessageListItem'
 
 @Component
 export struct BottomPanel {
@@ -81,71 +74,13 @@ export struct BottomPanel {
             })
         Button('选中项操作')
             .backgroundColor(getColorGroup(this.themeColor).main)
-            .bindMenu(this.selectPanelMenuElements())
+            .bindMenu(selectPanelMenuElements(this))
             .enabled(selectedItems(this.messageDataList).length > 0)
     }
 
     quitSelectMode() {
         this.isSelectMode = false
         this.messageDataList.forEach(item => item.selected = false)
-    }
-
-    /** 选择性操作菜单 */
-    selectPanelMenuElements(): MenuElement[] {
-        return [
-            {
-                value: '复制文本',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
-                action: () => {
-                    copyTextWithToast(this.mergeSelectedContent()).finally(() => {
-                        this.quitSelectMode()
-                    })
-                }
-            },
-            {
-                value: '分享文本',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
-                action: async () => {
-                    systemShareTextWithToast(await getShareTextTitle(), this.mergeSelectedContent()).finally(() => {
-                        this.quitSelectMode()
-                    })
-                },
-            },
-            {
-                value: '发送到邮箱',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
-                action: async () => {
-                    sendMailWithToast(await getShareTextTitle(), this.mergeSelectedContent()).finally(() => {
-                        this.quitSelectMode()
-                    })
-                }
-            },
-            {
-                value: '删除消息',
-                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
-                action: () => {
-                    AlertDialog.show({
-                        title: '操作提示',
-                        primaryButton: {
-                            value: '确定', fontColor: BSColor.danger, action: () => {
-                                selectedItems(this.messageDataList).forEach(needDeleteItem => {
-                                    this.messageDataList.splice(
-                                        this.messageDataList.findIndex(item => item.id == needDeleteItem.id),
-                                        1
-                                    )
-                                })
-                                this.quitSelectMode()
-                            }
-                        },
-                        secondaryButton: {
-                            value: '取消', action: () => {
-                            }
-                        },
-                        message: '确定要删除所选的消息吗？'
-                    })
-                },
-            },
-        ]
     }
 
     mergeSelectedContent() {

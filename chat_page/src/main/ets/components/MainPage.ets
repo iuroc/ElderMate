@@ -5,6 +5,8 @@ import { defaultMessageDataList } from '../config/defaultMessageDataList'
 import { MessageList } from './MessageList'
 import { MessageData } from './MessageListItem'
 import { BooleanValue } from '../utils/utils'
+import { TextSelectModal } from './TextSelectModal'
+import { navigationMenuItems } from '../config/navigationMenuItems'
 
 @Component
 export struct MainPage {
@@ -22,11 +24,13 @@ export struct MainPage {
      */
     nextSizeChangeNeedScrollToBottom = new BooleanValue()
     textAreaController = new TextAreaController()
+    @Provide isTextSelectModalShow: boolean = false
+    @Provide textSelectModalText: string = ''
 
     async aboutToAppear() {
         this.navTitle = await getContext().resourceManager.getStringValue($r('app.string.chat_assistant'))
 
-        this.messageDataList = defaultMessageDataList.concat(exampleMessageDataList)
+        this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
     }
 
     build() {
@@ -48,6 +52,20 @@ export struct MainPage {
         .onTouch(() => {
             this.pageHasTouch.value = true
         })
+        .bindSheet($$this.isTextSelectModalShow, this.TextSelectModal, {
+            title: { title: '选择文本', subtitle: '选取您喜欢的部分' },
+            height: this.textSelectModalText.length > 150 ? SheetSize.LARGE : SheetSize.MEDIUM
+        })
+        .menus(navigationMenuItems(this))
+    }
+
+    @Builder
+    TextSelectModal() {
+        Column() {
+            TextSelectModal({
+                text: this.textSelectModalText
+            })
+        }
     }
 }
 
