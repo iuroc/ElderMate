@@ -1,12 +1,14 @@
 import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
-import { LengthMetrics } from '@kit.ArkUI'
+import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
 
 @Component
 export struct MessageListItem {
     @Consume messageDataList: MessageData[]
     @Consume themeColor: BSColorNameMap
     @Require messageData?: MessageData
+    @Consume isSelectMode: boolean
+    @State showMenu: boolean = false
 
     build() {
         if (!this.messageData?.hidden) {
@@ -14,6 +16,10 @@ export struct MessageListItem {
                 space: { main: LengthMetrics.vp(10) },
                 justifyContent: this.makeJustifyContent()
             }) {
+                if (this.isSelectMode && this.messageData?.role) {
+                    this.Checkbox()
+                    Blank()
+                }
                 if (this.messageData?.role == 'user') {
                     this.Bubble()
                     this.Avatar()
@@ -22,7 +28,22 @@ export struct MessageListItem {
                     this.Bubble()
                 }
             }
+            .onClick(() => {
+                this.toggleSelected()
+            })
         }
+    }
+
+    /** 消息多选项 */
+    @Builder
+    Checkbox() {
+        Checkbox()
+            .flexShrink(0)
+            .select(this.messageData?.selected)
+            .shape(CheckBoxShape.ROUNDED_SQUARE)
+            .onClick(() => {
+                this.toggleSelected()
+            })
     }
 
     /**
@@ -47,46 +68,69 @@ export struct MessageListItem {
     @Builder
     Bubble() {
         Text(this.messageData?.content)
+            .textAlign(TextAlign.JUSTIFY)
+            .wordBreak(WordBreak.BREAK_ALL)
             .padding(10)
+            .maxLines(15)
             .borderRadius(10)
             .margin(this.makeBubbleMargin())
             .fontColor(this.makeBubbleFontColor())
-            .backgroundColor(this.makeBubbleBGColor())// .bindMenu(
-                //     this!.messageData.role != 'info' && !this.isSelectMode
-                //         ? this.MessageBubbleMenu() : undefined)
+            .backgroundColor(this.makeBubbleBGColor())
             .lineSpacing(LengthMetrics.vp(5))
             .letterSpacing(1)
             .border(this.makeBubbleBorder())
             .onClick(() => {
-                // this.toggleSelected()
-            })
-            .gesture(LongPressGesture().onAction(() => {
-                this.messageDataList.forEach((item, index) => {
-                    if (item.id == this.messageData?.id) {
-                        this.messageDataList.splice(index, 1)
-                    }
-                })
-            }))
-            .bindMenu([
-                {
-                    value: '复制',
-                    action: () => {
-                    }
+                if (!this.isSelectMode) {
+                    this.showMenu = true
+                } else {
+                    this.toggleSelected()
                 }
-            ])
+            })
+            .bindMenu(this.showMenu, this.bubbleMenuElements, {
+                enableArrow: true,
+                aboutToDisappear: () => {
+                    this.showMenu = false
+                },
+            })
     }
 
+    /** 消息气泡的绑定菜单配置 */
+    bubbleMenuElements: MenuElement[] = [
+        {
+            value: '复制文本',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
+            action: () => {
+            }
+        },
+        {
+            value: '选择文本',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
+            action: () => {
+            }
+        },
+        {
+            value: '多选模式',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
+            action: () => {
+                this.isSelectMode = true
+                this.messageData!.selected = true
+            }
+        }
+    ]
+
     toggleSelected() {
-        this.messageData!.selected = !this.messageData?.selected
+        if (this.isSelectMode) {
+            this.messageData!.selected = !this.messageData?.selected
+        }
     }
 
     /** 聊天内容气泡的外边距 */
     makeBubbleMargin(): Padding {
         switch (this.messageData?.role) {
             case 'user':
-                return { left: 10 }
+                return { left: this.isSelectMode ? 0 : 10 }
             default:
-                return { right: 10 }
+                return { right: this.isSelectMode ? 0 : 10 }
         }
     }
 

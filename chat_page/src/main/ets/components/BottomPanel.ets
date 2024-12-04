@@ -1,7 +1,7 @@
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 import { BSColor } from "@iuroc/bootstrap5-color/Index"
 import { window } from "@kit.ArkUI"
-import { BooleanValue } from "../utils/utils"
+import { BooleanValue, isAllSelected, selectedItems } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
 
 @Component
@@ -14,6 +14,7 @@ export struct BottomPanel {
     @Consume pathInfos: NavPathStack
     @Require nextSizeChangeNeedScrollToBottom?: BooleanValue
     @Require textAreaController?: TextAreaController
+    @Consume isSelectMode: boolean
 
     async aboutToAppear() {
         const lastWindow = await window.getLastWindow(getContext())
@@ -30,8 +31,15 @@ export struct BottomPanel {
 
     build() {
         Row({ space: 10 }) {
-            this.MessageInput()
-            this.SendButton()
+            if (this.isSelectMode) {
+                // 多选状态下的底部操作面板
+                this.SelectPanel()
+            } else {
+                // 消息输入框
+                this.MessageInput()
+                // 消息发送按钮
+                this.SendButton()
+            }
         }
         .padding({
             left: 10,
@@ -45,6 +53,32 @@ export struct BottomPanel {
         })
     }
 
+    /** 多选状态下的底部操作面板 */
+    @Builder
+    SelectPanel() {
+        Button((isAllSelected(this.messageDataList) ? '全不选' : '全选'),
+            { buttonStyle: ButtonStyleMode.NORMAL }
+        ).onClick(() => {
+            const newSelectedStatus = !isAllSelected(this.messageDataList)
+            this.messageDataList.forEach(item => item.selected = newSelectedStatus)
+        })
+            .fontColor(isAllSelected(this.messageDataList) ? Color.Orange : Color.Blue)
+        Button('退出多选', { buttonStyle: ButtonStyleMode.NORMAL })
+            .fontColor(BSColor.danger)
+            .onClick(() => {
+                this.isSelectMode = false
+                this.messageDataList.forEach(item => item.selected = false)
+            })
+        Button('选中项操作')
+            .backgroundColor(getColorGroup(this.themeColor).main)
+            .bindMenu(this.selectPanelMenuElements)
+            .enabled(selectedItems(this.messageDataList).length > 0)
+    }
+
+    /** 选择性操作菜单 */
+    selectPanelMenuElements: MenuElement[] = []
+
+    /** 消息输入框 */
     @Builder
     MessageInput() {
         TextArea({
@@ -54,6 +88,7 @@ export struct BottomPanel {
         }).layoutWeight(1)
     }
 
+    /** 消息发送按钮 */
     @Builder
     SendButton() {
         Button($r('app.string.button_send'))
@@ -61,6 +96,7 @@ export struct BottomPanel {
             .backgroundColor(getColorGroup(this.themeColor).main)
             .onClick(() => {
                 const messageWillSend = this.inputMessage.trim()
+                this.inputMessage = ''
                 this.nextSizeChangeNeedScrollToBottom!.value = true
                 this.messageDataList.push(new MessageData({
                     role: 'user',
