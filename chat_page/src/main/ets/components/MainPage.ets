@@ -11,7 +11,7 @@ export struct MainPage {
     @State navTitle: string = ''
     @State inputMessage: string = ''
     @Provide messageDataList: MessageData[] = []
-    @Provide themeColor: BSColorNameMap = 'danger'
+    @Provide themeColor: BSColorNameMap = 'success'
     @Provide isSelectMode: boolean = false
     /** 页面是否被触摸，从第一次触摸开始，该值由 `false` 变为 `true` */
     pageHasTouch = new BooleanValue()

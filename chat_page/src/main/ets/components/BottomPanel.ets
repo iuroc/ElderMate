@@ -1,8 +1,9 @@
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 import { BSColor } from "@iuroc/bootstrap5-color/Index"
-import { window } from "@kit.ArkUI"
-import { BooleanValue, isAllSelected, selectedItems } from "../utils/utils"
+import { promptAction, SymbolGlyphModifier, window } from "@kit.ArkUI"
+import { BooleanValue, copyTextWithToast, isAllSelected, selectedItems } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
+import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 
 @Component
 export struct BottomPanel {
@@ -56,18 +57,20 @@ export struct BottomPanel {
     /** 多选状态下的底部操作面板 */
     @Builder
     SelectPanel() {
-        Button((isAllSelected(this.messageDataList) ? '全不选' : '全选'),
-            { buttonStyle: ButtonStyleMode.NORMAL }
-        ).onClick(() => {
+        Button((isAllSelected(this.messageDataList) ? '全不选' : '全选')).onClick(() => {
             const newSelectedStatus = !isAllSelected(this.messageDataList)
             this.messageDataList.forEach(item => item.selected = newSelectedStatus)
         })
-            .fontColor(isAllSelected(this.messageDataList) ? Color.Orange : Color.Blue)
+            .backgroundColor(
+                isAllSelected(this.messageDataList) ? BSColor.warning_bg_subtle : BSColor.success_bg_subtle
+            )
+            .fontColor(
+                isAllSelected(this.messageDataList) ? BSColor.warning_text_emphasis : BSColor.success_text_emphasis
+            )
         Button('退出多选', { buttonStyle: ButtonStyleMode.NORMAL })
-            .fontColor(BSColor.danger)
+            .fontColor(getColorGroup(this.themeColor).main)
             .onClick(() => {
-                this.isSelectMode = false
-                this.messageDataList.forEach(item => item.selected = false)
+                this.quitSelectMode()
             })
         Button('选中项操作')
             .backgroundColor(getColorGroup(this.themeColor).main)
@@ -75,8 +78,25 @@ export struct BottomPanel {
             .enabled(selectedItems(this.messageDataList).length > 0)
     }
 
+    quitSelectMode() {
+        this.isSelectMode = false
+        this.messageDataList.forEach(item => item.selected = false)
+    }
+
     /** 选择性操作菜单 */
-    selectPanelMenuElements: MenuElement[] = []
+    selectPanelMenuElements: MenuElement[] = [
+        {
+            value: '复制文本',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
+            action: () => {
+                const text = selectedItems(this.messageDataList)
+                    .map(item => `【${item.role}】\n${item.content}`).join('\n')
+                copyTextWithToast(text).then(() => {
+                    this.quitSelectMode()
+                })
+            }
+        }
+    ]
 
     /** 消息输入框 */
     @Builder
@@ -84,7 +104,7 @@ export struct BottomPanel {
         TextArea({
             text: $$this.inputMessage,
             placeholder: $r('app.string.placeholder'),
-            controller: this.textAreaController
+            controller: this.textAreaController,
         }).layoutWeight(1)
     }
 
@@ -104,5 +124,6 @@ export struct BottomPanel {
                     inRequest: true,
                 }))
             })
+            .alignSelf(ItemAlign.End)
     }
 }

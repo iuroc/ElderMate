@@ -1,6 +1,8 @@
 import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
-import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
+import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
+import { copyTextWithToast } from '../utils/utils'
 
 @Component
 export struct MessageListItem {
@@ -11,12 +13,12 @@ export struct MessageListItem {
     @State showMenu: boolean = false
 
     build() {
-        if (!this.messageData?.hidden) {
+        if (!this.messageData?.hidden && (!this.isSelectMode || this.messageData?.role)) {
             Flex({
                 space: { main: LengthMetrics.vp(10) },
                 justifyContent: this.makeJustifyContent()
             }) {
-                if (this.isSelectMode && this.messageData?.role) {
+                if (this.isSelectMode) {
                     this.Checkbox()
                     Blank()
                 }
@@ -43,6 +45,9 @@ export struct MessageListItem {
             .shape(CheckBoxShape.ROUNDED_SQUARE)
             .onClick(() => {
                 this.toggleSelected()
+            })
+            .margin({
+                right: 0
             })
     }
 
@@ -100,6 +105,7 @@ export struct MessageListItem {
             value: '复制文本',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
             action: () => {
+                copyTextWithToast(this.messageData!.content)
             }
         },
         {
@@ -119,7 +125,7 @@ export struct MessageListItem {
     ]
 
     toggleSelected() {
-        if (this.isSelectMode) {
+        if (this.isSelectMode && this.messageData?.role) {
             this.messageData!.selected = !this.messageData?.selected
         }
     }
@@ -170,12 +176,14 @@ export struct MessageListItem {
     /** 消息列表中的头像 */
     @Builder
     Avatar() {
-        SymbolGlyph(this.makeAvatarSymbolResource())
-            .fontSize(30)
-            .avatarStyles()
-            .fontColor([this.makeAvatarSymbolFontColor()])
-            .backgroundColor(Color.White)
-            .flexShrink(0)
+        if (!this.isSelectMode) {
+            SymbolGlyph(this.makeAvatarSymbolResource())
+                .fontSize(30)
+                .avatarStyles()
+                .fontColor([this.makeAvatarSymbolFontColor()])
+                .backgroundColor(Color.White)
+                .flexShrink(0)
+        }
     }
 
     @Styles
@@ -213,7 +221,7 @@ export struct MessageListItem {
             case 'system':
                 return Color.Black
             case 'assistant':
-                return Color.Gray
+                return getColorGroup(this.themeColor).font
             default:
                 throw new Error('role not allow')
         }

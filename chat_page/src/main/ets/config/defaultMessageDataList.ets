@@ -6,6 +6,6 @@ export const defaultMessageDataList: MessageData[] = [
     new MessageData({
         role: 'system',
         content: '你是一个智能老年人生活助手，你的职责是帮助老年人解答生活中遇到的各种问题，并以亲切有趣的风格生成适合老年人的回答。',
-        hidden: true,
+        hidden: false,
     })
 ]
