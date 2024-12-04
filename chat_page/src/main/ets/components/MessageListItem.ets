@@ -103,6 +103,12 @@ export struct MessageListItem {
                         this.showMenu = false
                     },
                 })
+            .gesture(LongPressGesture().onAction(() => {
+                if (!this.isSelectMode) {
+                    this.textSelectModalText = this.messageData.content
+                    this.isTextSelectModalShow = true
+                }
+            }))
     }
 
     toggleSelected() {
