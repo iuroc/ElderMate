@@ -1,7 +1,15 @@
 import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
-import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
-import { copyTextWithToast, getShareTextTitle, selectableItems, systemShareTextWithToast } from '../utils/utils'
+import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
+import {
+    copyTextWithToast,
+    getShareTextTitle,
+    selectableItems,
+    sendMailWithToast,
+    systemShareTextWithToast
+} from '../utils/utils'
+import { common, wantConstant } from '@kit.AbilityKit'
+import { BusinessError } from '@kit.BasicServicesKit'
 
 @Component
 export struct MessageListItem {
@@ -155,7 +163,8 @@ export struct MessageListItem {
             {
                 value: '发送到邮箱',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
-                action: () => {
+                action: async () => {
+                    await sendMailWithToast(await getShareTextTitle(), this.messageData!.content)
                 }
             },
             {

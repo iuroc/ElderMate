@@ -3,7 +3,7 @@ import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 import { promptAction } from "@kit.ArkUI"
 import { systemShare } from "@kit.ShareKit"
 import { uniformTypeDescriptor as utd } from '@kit.ArkData'
-import { common } from "@kit.AbilityKit"
+import { common, wantConstant } from "@kit.AbilityKit"
 
 export class BooleanValue {
     value: boolean
@@ -60,6 +60,33 @@ export async function systemShareTextWithToast(
     } catch (error) {
         promptAction.showToast({ message: `分享失败：${(error as BusinessError).message}` })
     }
+}
+
+export async function sendMailWithToast(title: string, content: string) {
+    const context = getContext() as common.UIAbilityContext
+    const wantParam: Record<string, Object> = {
+        'sceneType': 1,
+        'email': [],
+        'cc': [],
+        'bcc': [],
+        'subject': encodeURI(title),
+        'body': encodeURI(content),
+        'ability.params.stream': [],
+        'ability.want.params.uriPermissionFlag': wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
+    }
+    const abilityStartCallback: common.AbilityStartCallback = {
+        onError: (_code: number, _name: string, message: string) => {
+            promptAction.showToast({ message: '失败：' + message })
+        },
+        onResult: (_result) => {
+            promptAction.showToast({ message: '成功' })
+        }
+    }
+    await context.startAbilityByType('mail', wantParam, abilityStartCallback).then(() => {
+        promptAction.showToast({ message: '成功' })
+    }).catch((error: BusinessError) => {
+        promptAction.showToast({ message: '失败：' + error.message })
+    })
 }
 
 /** 调用系统文本分享时的标题 */

@@ -7,6 +7,7 @@ import {
     getShareTextTitle,
     isAllSelected,
     selectedItems,
+    sendMailWithToast,
     systemShareTextWithToast
 } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
@@ -96,7 +97,7 @@ export struct BottomPanel {
                 value: '复制文本',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
                 action: () => {
-                    copyTextWithToast(this.mergeSelectedContent()).then(() => {
+                    copyTextWithToast(this.mergeSelectedContent()).finally(() => {
                         this.quitSelectMode()
                     })
                 }
@@ -105,7 +106,7 @@ export struct BottomPanel {
                 value: '分享文本',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
                 action: async () => {
-                    systemShareTextWithToast(await getShareTextTitle(), this.mergeSelectedContent()).then(() => {
+                    systemShareTextWithToast(await getShareTextTitle(), this.mergeSelectedContent()).finally(() => {
                         this.quitSelectMode()
                     })
                 },
@@ -113,7 +114,10 @@ export struct BottomPanel {
             {
                 value: '发送到邮箱',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
-                action: () => {
+                action: async () => {
+                    sendMailWithToast(await getShareTextTitle(), this.mergeSelectedContent()).finally(() => {
+                        this.quitSelectMode()
+                    })
                 }
             },
             {
