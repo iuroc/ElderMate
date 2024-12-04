@@ -1,6 +1,6 @@
 import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
-import { LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
+import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
 import {
     copyTextWithToast,
     getShareTextTitle,
@@ -8,19 +8,17 @@ import {
     sendMailWithToast,
     systemShareTextWithToast
 } from '../utils/utils'
-import { common, wantConstant } from '@kit.AbilityKit'
-import { BusinessError } from '@kit.BasicServicesKit'
 
 @Component
 export struct MessageListItem {
     @Consume messageDataList: MessageData[]
     @Consume themeColor: BSColorNameMap
-    @Require messageData?: MessageData
+    @Require messageData: MessageData = Object()
     @Consume isSelectMode: boolean
     @State showMenu: boolean = false
 
     build() {
-        if (!this.messageData?.hidden && (!this.isSelectMode || this.messageData?.role)) {
+        if (!this.messageData.hidden && (!this.isSelectMode || this.messageData.role)) {
             Flex({
                 space: { main: LengthMetrics.vp(10) },
                 justifyContent: this.makeJustifyContent()
@@ -29,7 +27,7 @@ export struct MessageListItem {
                     this.Checkbox()
                     Blank()
                 }
-                if (this.messageData?.role == 'user') {
+                if (this.messageData.role == 'user') {
                     this.Bubble()
                     this.Avatar()
                 } else {
@@ -48,7 +46,7 @@ export struct MessageListItem {
     Checkbox() {
         Checkbox()
             .flexShrink(0)
-            .select(this.messageData?.selected)
+            .select(this.messageData.selected)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
             .onClick(() => {
                 this.toggleSelected()
@@ -67,19 +65,19 @@ export struct MessageListItem {
             this.Bubble()
             this.TimeView()
         }
-        .alignItems(this.messageData?.role == 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
+        .alignItems(this.messageData.role == 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
     }
 
     @Builder
     TimeView() {
-        Text(this.messageData?.createTime.toLocaleString()).fontSize(12).fontColor(BSColor.secondary)
+        Text(this.messageData.createTime.toLocaleString()).fontSize(12).fontColor(BSColor.secondary)
             .margin({ left: 10, right: 10 })
     }
 
     /** 消息列表中的消息气泡 */
     @Builder
     Bubble() {
-        Text(this.messageData?.content)
+        Text(this.messageData.content)
             .textAlign(TextAlign.JUSTIFY)
             .wordBreak(WordBreak.BREAK_ALL)
             .padding(10)
@@ -93,7 +91,7 @@ export struct MessageListItem {
             .border(this.makeBubbleBorder())
             .onClick(() => {
                 if (!this.isSelectMode) {
-                    if (this.messageData?.role) {
+                    if (this.messageData.role) {
                         this.showMenu = true
                     }
                 } else {
@@ -132,7 +130,7 @@ export struct MessageListItem {
                 value: '复制文本',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
                 action: () => {
-                    copyTextWithToast(this.messageData!.content)
+                    copyTextWithToast(this.messageData.content)
                 }
             },
             {
@@ -147,7 +145,7 @@ export struct MessageListItem {
                 action: async () => {
                     systemShareTextWithToast(
                         await getShareTextTitle(),
-                        this.messageData!.content
+                        this.messageData.content
                     )
                 },
             },
@@ -157,14 +155,15 @@ export struct MessageListItem {
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
                 action: () => {
                     this.isSelectMode = true
-                    this.messageData!.selected = true
+                    this.messageData.selected = true
                 }
             },
             {
                 value: '发送到邮箱',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+
                 action: async () => {
-                    await sendMailWithToast(await getShareTextTitle(), this.messageData!.content)
+                    await sendMailWithToast(await getShareTextTitle(), this.messageData.content)
                 }
             },
             {
@@ -172,7 +171,7 @@ export struct MessageListItem {
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
                 action: () => {
                     this.messageDataList.forEach((item, index) => {
-                        if (item.id == this.messageData?.id) {
+                        if (item.id == this.messageData.id) {
                             this.messageDataList.splice(index, 1)
                         }
                     })
@@ -183,14 +182,14 @@ export struct MessageListItem {
     }
 
     toggleSelected() {
-        if (this.isSelectMode && this.messageData?.role) {
-            this.messageData!.selected = !this.messageData?.selected
+        if (this.isSelectMode && this.messageData.role) {
+            this.messageData.selected = !this.messageData.selected
         }
     }
 
     /** 聊天内容气泡的外边距 */
     makeBubbleMargin(): Padding {
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return { left: this.isSelectMode ? 0 : 10 }
             default:
@@ -200,7 +199,7 @@ export struct MessageListItem {
 
     /** 聊天内容气泡的背景颜色 */
     makeBubbleBGColor(): ResourceColor {
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return getColorGroup(this.themeColor).background
             default:
@@ -210,7 +209,7 @@ export struct MessageListItem {
 
     /** 聊天内容气泡的边框 */
     makeBubbleBorder(): BorderOptions {
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return {}
             default:
@@ -223,7 +222,7 @@ export struct MessageListItem {
 
     /** 聊天内容气泡的字体颜色 */
     makeBubbleFontColor(): ResourceColor {
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return getColorGroup(this.themeColor).font
             default:
@@ -254,10 +253,10 @@ export struct MessageListItem {
     }
 
     makeAvatarSymbolResource(): Resource {
-        if (!this.messageData?.role) {
+        if (!this.messageData.role) {
             return $r('sys.symbol.flag')
         }
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return $r('sys.symbol.person_crop_circle_fill_1')
             case 'system':
@@ -270,10 +269,10 @@ export struct MessageListItem {
     }
 
     makeAvatarSymbolFontColor(): ResourceColor {
-        if (!this.messageData?.role) {
+        if (!this.messageData.role) {
             return BSColor.warning
         }
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return getColorGroup(this.themeColor).main
             case 'system':
@@ -286,7 +285,7 @@ export struct MessageListItem {
     }
 
     makeJustifyContent() {
-        switch (this.messageData?.role) {
+        switch (this.messageData.role) {
             case 'user':
                 return FlexAlign.End
             default:
@@ -304,7 +303,7 @@ export class MessageData implements IMessageData {
     @Trace content: string
     @Trace hidden: boolean
     @Trace selected: boolean
-    @Trace id: number = NextID++
+    @Trace id: number
     @Trace createTime: Date
 
     constructor(data: MessageDataInit) {
@@ -314,6 +313,7 @@ export class MessageData implements IMessageData {
         this.hidden = data.hidden ?? false
         this.selected = data.selected ?? false
         this.createTime = data.createTime ?? new Date()
+        this.id = NextID++
     }
 }
 

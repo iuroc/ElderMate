@@ -4,10 +4,10 @@ import { BooleanValue } from '../utils/utils'
 @Component
 export struct MessageList {
     @Consume messageDataList: MessageData[]
-    messageListScroller?: Scroller
-    @Require pageHasTouch?: BooleanValue
-    @Require nextSizeChangeNeedScrollToBottom?: BooleanValue
-    @Require textAreaController?: TextAreaController
+    @Require messageListScroller = new Scroller()
+    @Require pageHasTouch = new BooleanValue(false)
+    @Require nextSizeChangeNeedScrollToBottom = new BooleanValue(false)
+    @Require textAreaController = new TextAreaController()
 
     build() {
         Scroll(this.messageListScroller) {
@@ -20,12 +20,12 @@ export struct MessageList {
             .padding(20)
             .onSizeChange((_oldValue, newValue) => {
                 if (newValue.height && newValue.height > 0) {
-                    if (!this.pageHasTouch?.value) {
+                    if (!this.pageHasTouch.value) {
                         // 表示当前页面还没有被触摸过，表示是刚进入页面，设置列表滚动到底部
-                        this.messageListScroller?.scrollEdge(Edge.Bottom)
-                    } else if (this.nextSizeChangeNeedScrollToBottom?.value) {
-                        this.nextSizeChangeNeedScrollToBottom!.value = false
-                        this.messageListScroller?.scrollEdge(Edge.Bottom)
+                        this.messageListScroller.scrollEdge(Edge.Bottom)
+                    } else if (this.nextSizeChangeNeedScrollToBottom.value) {
+                        this.nextSizeChangeNeedScrollToBottom.value = false
+                        this.messageListScroller.scrollEdge(Edge.Bottom)
                     }
                 }
             })
@@ -35,7 +35,7 @@ export struct MessageList {
         .height('100%')
         .onTouch(event => {
             if (event.type == TouchType.Down) {
-                this.textAreaController?.stopEditing()
+                this.textAreaController.stopEditing()
             }
         })
     }

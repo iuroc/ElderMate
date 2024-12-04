@@ -18,11 +18,11 @@ export struct BottomPanel {
     @State paddingBottom: number = 0
     @Consume messageDataList: MessageData[]
     @Consume themeColor: BSColorNameMap
-    messageListScroller?: Scroller
     @Consume pathInfos: NavPathStack
-    @Require nextSizeChangeNeedScrollToBottom?: BooleanValue
-    @Require textAreaController?: TextAreaController
     @Consume isSelectMode: boolean
+    @Require messageListScroller = new Scroller()
+    @Require nextSizeChangeNeedScrollToBottom = new BooleanValue(false)
+    @Require textAreaController = new TextAreaController()
 
     async aboutToAppear() {
         const lastWindow = await window.getLastWindow(getContext())
@@ -32,7 +32,7 @@ export struct BottomPanel {
                 // 在键盘抬高时，设置底部面板的底边距
                 this.paddingBottom = height > 0 ? 10 : 0
                 // 在键盘抬高时，让列表滚动到底部
-                this.messageListScroller?.scrollEdge(Edge.Bottom)
+                this.messageListScroller.scrollEdge(Edge.Bottom)
             }
         })
     }
@@ -172,7 +172,7 @@ export struct BottomPanel {
             .onClick(() => {
                 const messageWillSend = this.inputMessage.trim()
                 this.inputMessage = ''
-                this.nextSizeChangeNeedScrollToBottom!.value = true
+                this.nextSizeChangeNeedScrollToBottom.value = true
                 this.messageDataList.push(new MessageData({
                     role: 'user',
                     content: messageWillSend,
