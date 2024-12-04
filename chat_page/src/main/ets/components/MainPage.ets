@@ -8,6 +8,7 @@ import { BooleanValue } from '../utils/utils'
 import { TextSelectModal } from './TextSelectModal'
 import { navigationMenuItems } from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
+import { testOpenAI } from '@iuroc/openai/src/main/ets/test'
 
 @Component
 export struct MainPage {
@@ -35,6 +36,8 @@ export struct MainPage {
         this.navTitle = await getContext().resourceManager.getStringValue($r('app.string.chat_assistant'))
 
         this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
+
+        testOpenAI()
     }
 
     build() {
