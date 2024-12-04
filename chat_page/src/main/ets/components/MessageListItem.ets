@@ -10,7 +10,10 @@ export struct MessageListItem {
 
     build() {
         if (!this.messageData?.hidden) {
-            Row({ space: 10 }) {
+            Flex({
+                space: { main: LengthMetrics.vp(10) },
+                justifyContent: this.makeJustifyContent()
+            }) {
                 if (this.messageData?.role == 'user') {
                     this.Bubble()
                     this.Avatar()
@@ -19,17 +22,33 @@ export struct MessageListItem {
                     this.Bubble()
                 }
             }
-            .alignItems(VerticalAlign.Top)
         }
+    }
+
+    /**
+     * @deprecated
+     */
+    @Builder
+    CenterPanel() {
+        Column({ space: 5 }) {
+            this.Bubble()
+            this.TimeView()
+        }
+        .alignItems(this.messageData?.role == 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
+    }
+
+    @Builder
+    TimeView() {
+        Text(this.messageData?.createTime.toLocaleString()).fontSize(12).fontColor(BSColor.secondary)
+            .margin({ left: 10, right: 10 })
     }
 
     /** 消息列表中的消息气泡 */
     @Builder
     Bubble() {
-        Text(this.messageData?.content + '\n' + this.messageData?.selected)
+        Text(this.messageData?.content)
             .padding(10)
             .borderRadius(10)
-            .layoutWeight(1)
             .margin(this.makeBubbleMargin())
             .fontColor(this.makeBubbleFontColor())
             .backgroundColor(this.makeBubbleBGColor())// .bindMenu(
@@ -112,6 +131,7 @@ export struct MessageListItem {
             .avatarStyles()
             .fontColor([this.makeAvatarSymbolFontColor()])
             .backgroundColor(Color.White)
+            .flexShrink(0)
     }
 
     @Styles
