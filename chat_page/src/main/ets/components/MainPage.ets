@@ -29,16 +29,25 @@ export struct MainPage {
     /** 用户首选项 */
     @Require @Provide dataPreferences: preferences.Preferences = Object()
     /** 关系型数据库 */
-    @Provide dataRdbStore: relationalStore.RdbStore = Object()
+    @Provide rdbStore: relationalStore.RdbStore = Object()
     @Require getRdbStore: () => Promise<relationalStore.RdbStore> = Object()
     /** 是否开启自动滚动到底部（当列表长度增加时） */
     @Provide autoScrollToBottom: boolean = true
 
-    async aboutToAppear() {
-        this.navTitle = await getContext().resourceManager.getStringValue($r('app.string.chat_assistant'))
-        this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
-        this.dataRdbStore = await this.getRdbStore()
+    async initRdbRestore() {
+        this.rdbStore = await this.getRdbStore()
+    }
+
+    initStringValue() {
+        const resourceManager = getContext().resourceManager
+        resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.navTitle = value)
+    }
+
+    aboutToAppear() {
+        this.initStringValue()
+        this.initRdbRestore()
         this.themeColor = this.dataPreferences.getSync('theme_color_name', 'success') as BSColorNameMap
+        this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
     }
 
     build() {
