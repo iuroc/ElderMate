@@ -6,7 +6,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@iuroc/openai": "file:../openai"
+    "@iuroc/openai": "file:../../ohpm-openai/openai/build/default/outputs/default/openai.har"
   },
   "devDependencies": {},
   "dynamicDependencies": {}

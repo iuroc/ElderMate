@@ -38,58 +38,6 @@
             ]
         },
         {
-            "name": "demo",
-            "srcPath": "./demo",
-            "targets": [
-                {
-                    "name": "default",
-                    "applyToProducts": [
-                        "default"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "demo02",
-            "srcPath": "./demo02",
-            "targets": [
-                {
-                    "name": "default",
-                    "applyToProducts": [
-                        "default"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "demo03",
-            "srcPath": "./demo03",
-            "targets": [
-                {
-                    "name": "default",
-                    "applyToProducts": [
-                        "default"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "demo04",
-            "srcPath": "./demo04",
-            "targets": [
-                {
-                    "name": "default",
-                    "applyToProducts": [
-                        "default"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "openai",
-            "srcPath": "./openai",
-        },
-        {
             "name": "chat_page",
             "srcPath": "./chat_page",
         },
