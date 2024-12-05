@@ -6,7 +6,7 @@ import { isAllSelected, selectedItems, } from '../utils/utils'
 import { MessageData } from './MessageListItem'
 import { preferences } from '@kit.ArkData'
 import { rcp } from '@kit.RemoteCommunicationKit'
-import { OpenAI } from '@iuroc/openai/src/main/ets/OpenAI'
+import { OpenAI } from '@iuroc/openai'
 import { ChatCompletionMessageParam } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
 
