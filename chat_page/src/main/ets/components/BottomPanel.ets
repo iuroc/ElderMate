@@ -12,7 +12,7 @@ import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
 
 @Component
 export struct BottomPanel {
-    @Link inputMessage: string
+    @Consume inputMessage: string
     @State paddingBottom: number = 0
     @Consume messageDataList: MessageData[]
     @Consume themeColor: BSColorNameMap
@@ -22,6 +22,7 @@ export struct BottomPanel {
     @Require textAreaController: TextAreaController = Object()
     @State isChatRequesting: boolean = false
     private openai: OpenAI = Object()
+    @Consume dataPreferences: preferences.Preferences
     /** 流式输出的第一次输出是否已经完成
      *
      * 该值在每次新请求开始时变为 `true`，第一次接收到流数据后变为 `false` */
@@ -42,9 +43,8 @@ export struct BottomPanel {
         })
 
         // 载入 OpenAI 配置
-        const dataPreferences = await preferences.getPreferences(getContext(), 'openai')
-        const apiKey = await dataPreferences.get('apiKey', '') as string
-        const baseURL = await dataPreferences.get('baseURL', '') as string
+        const apiKey = this.dataPreferences.getSync('openai_api_key', '') as string
+        const baseURL = this.dataPreferences.getSync('openai_base_url', '') as string
         this.openai = new OpenAI({ apiKey, baseURL })
     }
 

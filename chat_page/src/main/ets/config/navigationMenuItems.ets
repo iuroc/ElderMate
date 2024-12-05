@@ -11,6 +11,7 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
             isEnabled: selectableItems(that.messageDataList).length > 0,
             action: () => {
+                that.textAreaController.stopEditing()
                 AlertDialog.show({
                     title: '操作提示',
                     message: '确定要清空当前消息列表吗？',
@@ -33,6 +34,7 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             value: '设置',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
             action: () => {
+                that.textAreaController.stopEditing()
                 that.settingDialogController.open()
             }
         }

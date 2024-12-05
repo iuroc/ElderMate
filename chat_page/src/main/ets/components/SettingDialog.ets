@@ -1,5 +1,6 @@
-import { BSColor, BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
+import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 import { SymbolGlyphModifier } from "@kit.ArkUI"
+import { preferences } from "@kit.ArkData"
 
 const colorNameMap: Array<BSColorNameMap> = [
     'success',
@@ -17,6 +18,10 @@ export struct SettingDialog {
         builder: SettingDialog({}),
     })
     @Consume themeColor: BSColorNameMap
+    @Consume dataPreferences: preferences.Preferences
+
+    aboutToAppear(): void {
+    }
 
     build() {
         Column({ space: 20 }) {
@@ -57,6 +62,7 @@ export struct SettingDialog {
                 .selected(colorNameMap.findIndex(name => name == this.themeColor))
                 .onSelect((_index, value) => {
                     this.themeColor = value as BSColorNameMap
+                    this.dataPreferences.putSync('theme_color_name', this.themeColor)
                 })
                 .value(this.themeColor)
         }

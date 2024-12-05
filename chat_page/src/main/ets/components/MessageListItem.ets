@@ -13,6 +13,7 @@ export struct MessageListItem {
     @State showMenu: boolean = false
     @Consume isTextSelectModalShow: boolean
     @Consume textSelectModalText: string
+    @Consume autoScrollToBottom: boolean
 
     build() {
         if (!this.messageData.hidden && (!this.isSelectMode || this.messageData.role)) {

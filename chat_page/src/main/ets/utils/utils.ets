@@ -2,7 +2,7 @@ import { MessageData } from "../components/MessageListItem"
 import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
 import { promptAction } from "@kit.ArkUI"
 import { systemShare } from "@kit.ShareKit"
-import { uniformTypeDescriptor as utd } from '@kit.ArkData'
+import { preferences, uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { common, wantConstant } from "@kit.AbilityKit"
 
 export class BooleanValue {

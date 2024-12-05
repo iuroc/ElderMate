@@ -42,6 +42,7 @@ export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
             enabled: selectableItems(that.messageDataList).length > 1,
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
             action: () => {
+                that.autoScrollToBottom = false
                 that.isSelectMode = true
                 that.messageData.selected = true
             }

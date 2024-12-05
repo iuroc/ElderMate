@@ -1,12 +1,13 @@
 import { MessageData, MessageListItem } from './MessageListItem'
-import { BooleanValue } from '../utils/utils'
 
 @Component
 export struct MessageList {
     @Consume messageDataList: MessageData[]
     @Require messageListScroller = new Scroller()
-    @Require pageHasTouch = new BooleanValue(false)
+    @Consume pageHasTouch: boolean
     @Require textAreaController = new TextAreaController()
+    @Consume isSelectMode: boolean
+    @Consume autoScrollToBottom: boolean
 
     /** 列表上次的长度，如果最新的长度小于该值，表示发生了删除，就不会滚动到底部，否则会滚动到底部。 */
     // private lastListLength = 0
@@ -22,11 +23,17 @@ export struct MessageList {
             .padding(20)
             .onSizeChange((oldValue, newValue) => {
                 if (newValue.height && newValue.height > 0) {
-                    if (!this.pageHasTouch.value) {
+                    if (!this.pageHasTouch) {
                         // 表示当前页面还没有被触摸过，表示是刚进入页面，设置列表滚动到底部
                         this.messageListScroller.scrollEdge(Edge.Bottom)
                     } else if (oldValue?.height && oldValue?.height < newValue.height) {
-                        this.messageListScroller.scrollEdge(Edge.Bottom)
+                        // 在进入多选模式后，手动将该值设置为 false
+                        // 设置 autoScrollToBottom 变量的目的是在退出多选模式时，禁用自动滚到到底部
+                        if (this.autoScrollToBottom) {
+                            this.messageListScroller.scrollEdge(Edge.Bottom)
+                        } else if (!this.isSelectMode) {
+                            this.autoScrollToBottom = true
+                        }
                     }
                 }
             })
