@@ -11,7 +11,8 @@ import { preferences, relationalStore } from '@kit.ArkData'
 import { initTables } from '../utils/db'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat'
-import { getOpenaiConfig } from '../utils/utils'
+import { url } from '@kit.ArkTS'
+import { promptAction } from '@kit.ArkUI'
 
 @Component
 export struct MainPage {
@@ -28,6 +29,14 @@ export struct MainPage {
     @Provide textSelectModalText: string = ''
     settingDialogController = new CustomDialogController({
         builder: SettingDialog({}),
+        onWillDismiss: () => {
+            try {
+                this.saveOpenAIConfig()
+                this.settingDialogController.close()
+            } catch (error) {
+                promptAction.showToast({ message: error.message })
+            }
+        },
     })
     /** 用户首选项 */
     @Require @Provide dataPreferences: preferences.Preferences = Object()
@@ -41,6 +50,7 @@ export struct MainPage {
     @Provide openaiApiKey: string = ''
     @Provide openaiBaseURL: string = ''
     @Provide openaiModel: ChatModel = 'gpt-4o-mini'
+    defaultOpenaiBaseURL = 'https://api.openai.com/v1'
 
     /**
      * @throws { BusinessError }
@@ -76,13 +86,35 @@ export struct MainPage {
 
     /** 载入 OpenAI 配置 */
     initOpenAI() {
-        const openaiConfig = getOpenaiConfig(this.dataPreferences)
-        this.openaiApiKey = openaiConfig.apiKey as string
-        this.openaiBaseURL = openaiConfig.baseURL as string
+        this.openaiApiKey = this.dataPreferences.getSync(
+            'openai_api_key',
+            `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`
+        ) as string
+        this.openaiBaseURL = this.dataPreferences.getSync('openai_base_url', this.defaultOpenaiBaseURL) as string
+        this.openaiModel = this.dataPreferences.getSync('openai_model', 'gpt-4o-mini') as ChatModel
 
         // 测试值
-        this.openaiApiKey = `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`
-        this.openaiBaseURL = `https://openkey.cloud/v1`
+        // this.openaiApiKey = `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`
+        // this.openaiBaseURL = `https://openkey.cloud/v1`
+        // this.openaiModel = `gpt-4o-mini`
+    }
+
+    saveOpenAIConfig() {
+        if (this.openaiApiKey == '') {
+            throw new Error('接口密钥不能为空')
+        }
+        if (!this.openaiBaseURL) {
+            this.openaiBaseURL = this.defaultOpenaiBaseURL
+        }
+        try {
+            url.URL.parseURL(this.openaiBaseURL)
+        } catch (error) {
+            throw new Error('接口地址格式错误')
+        }
+        this.dataPreferences.putSync('openai_api_key', this.openaiApiKey)
+        this.dataPreferences.putSync('openai_base_url', this.openaiBaseURL)
+        this.dataPreferences.putSync('openai_model', this.openaiModel)
+        this.dataPreferences.flush()
     }
 
     build() {

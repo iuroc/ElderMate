@@ -5,6 +5,7 @@ import { systemShare } from "@kit.ShareKit"
 import { preferences, uniformTypeDescriptor as utd } from '@kit.ArkData'
 import { common, wantConstant } from "@kit.AbilityKit"
 import { ClientOptions } from "@iuroc/openai/src/main/ets/openai@4.73.1"
+import { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat"
 
 export class BooleanValue {
     value: boolean
@@ -113,13 +114,9 @@ export class MenuElementObservedV2 implements MenuElement {
     }
 }
 
-export function getOpenaiConfig(dataPreferences: preferences.Preferences): OpenaiConfig {
-    const apiKey = dataPreferences.getSync('openai_api_key', '') as string
-    const baseURL = dataPreferences.getSync('openai_base_url', '') as string
-    return { apiKey, baseURL }
-}
 
 interface OpenaiConfig {
     apiKey: string
     baseURL: string
+    model: ChatModel | ''
 }
