@@ -193,7 +193,7 @@ export struct BottomPanel {
                 } as ChatCompletionMessageParam
             }),
             stream: true
-        }, onData)
+        }, { onData })
 
         this.requestSession = result.session
         result.response.then(() => {
