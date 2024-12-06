@@ -11,7 +11,7 @@ struct Page {
     build() {
         NavDestination() {
             Web({
-                src: 'http://books.apee.top',
+                src: 'https://appgallery.huawei.com/app/detail?id=com.easy.hmos.abroad',
                 controller: this.controller
             })
                 .width('100%')

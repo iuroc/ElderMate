@@ -2,7 +2,6 @@ import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
 import { LengthMetrics } from '@kit.ArkUI'
 import { bubbleMenuElements } from '../config/bubbleMenuElements'
-import { BooleanValue } from '../utils/utils'
 
 @Component
 export struct MessageListItem {

@@ -4,11 +4,15 @@ import { BottomPanel } from './BottomPanel'
 import { defaultMessageDataList } from '../config/defaultMessageDataList'
 import { MessageList } from './MessageList'
 import { MessageData } from './MessageListItem'
-import { BooleanValue } from '../utils/utils'
 import { TextSelectModal } from './TextSelectModal'
 import { navigationMenuItems } from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
 import { preferences, relationalStore } from '@kit.ArkData'
+import { initTables, copyDatabaseDir } from '../utils/db'
+import { BusinessError } from '@kit.BasicServicesKit'
+import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
+import { OpenAI } from '@iuroc/openai'
+import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 
 @Component
 export struct MainPage {
@@ -34,8 +38,21 @@ export struct MainPage {
     /** 是否开启自动滚动到底部（当列表长度增加时） */
     @Provide autoScrollToBottom: boolean = true
 
+    /**
+     * @throws { BusinessError }
+     */
     async initRdbRestore() {
         this.rdbStore = await this.getRdbStore()
+        if (this.rdbStore.version == 0) {
+            this.rdbStore.version = 1
+            console.log('start initTables')
+            await initTables(this.rdbStore).catch((error: BusinessError) => {
+                console.error('initTables', error.message)
+            })
+        }
+        // await copyDatabaseDir().catch((error: BusinessError) => {
+        //     console.log('copyDatabaseDir', error)
+        // })
     }
 
     initStringValue() {
@@ -45,7 +62,9 @@ export struct MainPage {
 
     aboutToAppear() {
         this.initStringValue()
-        this.initRdbRestore()
+        this.initRdbRestore().catch((error: BusinessError) => {
+            console.error(error.message)
+        })
         this.themeColor = this.dataPreferences.getSync('theme_color_name', 'success') as BSColorNameMap
         this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
     }
