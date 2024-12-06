@@ -1,6 +1,8 @@
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 import { SymbolGlyphModifier } from "@kit.ArkUI"
 import { preferences } from "@kit.ArkData"
+import type { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat"
+import { chatModels } from "../config/chatModels"
 
 const colorNameMap: Array<BSColorNameMap> = [
     'success',
@@ -19,6 +21,10 @@ export struct SettingDialog {
     })
     @Consume themeColor: BSColorNameMap
     @Consume dataPreferences: preferences.Preferences
+    @Consume openaiApiKey: string
+    @Consume openaiBaseURL: string
+    @Consume openaiModel: ChatModel
+    @Consume openaiCanConfig: boolean
 
     aboutToAppear(): void {
     }
@@ -36,6 +42,9 @@ export struct SettingDialog {
     Body() {
         Column({ space: 20 }) {
             this.ThemeColorSetting()
+            if (this.openaiCanConfig) {
+                this.OpenAISetting()
+            }
         }
     }
 
@@ -46,7 +55,7 @@ export struct SettingDialog {
 
     @Builder
     ThemeColorSetting() {
-        Row({ space: 15 }) {
+        Row({ space: 10 }) {
             Text('主题颜色')
             Select(colorNameMap.map(name => {
                 return {
@@ -67,5 +76,33 @@ export struct SettingDialog {
                 .value(this.themeColor)
         }
         .width('100%')
+    }
+
+    @Builder
+    OpenAISetting() {
+        Row({ space: 10 }) {
+            Text('选择模型')
+            Select(chatModels.map(model => {
+                const themeColor = getColorGroup(this.themeColor)
+                return {
+                    value: model,
+                    symbolIcon: new SymbolGlyphModifier($r('sys.symbol.minors_mode'))
+                        .fontColor([themeColor.main]),
+                } as SelectOption
+            }))
+                .value($$this.openaiModel)
+                .selected(chatModels.findIndex(model => model == this.openaiModel))
+                .layoutWeight(1)
+        }
+
+        Row({ space: 10 }) {
+            Text('接口密钥')
+            TextInput({ placeholder: 'sk-xxxx', text: $$this.openaiApiKey }).layoutWeight(1)
+        }
+
+        Row({ space: 10 }) {
+            Text('接口地址')
+            TextInput({ placeholder: 'https://api.openai.com/v1', text: $$this.openaiBaseURL }).layoutWeight(1)
+        }
     }
 }

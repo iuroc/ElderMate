@@ -10,6 +10,8 @@ import { SettingDialog } from './SettingDialog'
 import { preferences, relationalStore } from '@kit.ArkData'
 import { initTables } from '../utils/db'
 import { BusinessError } from '@kit.BasicServicesKit'
+import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat'
+import { getOpenaiConfig } from '../utils/utils'
 
 @Component
 export struct MainPage {
@@ -34,6 +36,11 @@ export struct MainPage {
     @Require getRdbStore: () => Promise<relationalStore.RdbStore> = Object()
     /** 是否开启自动滚动到底部（当列表长度增加时） */
     @Provide autoScrollToBottom: boolean = true
+    /** 是否显示 OpenAI 设置菜单 */
+    @Provide openaiCanConfig: boolean = true
+    @Provide openaiApiKey: string = ''
+    @Provide openaiBaseURL: string = ''
+    @Provide openaiModel: ChatModel = 'gpt-4o-mini'
 
     /**
      * @throws { BusinessError }
@@ -64,6 +71,18 @@ export struct MainPage {
         })
         this.themeColor = this.dataPreferences.getSync('theme_color_name', 'success') as BSColorNameMap
         this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
+        this.initOpenAI()
+    }
+
+    /** 载入 OpenAI 配置 */
+    initOpenAI() {
+        const openaiConfig = getOpenaiConfig(this.dataPreferences)
+        this.openaiApiKey = openaiConfig.apiKey as string
+        this.openaiBaseURL = openaiConfig.baseURL as string
+
+        // 测试值
+        this.openaiApiKey = `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`
+        this.openaiBaseURL = `https://openkey.cloud/v1`
     }
 
     build() {

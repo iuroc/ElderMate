@@ -32,7 +32,7 @@ export struct MessageList {
                         if (this.autoScrollToBottom) {
                             this.messageListScroller.scrollEdge(Edge.Bottom)
                         } else if (!this.isSelectMode) {
-                            this.autoScrollToBottom = true
+                            // this.autoScrollToBottom = true
                         }
                     }
                 }
@@ -44,6 +44,14 @@ export struct MessageList {
         .onTouch(event => {
             if (event.type == TouchType.Down) {
                 this.textAreaController.stopEditing()
+            }
+        })
+        .onReachEnd(() => {
+            this.autoScrollToBottom = true
+        })
+        .onWillScroll((_xOffset, yOffset, _scrollState, scrollSource) => {
+            if (yOffset < 0 && scrollSource != ScrollSource.EDGE_EFFECT) {
+                this.autoScrollToBottom = false
             }
         })
     }

@@ -1,13 +1,13 @@
 import { BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { BSColor } from '@iuroc/bootstrap5-color/Index'
-import { window } from '@kit.ArkUI'
+import { promptAction, window } from '@kit.ArkUI'
 import { selectPanelMenuElements } from '../config/selectPanelMenuElements'
-import { isAllSelected, selectedItems, } from '../utils/utils'
+import { getOpenaiConfig, isAllSelected, selectedItems, } from '../utils/utils'
 import { MessageData } from './MessageListItem'
 import { preferences } from '@kit.ArkData'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { OpenAI } from '@iuroc/openai'
-import { ChatCompletionMessageParam } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
+import { ChatCompletionMessageParam, ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
 
 @Component
@@ -29,6 +29,9 @@ export struct BottomPanel {
     private showRequestStartTip = false
     private requestStartTip = '正在思考~'
     private requestSession: rcp.Session = Object()
+    @Consume openaiApiKey: string
+    @Consume openaiBaseURL: string
+    @Consume openaiModel: ChatModel
 
     async aboutToAppear() {
         const lastWindow = await window.getLastWindow(getContext())
@@ -42,10 +45,10 @@ export struct BottomPanel {
             }
         })
 
-        // 载入 OpenAI 配置
-        const apiKey = this.dataPreferences.getSync('openai_api_key', '') as string
-        const baseURL = this.dataPreferences.getSync('openai_base_url', '') as string
-        this.openai = new OpenAI({ apiKey, baseURL })
+        this.openai = new OpenAI({
+            apiKey: this.openaiApiKey,
+            baseURL: this.openaiBaseURL
+        })
     }
 
     build() {
@@ -154,6 +157,10 @@ export struct BottomPanel {
     }
 
     handleMessageSend() {
+        if (!this.openaiBaseURL || !this.openaiApiKey) {
+            promptAction.showToast({ message: 'OpenAI 配置不完整' })
+            return
+        }
         const messageWillSend = this.inputMessage.trim()
         this.inputMessage = ''
         this.messageDataList.push(new MessageData({
@@ -184,9 +191,11 @@ export struct BottomPanel {
             responseMessageData.content = textContent
         }
 
+        this.openai.options.apiKey = this.openaiApiKey
+        this.openai.options.baseURL = this.openaiBaseURL
         const result = this.openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: this.messageDataList.filter(item => item.role).map(item => {
+            model: this.openaiModel,
+            messages: this.messageDataList.filter(item => item.role as string).map(item => {
                 return {
                     role: item.role,
                     content: item.content
