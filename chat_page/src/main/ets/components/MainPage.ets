@@ -8,11 +8,8 @@ import { TextSelectModal } from './TextSelectModal'
 import { navigationMenuItems } from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
 import { preferences, relationalStore } from '@kit.ArkData'
-import { initTables, copyDatabaseDir } from '../utils/db'
+import { initTables } from '../utils/db'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
-import { OpenAI } from '@iuroc/openai'
-import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 
 @Component
 export struct MainPage {

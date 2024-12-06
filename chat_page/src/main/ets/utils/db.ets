@@ -26,13 +26,19 @@ export async function initTables(rdbStore: relationalStore.RdbStore) {
     )`)
 }
 
+/** 将沙箱中的数据库目录复制到选择器选择的目录 */
 export async function copyDatabaseDir() {
     const databaseDir = getContext().databaseDir
     const documentViewPicker = new picker.DocumentViewPicker()
     const documentSaveOptions = new picker.DocumentSaveOptions()
-    if (canIUse('SystemCapability.FileManagement.UserFileService.FolderSelection')) {
-        documentSaveOptions.pickerMode = picker.DocumentPickerMode.DOWNLOAD
-    }
-    const targetDirPath = (await documentViewPicker.save(documentSaveOptions))[0]
-    fileIo.copyDirSync(databaseDir, new fileUri.FileUri(targetDirPath).path)
+    const saveUris = await documentViewPicker.save(documentSaveOptions)
+    const savePath = new fileUri.FileUri(saveUris[0]).path
+    fileIo.unlinkSync(savePath)
+    fileIo.mkdirSync(savePath)
+    fileIo.copyDirSync(databaseDir, savePath)
+    console.log('已复制到', savePath)
+}
+
+export async function getDocRootDir() {
+    return 'file://docs/storage/Users/currentUser/'
 }
