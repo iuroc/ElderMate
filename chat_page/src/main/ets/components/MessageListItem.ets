@@ -55,24 +55,6 @@ export struct MessageListItem {
             })
     }
 
-    /**
-     * @deprecated
-     */
-    @Builder
-    CenterPanel() {
-        Column({ space: 5 }) {
-            this.Bubble()
-            this.TimeView()
-        }
-        .alignItems(this.messageData.role == 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
-    }
-
-    @Builder
-    TimeView() {
-        Text(this.messageData.sendTime.toLocaleString()).fontSize(12).fontColor(BSColor.secondary)
-            .margin({ left: 10, right: 10 })
-    }
-
     /** 消息列表中的消息气泡 */
     @Builder
     Bubble() {

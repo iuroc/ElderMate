@@ -7,10 +7,7 @@ import { navigationMenuItems } from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
 import { preferences, relationalStore } from '@kit.ArkData'
 import {
-    getLatestChat,
     initTables,
-    createChat,
-    insertMessages,
     ChatData,
     getMessagesByChatID,
     getAllChatData,
@@ -20,13 +17,12 @@ import {
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat'
 import { url } from '@kit.ArkTS'
-import { promptAction } from '@kit.ArkUI'
-import { defaultMessageDataList } from '../config/defaultMessageDataList'
-import { exampleMessageDataList } from '../config/exampleMessageDataList'
+import { promptAction, SelectDialog } from '@kit.ArkUI'
+import { ChatListDialog } from './ChatListDialog'
 
 @Component
 export struct MainPage {
-    @State navTitle: string = ''
+    @Provide navTitle: string = ''
     @Provide inputMessage: string = ''
     @Provide messageDataList: MessageData[] = []
     @Provide themeColor: BSColorNameMap = 'success'
@@ -37,17 +33,8 @@ export struct MainPage {
     public textAreaController = new TextAreaController()
     @Provide isTextSelectModalShow: boolean = false
     @Provide textSelectModalText: string = ''
-    settingDialogController = new CustomDialogController({
-        builder: SettingDialog({}),
-        onWillDismiss: () => {
-            try {
-                this.saveOpenAIConfig()
-                this.settingDialogController.close()
-            } catch (error) {
-                promptAction.showToast({ message: error.message })
-            }
-        },
-    })
+    settingDialogController: CustomDialogController = Object()
+    chatListDialogController: CustomDialogController = Object()
     /** 用户首选项 */
     @Require @Provide dataPreferences: preferences.Preferences = Object()
     /** 关系型数据库 */
@@ -59,11 +46,13 @@ export struct MainPage {
     @Provide openaiCanConfig: boolean = true
     @Provide openaiApiKey: string = ''
     @Provide openaiBaseURL: string = ''
-    defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
+    @Provide defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
     @Provide openaiModel: ChatModel = this.defaultOpenaiModel
     defaultOpenaiBaseURL = 'https://api.openai.com/v1'
     /** Chat 列表，按 ID 降序排列，第一项为最新记录 */
     @Provide chatDataList: ChatData[] = []
+    @Provide currentChatId: number = 0
+    @Provide isChatRequesting: boolean = false
 
     /**
      * @throws { BusinessError }
@@ -84,9 +73,24 @@ export struct MainPage {
         resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.navTitle = value)
     }
 
+    initSettingDialogController() {
+        this.settingDialogController = new CustomDialogController({
+            builder: SettingDialog({}),
+            onWillDismiss: () => {
+                try {
+                    this.saveOpenAIConfig()
+                    this.settingDialogController.close()
+                } catch (error) {
+                    promptAction.showToast({ message: error.message })
+                }
+            },
+        })
+    }
+
     aboutToAppear() {
         this.initStringValue()
         this.initOpenAI()
+        this.initSettingDialogController()
         this.initRdbRestore().catch((error: BusinessError) => {
             console.error(error.message)
         }).then(() => {
@@ -94,12 +98,46 @@ export struct MainPage {
             if (this.chatDataList.length == 0) {
                 createNewChatForPage(this.rdbStore, this.chatDataList, this.defaultOpenaiModel)
             }
-            this.messageDataList = getMessagesByChatID(this.rdbStore, sortChatList(this.chatDataList)[0].id)
-            this.navTitle = this.chatDataList[0].title
+            const currentChat = sortChatList(this.chatDataList)[0]
+            this.currentChatId = currentChat.id
+            this.messageDataList = getMessagesByChatID(this.rdbStore, this.currentChatId)
+            this.navTitle = currentChat.title
             // 将当前页面的模型类型更新为数据库中最新 chat 的
-            this.openaiModel = this.chatDataList[0].model
+            this.openaiModel = currentChat.model
+            this.initChatListDialogController()
         })
         this.themeColor = this.dataPreferences.getSync('theme_color_name', 'success') as BSColorNameMap
+    }
+
+    initChatListDialogController() {
+        this.chatListDialogController = new CustomDialogController({
+            builder: ChatListDialog({}),
+        })
+        // const chatList = this.chatDataList.sort((a, b) => b.id - a.id)
+        // this.chatListDialogController = new CustomDialogController({
+        //     builder: SelectDialog({
+        //         title: '历史对话',
+        //         confirm: {
+        //             value: '取消'
+        //         },
+        //         radioContent: chatList.map(chatData => {
+        //             return {
+        //                 title: chatData.title,
+        //                 action: () => {
+        //                     if (this.currentChatId == chatData.id) {
+        //                         return
+        //                     }
+        //                     this.currentChatId = chatData.id
+        //                     this.messageDataList = getMessagesByChatID(this.rdbStore, chatData.id)
+        //                     this.navTitle = chatData.title
+        //                     // 将当前页面的模型类型更新为数据库中最新 chat 的
+        //                     this.openaiModel = chatData.model
+        //                 }
+        //             } as SheetInfo
+        //         }),
+        //         selectedIndex: chatList.findIndex(i => i.id == this.currentChatId)
+        //     })
+        // })
     }
 
     /** 载入 OpenAI 配置 */

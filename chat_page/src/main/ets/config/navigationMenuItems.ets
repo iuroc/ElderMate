@@ -15,17 +15,19 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
     return that.isSelectMode ? [] : [
         {
             value: '创建新对话',
-            isEnabled: selectableItems(that.messageDataList).length > 0,
+            isEnabled: selectableItems(that.messageDataList).length > 0 && !that.isChatRequesting,
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus')),
             action: () => {
                 createNewChatForPage(that.rdbStore, that.chatDataList, that.defaultOpenaiModel)
-                that.messageDataList = getMessagesByChatID(that.rdbStore, sortChatList(that.chatDataList)[0].id)
+                const newChatData = sortChatList(that.chatDataList)[0]
+                that.currentChatId = newChatData.id
+                that.messageDataList = getMessagesByChatID(that.rdbStore, newChatData.id)
             }
         },
         {
             value: '清空当前消息列表',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
-            isEnabled: selectableItems(that.messageDataList).length > 0,
+            isEnabled: selectableItems(that.messageDataList).length > 0 && !that.isChatRequesting,
             action: () => {
                 that.textAreaController.stopEditing()
                 AlertDialog.show({
@@ -36,8 +38,8 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                         fontColor: BSColor.danger,
                         action: () => {
                             that.messageDataList = defaultMessageDataList()
-                            deleteMessagesByChatId(that.rdbStore, that.chatDataList[0].id)
-                            insertMessages(that.rdbStore, that.chatDataList[0].id, that.messageDataList)
+                            deleteMessagesByChatId(that.rdbStore, that.currentChatId)
+                            insertMessages(that.rdbStore, that.currentChatId, that.messageDataList)
                         }
                     },
                     secondaryButton: {
@@ -50,10 +52,10 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
         },
         {
             value: '历史对话',
-            isEnabled: that.chatDataList.length > 1,
+            isEnabled: that.chatDataList.length > 1 && !that.isChatRequesting,
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.arrow_counterclockwise_clock')),
             action: () => {
-
+                that.chatListDialogController.open()
             }
         },
         {

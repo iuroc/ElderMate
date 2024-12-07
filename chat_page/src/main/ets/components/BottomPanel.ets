@@ -21,7 +21,7 @@ export struct BottomPanel {
     @Consume isSelectMode: boolean
     @Require messageListScroller: Scroller = Object()
     @Require textAreaController: TextAreaController = Object()
-    @State isChatRequesting: boolean = false
+    @Consume isChatRequesting: boolean
     private openai: OpenAI = Object()
     @Consume dataPreferences: preferences.Preferences
     /** 流式输出的第一次输出是否已经完成

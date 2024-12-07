@@ -4,6 +4,7 @@ import { relationalStore } from '@kit.ArkData'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { MessageData } from '../components/MessageListItem'
 import { defaultMessageDataList } from '../config/defaultMessageDataList'
+import { getDatetimeString } from './utils'
 
 /**
  * 初始化数据表
@@ -75,7 +76,6 @@ export function getAllChatData(rdbStore: relationalStore.RdbStore): ChatData[] {
     const result = rdbStore.querySqlSync(`SELECT * FROM "chat" ORDER BY "id" DESC`)
     const chatDataList: ChatData[] = []
     while (result.goToNextRow()) {
-        console.log('888')
         chatDataList.push(getChatDataFromResultSet(result))
     }
     return chatDataList
@@ -103,7 +103,7 @@ export function createChat(
     const id = rdbStore.insertSync('chat', {
         title,
         model,
-        create_time: createTime.toLocaleString()
+        create_time: getDatetimeString(createTime)
     })
     return new ChatData(id, title, model, createTime)
 }
@@ -142,7 +142,7 @@ function messageDataToInsertValues(chatId: number, messageData: MessageData): re
         in_request: booleanToNumber(messageData.inRequest),
         hidden: booleanToNumber(messageData.hidden),
         chat_id: chatId,
-        send_time: messageData.sendTime.toLocaleString(),
+        send_time: getDatetimeString(messageData.sendTime),
     }
 }
 
@@ -192,8 +192,16 @@ export function createNewChatForPage(rdbStore: relationalStore.RdbStore, chatDat
     const newChatData = createChat(rdbStore, '新的聊天', model)
     insertMessages(rdbStore, newChatData.id, defaultMessageDataList())
     chatDataList.push(newChatData)
+    return newChatData
 }
 
 export function sortChatList(list: ChatData[]): ChatData[] {
     return list.sort((a, b) => b.id - a.id)
+}
+
+/** 根据 chat_id 删除 chat，注意需要先删除 message，否则有外键冲突 */
+export function deleteChatById(rdbStore: relationalStore.RdbStore, id: number) {
+    const predicates = new relationalStore.RdbPredicates('chat')
+    predicates.equalTo('id', id)
+    rdbStore.deleteSync(predicates)
 }

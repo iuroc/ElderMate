@@ -1,5 +1,5 @@
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
-import { SymbolGlyphModifier } from "@kit.ArkUI"
+import { CustomContentDialog, SymbolGlyphModifier } from "@kit.ArkUI"
 import { preferences } from "@kit.ArkData"
 import type { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat"
 import { chatModels } from "../config/chatModels"
@@ -30,12 +30,12 @@ export struct SettingDialog {
     }
 
     build() {
-        Column({ space: 20 }) {
-            this.Title()
-            this.Body()
-        }
-        .width('100%')
-        .padding(25)
+        CustomContentDialog({
+            primaryTitle: '设置',
+            contentBuilder: () => {
+                this.Body()
+            }
+        })
     }
 
     @Builder
