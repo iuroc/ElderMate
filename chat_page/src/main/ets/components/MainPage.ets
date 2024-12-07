@@ -113,31 +113,6 @@ export struct MainPage {
         this.chatListDialogController = new CustomDialogController({
             builder: ChatListDialog({}),
         })
-        // const chatList = this.chatDataList.sort((a, b) => b.id - a.id)
-        // this.chatListDialogController = new CustomDialogController({
-        //     builder: SelectDialog({
-        //         title: '历史对话',
-        //         confirm: {
-        //             value: '取消'
-        //         },
-        //         radioContent: chatList.map(chatData => {
-        //             return {
-        //                 title: chatData.title,
-        //                 action: () => {
-        //                     if (this.currentChatId == chatData.id) {
-        //                         return
-        //                     }
-        //                     this.currentChatId = chatData.id
-        //                     this.messageDataList = getMessagesByChatID(this.rdbStore, chatData.id)
-        //                     this.navTitle = chatData.title
-        //                     // 将当前页面的模型类型更新为数据库中最新 chat 的
-        //                     this.openaiModel = chatData.model
-        //                 }
-        //             } as SheetInfo
-        //         }),
-        //         selectedIndex: chatList.findIndex(i => i.id == this.currentChatId)
-        //     })
-        // })
     }
 
     /** 载入 OpenAI 配置 */
@@ -148,11 +123,6 @@ export struct MainPage {
         ) as string
         this.openaiBaseURL = this.dataPreferences.getSync('openai_base_url', this.defaultOpenaiBaseURL) as string
         this.openaiModel = this.dataPreferences.getSync('openai_model', 'gpt-4o-mini') as ChatModel
-
-        // 测试值
-        // this.openaiApiKey = `sk-7TImgtgJvIK8uhlKA1D230B6F18b4363BcA4Be0d342914F7`
-        // this.openaiBaseURL = `https://openkey.cloud/v1`
-        // this.openaiModel = `gpt-4o-mini`
     }
 
     saveOpenAIConfig() {
