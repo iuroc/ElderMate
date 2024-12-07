@@ -1,6 +1,7 @@
 import { BSColor, getColorGroup } from '@iuroc/bootstrap5-color'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { MainPage } from '../components/MainPage'
+import { deleteMessagesByChatId, insertMessages } from '../utils/db'
 import { selectableItems } from '../utils/utils'
 import { defaultMessageDataList } from './defaultMessageDataList'
 
@@ -20,6 +21,8 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                         fontColor: BSColor.danger,
                         action: () => {
                             that.messageDataList = defaultMessageDataList()
+                            deleteMessagesByChatId(that.rdbStore, that.chatDataList[0].id)
+                            insertMessages(that.rdbStore, that.chatDataList[0].id, that.messageDataList)
                         }
                     },
                     secondaryButton: {

@@ -1,18 +1,26 @@
 import { BSColorNameMap } from '@iuroc/bootstrap5-color'
-import { exampleMessageDataList } from '../config/exampleMessageDataList'
 import { BottomPanel } from './BottomPanel'
-import { defaultMessageDataList } from '../config/defaultMessageDataList'
 import { MessageList } from './MessageList'
 import { MessageData } from './MessageListItem'
 import { TextSelectModal } from './TextSelectModal'
 import { navigationMenuItems } from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
 import { preferences, relationalStore } from '@kit.ArkData'
-import { initTables } from '../utils/db'
+import {
+    getLatestChat,
+    initTables,
+    createChat,
+    insertMessages,
+    ChatData,
+    getMessagesByChatID,
+    getAllChatData
+} from '../utils/db'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat'
 import { url } from '@kit.ArkTS'
 import { promptAction } from '@kit.ArkUI'
+import { defaultMessageDataList } from '../config/defaultMessageDataList'
+import { exampleMessageDataList } from '../config/exampleMessageDataList'
 
 @Component
 export struct MainPage {
@@ -51,6 +59,8 @@ export struct MainPage {
     @Provide openaiBaseURL: string = ''
     @Provide openaiModel: ChatModel = 'gpt-4o-mini'
     defaultOpenaiBaseURL = 'https://api.openai.com/v1'
+    /** Chat 列表，按 ID 降序排列，第一项为最新记录 */
+    @Provide chatDataList: ChatData[] = []
 
     /**
      * @throws { BusinessError }
@@ -64,9 +74,6 @@ export struct MainPage {
                 console.error('initTables', error.message)
             })
         }
-        // await copyDatabaseDir().catch((error: BusinessError) => {
-        //     console.log('copyDatabaseDir', error)
-        // })
     }
 
     initStringValue() {
@@ -76,12 +83,27 @@ export struct MainPage {
 
     aboutToAppear() {
         this.initStringValue()
+        this.initOpenAI()
         this.initRdbRestore().catch((error: BusinessError) => {
             console.error(error.message)
+        }).then(() => {
+            this.chatDataList = getAllChatData(this.rdbStore)
+            if (this.chatDataList.length == 0) {
+                console.debug('没有找到 chat 记录，正在创建新的 chat 记录')
+                const newChatData = createChat(this.rdbStore, '新的聊天', this.openaiModel)
+                console.log(`创建 chat 完成，id 为 ${newChatData.id}`)
+                console.log('正在将初始的消息列表写入到 message')
+                insertMessages(this.rdbStore, newChatData.id, defaultMessageDataList().concat(exampleMessageDataList()))
+                console.log('完成写入到 message')
+                this.chatDataList.push(newChatData)
+            }
+            console.log('正在写入 message 列表，chat_id ' + this.chatDataList[0].id)
+            this.messageDataList = getMessagesByChatID(this.rdbStore, this.chatDataList[0].id)
+            this.navTitle = this.chatDataList[0].title
+            // 将当前页面的模型类型更新为数据库中最新 chat 的
+            this.openaiModel = this.chatDataList[0].model
         })
         this.themeColor = this.dataPreferences.getSync('theme_color_name', 'success') as BSColorNameMap
-        this.messageDataList = defaultMessageDataList().concat(exampleMessageDataList())
-        this.initOpenAI()
     }
 
     /** 载入 OpenAI 配置 */

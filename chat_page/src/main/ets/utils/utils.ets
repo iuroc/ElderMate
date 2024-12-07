@@ -97,24 +97,6 @@ export async function getShareTextTitle() {
 }
 
 
-@ObservedV2
-export class MenuElementObservedV2 implements MenuElement {
-    @Trace value: ResourceStr
-    @Trace icon?: ResourceStr
-    @Trace symbolIcon?: SymbolGlyphModifier
-    @Trace enabled?: boolean
-    @Trace action: () => void
-
-    constructor(menuElement: MenuElement) {
-        this.value = menuElement.value
-        this.icon = menuElement.icon
-        this.symbolIcon = menuElement.symbolIcon
-        this.enabled = menuElement.enabled
-        this.action = menuElement.action
-    }
-}
-
-
 interface OpenaiConfig {
     apiKey: string
     baseURL: string

@@ -2,13 +2,14 @@ import { BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { BSColor } from '@iuroc/bootstrap5-color/Index'
 import { promptAction, window } from '@kit.ArkUI'
 import { selectPanelMenuElements } from '../config/selectPanelMenuElements'
-import {  isAllSelected, selectedItems, } from '../utils/utils'
+import { isAllSelected, selectedItems, } from '../utils/utils'
 import { MessageData } from './MessageListItem'
-import { preferences } from '@kit.ArkData'
+import { preferences, relationalStore } from '@kit.ArkData'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { OpenAI } from '@iuroc/openai'
 import { ChatCompletionMessageParam, ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
+import { ChatData, insertMessage, insertMessages, updateMessage } from '../utils/db'
 
 @Component
 export struct BottomPanel {
@@ -32,6 +33,8 @@ export struct BottomPanel {
     @Consume openaiApiKey: string
     @Consume openaiBaseURL: string
     @Consume openaiModel: ChatModel
+    @Consume chatDataList: ChatData[]
+    @Consume rdbStore: relationalStore.RdbStore
 
     async aboutToAppear() {
         const lastWindow = await window.getLastWindow(getContext())
@@ -163,16 +166,20 @@ export struct BottomPanel {
         }
         const messageWillSend = this.inputMessage.trim()
         this.inputMessage = ''
-        this.messageDataList.push(new MessageData({
+        const requestMessageData = new MessageData({
             role: 'user',
             content: messageWillSend,
             inRequest: true,
-        }))
+        })
+        // 插入到数据库并更新 latestId
+        requestMessageData.id = insertMessage(this.rdbStore, this.chatDataList[0].id, requestMessageData)
+        this.messageDataList.push(requestMessageData)
         const responseMessageData = new MessageData({
             role: 'assistant',
             content: this.requestStartTip,
             inRequest: true,
         })
+        responseMessageData.id = insertMessage(this.rdbStore, this.chatDataList[0].id, responseMessageData)
         this.messageDataList.push(responseMessageData)
         /** 开始请求中状态 */
         this.isChatRequesting = true
@@ -207,6 +214,9 @@ export struct BottomPanel {
         this.requestSession = result.session
         result.response.then(() => {
             this.isChatRequesting = false
+
+            // 更新 message 记录的 content 值
+            updateMessage(this.rdbStore, { content: responseMessageData.content }, responseMessageData.id)
         })
     }
 }

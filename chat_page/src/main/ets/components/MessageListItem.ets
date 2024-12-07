@@ -2,6 +2,7 @@ import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
 import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/types'
 import { LengthMetrics } from '@kit.ArkUI'
 import { bubbleMenuElements } from '../config/bubbleMenuElements'
+import { relationalStore } from '@kit.ArkData'
 
 @Component
 export struct MessageListItem {
@@ -13,6 +14,7 @@ export struct MessageListItem {
     @Consume isTextSelectModalShow: boolean
     @Consume textSelectModalText: string
     @Consume autoScrollToBottom: boolean
+    @Consume rdbStore: relationalStore.RdbStore
 
     build() {
         if (!this.messageData.hidden && (!this.isSelectMode || this.messageData.role)) {
@@ -67,7 +69,7 @@ export struct MessageListItem {
 
     @Builder
     TimeView() {
-        Text(this.messageData.createTime.toLocaleString()).fontSize(12).fontColor(BSColor.secondary)
+        Text(this.messageData.sendTime.toLocaleString()).fontSize(12).fontColor(BSColor.secondary)
             .margin({ left: 10, right: 10 })
     }
 
@@ -234,7 +236,7 @@ export class MessageData implements IMessageData {
     @Trace hidden: boolean
     @Trace selected: boolean
     @Trace id: number
-    @Trace createTime: Date
+    @Trace sendTime: Date
 
     constructor(data: MessageDataInit) {
         this.inRequest = data.inRequest ?? true
@@ -242,12 +244,14 @@ export class MessageData implements IMessageData {
         this.content = data.content
         this.hidden = data.hidden ?? false
         this.selected = data.selected ?? false
-        this.createTime = data.createTime ?? new Date()
-        this.id = NextID++
+        this.sendTime = data.sendTime ?? new Date()
+        this.id = data.id ?? NextID++
     }
 }
 
 export interface MessageDataInit {
+    /** 数据库中的记录 ID */
+    id?: number
     /** 消息是否需要加入请求体，默认 `true` */
     inRequest?: boolean
     /** 消息角色，默认 `null` */
@@ -258,8 +262,8 @@ export interface MessageDataInit {
     hidden?: boolean
     /** 是否选中组件，默认 `false` */
     selected?: boolean
-    /** 消息创建时间，默认 `new Date()` */
-    createTime?: Date
+    /** 消息发送时间，默认 `new Date()` */
+    sendTime?: Date
 }
 
 export type IMessageData = Required<MessageDataInit>

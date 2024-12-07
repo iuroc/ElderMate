@@ -1,6 +1,7 @@
 import { BSColor } from '@iuroc/bootstrap5-color'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { MessageListItem } from '../components/MessageListItem'
+import { deleteMessageById } from '../utils/db'
 import {
     copyTextWithToast,
     getShareTextTitle,
@@ -62,6 +63,7 @@ export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
                 that.messageDataList.forEach((item, index) => {
                     if (item.id == that.messageData.id) {
                         that.messageDataList.splice(index, 1)
+                        deleteMessageById(that.rdbStore, item.id)
                     }
                 })
             },

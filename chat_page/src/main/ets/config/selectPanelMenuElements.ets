@@ -1,6 +1,7 @@
 import { BSColor } from '@iuroc/bootstrap5-color'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { BottomPanel } from '../components/BottomPanel'
+import { deleteMessageById } from '../utils/db'
 import {
     copyTextWithToast,
     getShareTextTitle,
@@ -52,6 +53,7 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
                                     that.messageDataList.findIndex(item => item.id == needDeleteItem.id),
                                     1
                                 )
+                                deleteMessageById(that.rdbStore, needDeleteItem.id)
                             })
                             that.quitSelectMode()
                         }
