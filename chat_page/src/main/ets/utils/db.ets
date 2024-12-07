@@ -3,6 +3,7 @@ import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/type
 import { relationalStore } from '@kit.ArkData'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { MessageData } from '../components/MessageListItem'
+import { defaultMessageDataList } from '../config/defaultMessageDataList'
 
 /**
  * 初始化数据表
@@ -184,4 +185,15 @@ export function deleteMessagesByChatId(rdbStore: relationalStore.RdbStore, chatI
     const predicates = new relationalStore.RdbPredicates('message')
     predicates.equalTo('chat_id', chatId)
     rdbStore.deleteSync(predicates)
+}
+
+/** 创建新的 chat 记录，并重置当前的聊天记录列表为新 chat 的 */
+export function createNewChatForPage(rdbStore: relationalStore.RdbStore, chatDataList: ChatData[], model: ChatModel) {
+    const newChatData = createChat(rdbStore, '新的聊天', model)
+    insertMessages(rdbStore, newChatData.id, defaultMessageDataList())
+    chatDataList.push(newChatData)
+}
+
+export function sortChatList(list: ChatData[]): ChatData[] {
+    return list.sort((a, b) => b.id - a.id)
 }

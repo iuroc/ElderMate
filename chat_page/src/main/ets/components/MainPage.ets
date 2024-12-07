@@ -13,7 +13,9 @@ import {
     insertMessages,
     ChatData,
     getMessagesByChatID,
-    getAllChatData
+    getAllChatData,
+    createNewChatForPage,
+    sortChatList
 } from '../utils/db'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat'
@@ -57,7 +59,8 @@ export struct MainPage {
     @Provide openaiCanConfig: boolean = true
     @Provide openaiApiKey: string = ''
     @Provide openaiBaseURL: string = ''
-    @Provide openaiModel: ChatModel = 'gpt-4o-mini'
+    defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
+    @Provide openaiModel: ChatModel = this.defaultOpenaiModel
     defaultOpenaiBaseURL = 'https://api.openai.com/v1'
     /** Chat 列表，按 ID 降序排列，第一项为最新记录 */
     @Provide chatDataList: ChatData[] = []
@@ -89,16 +92,9 @@ export struct MainPage {
         }).then(() => {
             this.chatDataList = getAllChatData(this.rdbStore)
             if (this.chatDataList.length == 0) {
-                console.debug('没有找到 chat 记录，正在创建新的 chat 记录')
-                const newChatData = createChat(this.rdbStore, '新的聊天', this.openaiModel)
-                console.log(`创建 chat 完成，id 为 ${newChatData.id}`)
-                console.log('正在将初始的消息列表写入到 message')
-                insertMessages(this.rdbStore, newChatData.id, defaultMessageDataList().concat(exampleMessageDataList()))
-                console.log('完成写入到 message')
-                this.chatDataList.push(newChatData)
+                createNewChatForPage(this.rdbStore, this.chatDataList, this.defaultOpenaiModel)
             }
-            console.log('正在写入 message 列表，chat_id ' + this.chatDataList[0].id)
-            this.messageDataList = getMessagesByChatID(this.rdbStore, this.chatDataList[0].id)
+            this.messageDataList = getMessagesByChatID(this.rdbStore, sortChatList(this.chatDataList)[0].id)
             this.navTitle = this.chatDataList[0].title
             // 将当前页面的模型类型更新为数据库中最新 chat 的
             this.openaiModel = this.chatDataList[0].model

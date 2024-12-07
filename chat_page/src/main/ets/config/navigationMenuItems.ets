@@ -1,12 +1,27 @@
 import { BSColor, getColorGroup } from '@iuroc/bootstrap5-color'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { MainPage } from '../components/MainPage'
-import { deleteMessagesByChatId, insertMessages } from '../utils/db'
+import {
+    createNewChatForPage,
+    deleteMessagesByChatId,
+    getMessagesByChatID,
+    insertMessages,
+    sortChatList
+} from '../utils/db'
 import { selectableItems } from '../utils/utils'
 import { defaultMessageDataList } from './defaultMessageDataList'
 
 export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
     return that.isSelectMode ? [] : [
+        {
+            value: '创建新对话',
+            isEnabled: selectableItems(that.messageDataList).length > 0,
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus')),
+            action: () => {
+                createNewChatForPage(that.rdbStore, that.chatDataList, that.defaultOpenaiModel)
+                that.messageDataList = getMessagesByChatID(that.rdbStore, sortChatList(that.chatDataList)[0].id)
+            }
+        },
         {
             value: '清空当前消息列表',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
@@ -34,12 +49,20 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             }
         },
         {
+            value: '历史对话',
+            isEnabled: that.chatDataList.length > 1,
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.arrow_counterclockwise_clock')),
+            action: () => {
+
+            }
+        },
+        {
             value: '设置',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
             action: () => {
                 that.textAreaController.stopEditing()
                 that.settingDialogController.open()
             }
-        }
+        },
     ]
 }
