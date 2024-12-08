@@ -3,6 +3,7 @@ import { CustomContentDialog, SymbolGlyphModifier } from "@kit.ArkUI"
 import { preferences } from "@kit.ArkData"
 import type { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat"
 import { chatModels } from "../config/chatModels"
+import { ChatData } from "../utils/db"
 
 const colorNameMap: Array<BSColorNameMap> = [
     'success',
@@ -23,8 +24,9 @@ export struct SettingDialog {
     @Consume dataPreferences: preferences.Preferences
     @Consume openaiApiKey: string
     @Consume openaiBaseURL: string
-    @Consume openaiModel: ChatModel
     @Consume openaiCanConfig: boolean
+    @Consume currentChatIndex: number
+    @Consume chatDataList: ChatData[]
 
     aboutToAppear(): void {
     }
@@ -90,9 +92,12 @@ export struct SettingDialog {
                         .fontColor([themeColor.main]),
                 } as SelectOption
             }))
-                .value($$this.openaiModel)
-                .selected(chatModels.findIndex(model => model == this.openaiModel))
+                .value(this.chatDataList[this.currentChatIndex].model)
+                .selected(chatModels.findIndex(model => this.chatDataList[this.currentChatIndex].model == model))
                 .layoutWeight(1)
+                .onSelect((_index, value) => {
+                    this.chatDataList[this.currentChatIndex].model = value as ChatModel
+                })
         }
 
         Row({ space: 10 }) {

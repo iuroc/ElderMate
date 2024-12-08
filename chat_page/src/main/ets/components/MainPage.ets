@@ -49,11 +49,15 @@ export struct MainPage {
     defaultThemeColor: BSColorNameMap = 'success'
     @Provide openaiApiKey: string = ''
     @Provide openaiBaseURL: string = ''
-    @Provide openaiModel: ChatModel = this.defaultOpenaiModel
     @Provide themeColor: BSColorNameMap = this.defaultThemeColor
     /** Chat 列表，按 ID 降序排列，第一项为最新记录 */
     @Provide chatDataList: ChatData[] = []
-    @Provide currentChatId: number = 0
+    @Provide currentChatIndex: number = 0
+
+    currentChat() {
+        return this.chatDataList[this.currentChatIndex]
+    }
+
     @Provide isChatRequesting: boolean = false
 
     /**
@@ -87,13 +91,23 @@ export struct MainPage {
             builder: SettingDialog({}),
             onWillDismiss: () => {
                 try {
+                    // 弹窗关闭时，保存 Preferences 中的 OpenAI 配置
                     this.saveOpenAIConfig()
+                    // 弹窗关闭时，更新数据库中当前 chat 的模型
+                    this.updateModel()
                     this.settingDialogController.close()
                 } catch (error) {
                     promptAction.showToast({ message: error.message })
                 }
             },
         })
+    }
+
+    /** 更新当前 `chat` 记录的 `model` */
+    updateModel() {
+        const predicates = new relationalStore.RdbPredicates('chat')
+        predicates.equalTo('id', this.chatDataList[this.currentChatIndex].id)
+        this.rdbStore.updateSync({ model: this.chatDataList[this.currentChatIndex].model }, predicates)
     }
 
     aboutToAppear() {
@@ -113,7 +127,7 @@ export struct MainPage {
             if (this.chatDataList.length == 0) {
                 this.unshiftNewChatToList()
             }
-            this.showChat(this.chatDataList[0])
+            this.showChat(0)
         })
     }
 
@@ -131,13 +145,11 @@ export struct MainPage {
      *
      * - `openai_api_key` => `openaiApiKey`
      * - `openai_base_url` => `openaiBaseURL`
-     * - `openai_model` => `openaiModel`
-     * `themeColor`
+     * - `themeColor` => `themeColor`
      */
     initPreferences() {
         this.openaiApiKey = this.dataPreferences.getSync('openai_api_key', ``) as string
         this.openaiBaseURL = this.dataPreferences.getSync('openai_base_url', this.defaultOpenaiBaseURL) as string
-        this.openaiModel = this.dataPreferences.getSync('openai_model', this.defaultOpenaiModel) as ChatModel
         this.themeColor = this.dataPreferences.getSync('theme_color_name', this.defaultThemeColor) as BSColorNameMap
     }
 
@@ -158,7 +170,6 @@ export struct MainPage {
         }
         this.dataPreferences.putSync('openai_api_key', this.openaiApiKey)
         this.dataPreferences.putSync('openai_base_url', this.openaiBaseURL)
-        this.dataPreferences.putSync('openai_model', this.openaiModel)
         this.dataPreferences.flush()
     }
 
@@ -174,11 +185,10 @@ export struct MainPage {
     }
 
     /** 切换当前页面显示的 Chat 信息和消息列表，并更新 `currentChatId` */
-    showChat(chatData: ChatData) {
-        this.currentChatId = chatData.id
-        this.messageDataList = getMessagesByChatID(this.rdbStore, chatData.id)
-        this.navTitle = chatData.title
-        this.openaiModel = chatData.model
+    showChat(index: number) {
+        this.currentChatIndex = index
+        this.messageDataList = getMessagesByChatID(this.rdbStore, this.chatDataList[this.currentChatIndex].id)
+        this.navTitle = this.chatDataList[this.currentChatIndex].title
     }
 
     build() {

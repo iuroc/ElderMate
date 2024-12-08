@@ -32,10 +32,9 @@ export struct BottomPanel {
     private requestSession: rcp.Session = Object()
     @Consume openaiApiKey: string
     @Consume openaiBaseURL: string
-    @Consume openaiModel: ChatModel
     @Consume chatDataList: ChatData[]
     @Consume rdbStore: relationalStore.RdbStore
-    @Consume currentChatId: number
+    @Consume currentChatIndex: number
 
     aboutToDisappear(): void {
         console.log('页面销毁')
@@ -124,7 +123,9 @@ export struct BottomPanel {
             text: $$this.inputMessage,
             placeholder: $r('app.string.placeholder'),
             controller: this.textAreaController,
-        }).layoutWeight(1)
+        })
+            .layoutWeight(1)
+            .enableKeyboardOnFocus(false)
     }
 
     /** 消息发送按钮 */
@@ -196,7 +197,8 @@ export struct BottomPanel {
             inRequest: true,
         })
         // 将新产生的 Message 插入到数据库，并更新 latestId
-        requestMessageData.id = insertMessage(this.rdbStore, this.currentChatId, requestMessageData)
+        requestMessageData.id =
+            insertMessage(this.rdbStore, this.chatDataList[this.currentChatIndex].id, requestMessageData)
         // 将需要发送的消息添加到页面列表
         this.messageDataList.push(requestMessageData)
         // 包含在响应中的 MessageData 的容器
@@ -205,7 +207,8 @@ export struct BottomPanel {
             content: this.requestStartTip,
             inRequest: true,
         })
-        responseMessageData.id = insertMessage(this.rdbStore, this.currentChatId, responseMessageData)
+        responseMessageData.id =
+            insertMessage(this.rdbStore, this.chatDataList[this.currentChatIndex].id, responseMessageData)
         this.messageDataList.push(responseMessageData)
         /** 开始请求中状态 */
         this.isChatRequesting = true
@@ -231,7 +234,7 @@ export struct BottomPanel {
             baseURL: this.openaiBaseURL
         })
         const result = openai.chat.completions.create({
-            model: this.openaiModel,
+            model: this.chatDataList[this.currentChatIndex].model,
             messages: this.messageDataList.filter(item => item.role as string).map(item => {
                 return {
                     role: item.role,

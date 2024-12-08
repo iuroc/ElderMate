@@ -12,14 +12,13 @@ export struct ChatListDialog {
         builder: ChatListDialog({ showChat: Object(), unshiftNewChatToList: Object() }),
     })
     @Consume chatDataList: ChatData[]
-    @Consume currentChatId: number
+    @Consume currentChatIndex: number
     @Consume messageDataList: MessageData[]
     @Consume navTitle: string
-    @Consume openaiModel: ChatModel
     @Consume rdbStore: relationalStore.RdbStore
     @Consume themeColor: BSColorNameMap
     @Consume defaultOpenaiModel: ChatModel
-    @Require showChat: (chatData: ChatData) => void = Object()
+    @Require showChat: (index: number) => void = Object()
     @Require unshiftNewChatToList: () => void = Object()
 
     build() {
@@ -66,29 +65,29 @@ export struct ChatListDialog {
                                     if (this.chatDataList.length == 0) {
                                         // 全部 chat 都被删除了，创建新的 chat
                                         this.unshiftNewChatToList()
-                                        this.showChat(this.chatDataList[0])
+                                        this.showChat(0)
                                         this.controller.close()
-                                    } else if (this.currentChatId == chatData.id) {
+                                    } else if (this.currentChatIndex == index) {
                                         // 此次删除的是 currentChatId，那么重新显示最新的 chat
-                                        this.showChat(this.chatDataList[0])
+                                        this.showChat(0)
                                     }
                                 }
                             }
                         }
                     })
                         .backgroundColor(
-                            this.currentChatId == chatData.id
+                            this.currentChatIndex == index
                                 ? getColorGroup(this.themeColor).background :
                                 undefined
                         )
                         .borderRadius(10)
                         .onClick(() => {
-                            if (this.currentChatId == chatData.id) {
+                            if (this.currentChatIndex == index) {
                                 // 当前页面显示的 chat 就是点击的这个 chat，所以不进行加载
                                 this.controller.close()
                                 return
                             }
-                            this.showChat(chatData)
+                            this.showChat(index)
                             this.controller.close()
                         })
                 }

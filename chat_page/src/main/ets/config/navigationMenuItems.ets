@@ -13,7 +13,7 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus')),
             action: () => {
                 that.unshiftNewChatToList()
-                that.showChat(that.chatDataList[0])
+                that.showChat(0)
             }
         },
         {
@@ -21,7 +21,6 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.clean')),
             isEnabled: selectableItems(that.messageDataList).length > 0 && !that.isChatRequesting,
             action: () => {
-                that.textAreaController.stopEditing()
                 AlertDialog.show({
                     title: '操作提示',
                     message: '确定要清空当前消息列表吗？',
@@ -29,9 +28,9 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                         value: '确定',
                         fontColor: BSColor.danger,
                         action: () => {
-                            deleteMessagesByChatId(that.rdbStore, that.currentChatId)
+                            deleteMessagesByChatId(that.rdbStore, that.currentChat().id)
                             that.messageDataList = defaultMessageDataList()
-                            insertMessages(that.rdbStore, that.currentChatId, that.messageDataList)
+                            insertMessages(that.rdbStore, that.currentChat().id, that.messageDataList)
                         }
                     },
                     secondaryButton: {
@@ -54,7 +53,6 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             value: '设置',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
             action: () => {
-                that.textAreaController.stopEditing()
                 that.settingDialogController.open()
             }
         },
