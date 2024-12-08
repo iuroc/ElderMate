@@ -1,21 +1,15 @@
-import {
-    ChatData,
-    createNewChatForPage,
-    deleteChatById,
-    deleteMessagesByChatId,
-    getMessagesByChatID
-} from "../utils/db"
+import { ChatData, deleteChatById, deleteMessagesByChatId, } from "../utils/db"
 import { ComposeListItem, CustomContentDialog, IconType } from "@kit.ArkUI"
 import { getDatetimeString } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
 import { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat"
 import { relationalStore } from "@kit.ArkData"
-import { BSColor, BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
+import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 
 @CustomDialog
 export struct ChatListDialog {
     controller: CustomDialogController = new CustomDialogController({
-        builder: ChatListDialog({}),
+        builder: ChatListDialog({ showChat: Object(), unshiftNewChatToList: Object() }),
     })
     @Consume chatDataList: ChatData[]
     @Consume currentChatId: number
@@ -25,6 +19,8 @@ export struct ChatListDialog {
     @Consume rdbStore: relationalStore.RdbStore
     @Consume themeColor: BSColorNameMap
     @Consume defaultOpenaiModel: ChatModel
+    @Require showChat: (chatData: ChatData) => void = Object()
+    @Require unshiftNewChatToList: () => void = Object()
 
     build() {
         CustomContentDialog({
@@ -47,7 +43,7 @@ export struct ChatListDialog {
     @Builder
     Content() {
         List() {
-            ForEach(this.chatDataList, (chatData: ChatData) => {
+            ForEach(this.chatDataList, (chatData: ChatData, index) => {
                 ListItem() {
                     ComposeListItem({
                         contentItem: {
@@ -60,28 +56,22 @@ export struct ChatListDialog {
                             icon: {
                                 value: $r('app.media.trash'),
                                 action: () => {
-                                    this.chatDataList.forEach((data, index) => {
-                                        if (data.id == chatData.id) {
-                                            this.chatDataList.splice(index, 1)
-                                            deleteMessagesByChatId(this.rdbStore, data.id)
-                                            deleteChatById(this.rdbStore, data.id)
-
-                                            if (this.chatDataList.length == 0) {
-                                                // 全部 chat 都被删除了，创建新的 chat
-                                                const currentChat = createNewChatForPage(
-                                                    this.rdbStore,
-                                                    this.chatDataList,
-                                                    this.defaultOpenaiModel
-                                                )
-                                                this.currentChatId = currentChat.id
-                                                this.messageDataList = getMessagesByChatID(this.rdbStore, this.currentChatId)
-                                                this.navTitle = currentChat.title
-                                                // 将当前页面的模型类型更新为数据库中最新 chat 的
-                                                this.openaiModel = currentChat.model
-                                                this.controller.close()
-                                            }
-                                        }
-                                    })
+                                    // 删除当前 chat_id 的 message 记录
+                                    deleteMessagesByChatId(this.rdbStore, chatData.id)
+                                    // 删除当前 chat_id 的 chat 记录
+                                    deleteChatById(this.rdbStore, chatData.id)
+                                    // 删除当前 index 的数组元素
+                                    this.chatDataList.splice(index, 1)
+                                    // 判断是否将唯一的数组元素删除了
+                                    if (this.chatDataList.length == 0) {
+                                        // 全部 chat 都被删除了，创建新的 chat
+                                        this.unshiftNewChatToList()
+                                        this.showChat(this.chatDataList[0])
+                                        this.controller.close()
+                                    } else if (this.currentChatId == chatData.id) {
+                                        // 此次删除的是 currentChatId，那么重新显示最新的 chat
+                                        this.showChat(this.chatDataList[0])
+                                    }
                                 }
                             }
                         }
@@ -93,16 +83,13 @@ export struct ChatListDialog {
                         )
                         .borderRadius(10)
                         .onClick(() => {
-                            this.controller.close()
                             if (this.currentChatId == chatData.id) {
+                                // 当前页面显示的 chat 就是点击的这个 chat，所以不进行加载
+                                this.controller.close()
                                 return
                             }
-                            this.currentChatId = chatData.id
-                            this.messageDataList = getMessagesByChatID(this.rdbStore, chatData.id)
-                            console.log(this.messageDataList.length.toString())
-                            this.navTitle = chatData.title
-                            // 将当前页面的模型类型更新为数据库中最新 chat 的
-                            this.openaiModel = chatData.model
+                            this.showChat(chatData)
+                            this.controller.close()
                         })
                 }
             })

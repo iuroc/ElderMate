@@ -72,7 +72,12 @@ export function getLatestChat(rdbStore: relationalStore.RdbStore): ChatData | nu
     return null
 }
 
-export function getAllChatData(rdbStore: relationalStore.RdbStore): ChatData[] {
+/**
+ * 返回 `chat` 表的全部记录，已自动排序，ID 大的在前面
+ * @param rdbStore
+ * @returns
+ */
+export function getAllChatDataSorted(rdbStore: relationalStore.RdbStore): ChatData[] {
     const result = rdbStore.querySqlSync(`SELECT * FROM "chat" ORDER BY "id" DESC`)
     const chatDataList: ChatData[] = []
     while (result.goToNextRow()) {
@@ -81,6 +86,11 @@ export function getAllChatData(rdbStore: relationalStore.RdbStore): ChatData[] {
     return chatDataList
 }
 
+/**
+ * 将 `chat` 表的 `SELECT *` 查询结果转换为 `ChatData` 对象
+ * @param result
+ * @returns
+ */
 function getChatDataFromResultSet(result: relationalStore.ResultSet): ChatData {
     return new ChatData(
         result.getLong(result.getColumnIndex('id')),
@@ -181,13 +191,21 @@ export function deleteMessageById(rdbStore: relationalStore.RdbStore, id: number
     rdbStore.deleteSync(predicates)
 }
 
-export function deleteMessagesByChatId(rdbStore: relationalStore.RdbStore, chatId: number) {
+/**
+ * 根据 `chatId` 删除属于该 `chat` 的全部 `message`
+ * @param rdbStore
+ * @param chatId
+ */
+export function deleteMessagesByChatId(rdbStore: relationalStore.RdbStore, chatId: number): number {
     const predicates = new relationalStore.RdbPredicates('message')
     predicates.equalTo('chat_id', chatId)
-    rdbStore.deleteSync(predicates)
+    return rdbStore.deleteSync(predicates)
 }
 
-/** 创建新的 chat 记录，并重置当前的聊天记录列表为新 chat 的 */
+/** 创建新的 chat 记录，并重置当前的聊天记录列表为新 chat 的
+ *
+ * @deprecated
+ */
 export function createNewChatForPage(rdbStore: relationalStore.RdbStore, chatDataList: ChatData[], model: ChatModel) {
     const newChatData = createChat(rdbStore, '新的聊天', model)
     insertMessages(rdbStore, newChatData.id, defaultMessageDataList())
@@ -195,8 +213,11 @@ export function createNewChatForPage(rdbStore: relationalStore.RdbStore, chatDat
     return newChatData
 }
 
-export function sortChatList(list: ChatData[]): ChatData[] {
-    return list.sort((a, b) => b.id - a.id)
+/**
+ * 对 `chatDataList` 排序，`id` 更大的排在前面，第一项表示最新插入的记录
+ */
+export function sortChatList(chatDataList: ChatData[]): ChatData[] {
+    return chatDataList.sort((a, b) => b.id - a.id)
 }
 
 /** 根据 chat_id 删除 chat，注意需要先删除 message，否则有外键冲突 */

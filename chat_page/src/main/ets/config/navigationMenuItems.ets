@@ -1,13 +1,7 @@
-import { BSColor, getColorGroup } from '@iuroc/bootstrap5-color'
+import { BSColor } from '@iuroc/bootstrap5-color'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { MainPage } from '../components/MainPage'
-import {
-    createNewChatForPage,
-    deleteMessagesByChatId,
-    getMessagesByChatID,
-    insertMessages,
-    sortChatList
-} from '../utils/db'
+import { deleteMessagesByChatId, insertMessages } from '../utils/db'
 import { selectableItems } from '../utils/utils'
 import { defaultMessageDataList } from './defaultMessageDataList'
 
@@ -18,10 +12,8 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             isEnabled: selectableItems(that.messageDataList).length > 0 && !that.isChatRequesting,
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus')),
             action: () => {
-                createNewChatForPage(that.rdbStore, that.chatDataList, that.defaultOpenaiModel)
-                const newChatData = sortChatList(that.chatDataList)[0]
-                that.currentChatId = newChatData.id
-                that.messageDataList = getMessagesByChatID(that.rdbStore, newChatData.id)
+                that.unshiftNewChatToList()
+                that.showChat(that.chatDataList[0])
             }
         },
         {
@@ -37,8 +29,8 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                         value: '确定',
                         fontColor: BSColor.danger,
                         action: () => {
-                            that.messageDataList = defaultMessageDataList()
                             deleteMessagesByChatId(that.rdbStore, that.currentChatId)
+                            that.messageDataList = defaultMessageDataList()
                             insertMessages(that.rdbStore, that.currentChatId, that.messageDataList)
                         }
                     },

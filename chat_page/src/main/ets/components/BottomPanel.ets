@@ -9,7 +9,7 @@ import { rcp } from '@kit.RemoteCommunicationKit'
 import { OpenAI } from '@iuroc/openai'
 import { ChatCompletionMessageParam, ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
-import { ChatData, insertMessage, insertMessages, updateMessage } from '../utils/db'
+import { ChatData, insertMessage, updateMessage } from '../utils/db'
 
 @Component
 export struct BottomPanel {
@@ -22,12 +22,12 @@ export struct BottomPanel {
     @Require messageListScroller: Scroller = Object()
     @Require textAreaController: TextAreaController = Object()
     @Consume isChatRequesting: boolean
-    private openai: OpenAI = Object()
     @Consume dataPreferences: preferences.Preferences
-    /** 流式输出的第一次输出是否已经完成
+    /** 是否显示请求开始时的提示文本，比如：正在思考
      *
      * 该值在每次新请求开始时变为 `true`，第一次接收到流数据后变为 `false` */
     private showRequestStartTip = false
+    /** 第一次流式响应之前显示的提示文本 */
     private requestStartTip = '正在思考~'
     private requestSession: rcp.Session = Object()
     @Consume openaiApiKey: string
@@ -35,6 +35,11 @@ export struct BottomPanel {
     @Consume openaiModel: ChatModel
     @Consume chatDataList: ChatData[]
     @Consume rdbStore: relationalStore.RdbStore
+    @Consume currentChatId: number
+
+    aboutToDisappear(): void {
+        console.log('页面销毁')
+    }
 
     async aboutToAppear() {
         const lastWindow = await window.getLastWindow(getContext())
@@ -46,11 +51,6 @@ export struct BottomPanel {
                 // 在键盘抬高时，让列表滚动到底部
                 this.messageListScroller.scrollEdge(Edge.Bottom)
             }
-        })
-
-        this.openai = new OpenAI({
-            apiKey: this.openaiApiKey,
-            baseURL: this.openaiBaseURL
         })
     }
 
@@ -147,44 +147,71 @@ export struct BottomPanel {
         })
             .fontColor(Color.Black)
             .onClick(() => {
+                // 停止正在生成状态
                 this.isChatRequesting = false
+                // 停止网络请求
                 this.requestSession.cancel()
-                const lestItemIndex = this.messageDataList.length - 1
-                const lastItem = this.messageDataList[lestItemIndex]
-                if (this.showRequestStartTip) {
-                    lastItem.role = null
-                    lastItem.content = '已停止回答'
-                }
+                // 最新一条消息列表项的下标
+                this.updateLatestMessage()
             })
             .flexShrink(0)
     }
 
+    /**
+     * 保存 message 的最新状态
+     *
+     * 在请求完成、手动停止请求、页面销毁导致请求停止时，都需要调用此方法保存 message 的最新状态
+     */
+    updateLatestMessage() {
+        // 最新一条消息列表项的下标
+        const lestItemIndex = this.messageDataList.length - 1
+        // 最新一条消息列表项
+        const lastItem = this.messageDataList[lestItemIndex]
+        // 如果第一次流式输出未完成，则将消息内容设置未已停止回答，并清除其 role
+        if (this.showRequestStartTip) {
+            lastItem.role = null
+            lastItem.content = '已停止回答'
+        }
+        // 更新数据库中的 message 记录为最新的响应状态
+        updateMessage(this.rdbStore, {
+            content: lastItem.content,
+            role: lastItem.role,
+        }, lastItem.id)
+    }
+
     handleMessageSend() {
+        // 检查 OpenAI 配置是否完整
         if (!this.openaiBaseURL || !this.openaiApiKey) {
             promptAction.showToast({ message: 'OpenAI 配置不完整' })
             return
         }
+        /** 最终需要发送的消息内容 */
         const messageWillSend = this.inputMessage.trim()
+        // 清空消息输入框
         this.inputMessage = ''
+        /** 包含在 Request 里的 MessageData */
         const requestMessageData = new MessageData({
             role: 'user',
             content: messageWillSend,
             inRequest: true,
         })
-        // 插入到数据库并更新 latestId
-        requestMessageData.id = insertMessage(this.rdbStore, this.chatDataList[0].id, requestMessageData)
+        // 将新产生的 Message 插入到数据库，并更新 latestId
+        requestMessageData.id = insertMessage(this.rdbStore, this.currentChatId, requestMessageData)
+        // 将需要发送的消息添加到页面列表
         this.messageDataList.push(requestMessageData)
+        // 包含在响应中的 MessageData 的容器
         const responseMessageData = new MessageData({
             role: 'assistant',
             content: this.requestStartTip,
             inRequest: true,
         })
-        responseMessageData.id = insertMessage(this.rdbStore, this.chatDataList[0].id, responseMessageData)
+        responseMessageData.id = insertMessage(this.rdbStore, this.currentChatId, responseMessageData)
         this.messageDataList.push(responseMessageData)
         /** 开始请求中状态 */
         this.isChatRequesting = true
         /** 显示正在思考 */
         this.showRequestStartTip = true
+        /** 循环拼接来自响应的 `content` 字符串 */
         let textContent = ''
 
         const onData: OnDataCallback = chunks => {
@@ -198,9 +225,12 @@ export struct BottomPanel {
             responseMessageData.content = textContent
         }
 
-        this.openai.options.apiKey = this.openaiApiKey
-        this.openai.options.baseURL = this.openaiBaseURL
-        const result = this.openai.chat.completions.create({
+        /** OpenAI 请求工具对象 */
+        const openai = new OpenAI({
+            apiKey: this.openaiApiKey,
+            baseURL: this.openaiBaseURL
+        })
+        const result = openai.chat.completions.create({
             model: this.openaiModel,
             messages: this.messageDataList.filter(item => item.role as string).map(item => {
                 return {
@@ -216,7 +246,7 @@ export struct BottomPanel {
             this.isChatRequesting = false
 
             // 更新 message 记录的 content 值
-            updateMessage(this.rdbStore, { content: responseMessageData.content }, responseMessageData.id)
+            this.updateLatestMessage()
         })
     }
 }
