@@ -7,19 +7,81 @@ import { relationalStore } from "@kit.ArkData"
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 
 @CustomDialog
+struct RenameDialog {
+    controller: CustomDialogController
+    @Link chatDataIndex: number
+    @Consume rdbStore: relationalStore.RdbStore
+    @Consume chatDataList: ChatData[]
+    @State text: string = ''
+    @Consume defaultChatTitle: string
+    @Consume themeColor: BSColorNameMap
+
+    aboutToAppear(): void {
+        this.text = this.chatDataList[this.chatDataIndex].title
+    }
+
+    build() {
+        CustomContentDialog({
+            primaryTitle: '重命名对话',
+            contentBuilder: () => {
+                this.Body()
+            },
+            buttons: [
+                {
+                    value: '取消',
+                    fontColor: getColorGroup(this.themeColor).main,
+                    action: () => {
+                        this.controller.close()
+                    }
+                },
+                {
+                    value: '确定',
+                    background: getColorGroup(this.themeColor).main,
+                    action: () => {
+                        this.updateChatTitle()
+                        this.controller.close()
+                    },
+                    buttonStyle: ButtonStyleMode.EMPHASIZED
+                },
+            ]
+        })
+    }
+
+    updateChatTitle() {
+        this.chatDataList[this.chatDataIndex].title = this.text || this.defaultChatTitle
+        const predicates = new relationalStore.RdbPredicates('chat')
+        predicates.equalTo('id', this.chatDataList[this.chatDataIndex].id)
+        this.rdbStore.updateSync({ title: this.text }, predicates)
+    }
+
+    @Builder
+    Body() {
+        Column() {
+            TextInput({ text: $$this.text, placeholder: '请输入新的标题' })
+                .defaultFocus(true)
+        }
+    }
+}
+
+@CustomDialog
 export struct ChatListDialog {
-    controller: CustomDialogController = new CustomDialogController({
-        builder: ChatListDialog({ showChat: Object(), unshiftNewChatToList: Object() }),
+    controller: CustomDialogController
+    @State renameDialogChatDataIndex: number = 0
+    renameDialogController = new CustomDialogController({
+        builder: RenameDialog({
+            chatDataIndex: this.renameDialogChatDataIndex
+        }),
+        showInSubWindow: true,
     })
     @Consume chatDataList: ChatData[]
     @Consume currentChatIndex: number
     @Consume messageDataList: MessageData[]
-    @Consume navTitle: string
     @Consume rdbStore: relationalStore.RdbStore
     @Consume themeColor: BSColorNameMap
     @Consume defaultOpenaiModel: ChatModel
     @Require showChat: (index: number) => void = Object()
     @Require unshiftNewChatToList: () => void = Object()
+    @Consume autoScrollToBottom: boolean
 
     build() {
         CustomContentDialog({
@@ -30,18 +92,20 @@ export struct ChatListDialog {
             buttons: [
                 {
                     value: '取消',
+                    background: getColorGroup(this.themeColor).background,
+                    fontColor: getColorGroup(this.themeColor).font,
                     action: () => {
                         this.controller.close()
                     }
                 }
             ],
-            contentAreaPadding: { left: 10, right: 10 }
+            contentAreaPadding: { left: 0, right: 0 }
         })
     }
 
     @Builder
     Content() {
-        List() {
+        List({ initialIndex: this.currentChatIndex }) {
             ForEach(this.chatDataList, (chatData: ChatData, index) => {
                 ListItem() {
                     ComposeListItem({
@@ -49,7 +113,7 @@ export struct ChatListDialog {
                             primaryText: chatData.title,
                             secondaryText: getDatetimeString(chatData.createTime),
                             iconStyle: IconType.SYSTEM_ICON,
-                            icon: $r('sys.media.ohos_ic_public_clock'),
+                            icon: $r('app.media.ellipsis_message'),
                         },
                         operateItem: {
                             icon: {
@@ -72,16 +136,18 @@ export struct ChatListDialog {
                                         this.showChat(0)
                                     }
                                 }
+                            },
+                            subIcon: {
+                                value: $r('app.media.rename'),
+                                action: () => {
+                                    this.renameDialogChatDataIndex = index
+                                    this.renameDialogController.open()
+                                }
                             }
                         }
                     })
-                        .backgroundColor(
-                            this.currentChatIndex == index
-                                ? getColorGroup(this.themeColor).background :
-                                undefined
-                        )
-                        .borderRadius(10)
                         .onClick(() => {
+                            this.autoScrollToBottom = true
                             if (this.currentChatIndex == index) {
                                 // 当前页面显示的 chat 就是点击的这个 chat，所以不进行加载
                                 this.controller.close()
@@ -91,10 +157,23 @@ export struct ChatListDialog {
                             this.controller.close()
                         })
                 }
+                .borderRadius(16)
+                .padding({
+                    top: this.currentChatIndex == index ? 4 : 0,
+                    bottom: this.currentChatIndex == index ? 4 : 0
+                })
+                .margin({ bottom: index == this.chatDataList.length - 1 ? 10 : 0 })
+                .backgroundColor(this.currentChatIndex == index ? getColorGroup(this.themeColor).background :
+                    undefined)
             })
         }
         .width('100%')
         .height('70%')
+        .padding({ left: 10, right: 10 })
         .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     }
+
+    // getChatIndex(chatId: number) {
+    //     return this.chatDataList.findIndex(i => i.id == chatId)
+    // }
 }

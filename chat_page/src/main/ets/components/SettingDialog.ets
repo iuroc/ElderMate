@@ -17,9 +17,7 @@ const colorNameMap: Array<BSColorNameMap> = [
 
 @CustomDialog
 export struct SettingDialog {
-    controller: CustomDialogController = new CustomDialogController({
-        builder: SettingDialog({}),
-    })
+    controller: CustomDialogController
     @Consume themeColor: BSColorNameMap
     @Consume dataPreferences: preferences.Preferences
     @Consume openaiApiKey: string
@@ -28,15 +26,20 @@ export struct SettingDialog {
     @Consume currentChatIndex: number
     @Consume chatDataList: ChatData[]
 
-    aboutToAppear(): void {
-    }
-
     build() {
         CustomContentDialog({
             primaryTitle: '设置',
             contentBuilder: () => {
                 this.Body()
-            }
+            },
+            buttons: [
+                {
+                    value: '关闭',
+                    action: () => {
+                        this.controller.close()
+                    }
+                }
+            ]
         })
     }
 
@@ -48,6 +51,10 @@ export struct SettingDialog {
                 this.OpenAISetting()
             }
         }
+        .margin({
+            top: 10,
+            bottom: 10
+        })
     }
 
     @Builder

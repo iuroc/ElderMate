@@ -41,7 +41,7 @@ export async function copyDatabaseDir() {
     fileIo.unlinkSync(savePath)
     fileIo.mkdirSync(savePath)
     fileIo.copyDirSync(databaseDir, savePath)
-    console.log('已复制到', savePath)
+    // console.log('已复制到', savePath)
 }
 
 export function getMessagesByChatID(rdbStore: relationalStore.RdbStore, chatId: number): MessageData[] {
@@ -166,10 +166,10 @@ export function insertMessage(
 
 @ObservedV2
 export class ChatData {
-    id: number
-    title: string
-    model: ChatModel
-    createTime: Date
+    @Trace id: number
+    @Trace title: string
+    @Trace model: ChatModel
+    @Trace createTime: Date
 
     constructor(id: number, title: string, model: ChatModel, createTime: Date) {
         this.id = id

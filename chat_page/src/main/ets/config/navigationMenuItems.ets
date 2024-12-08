@@ -24,7 +24,7 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                 AlertDialog.show({
                     title: '操作提示',
                     message: '确定要清空当前消息列表吗？',
-                    primaryButton: {
+                    secondaryButton: {
                         value: '确定',
                         fontColor: BSColor.danger,
                         action: () => {
@@ -33,7 +33,7 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                             insertMessages(that.rdbStore, that.currentChat().id, that.messageDataList)
                         }
                     },
-                    secondaryButton: {
+                    primaryButton: {
                         value: '取消',
                         action: () => {
                         }

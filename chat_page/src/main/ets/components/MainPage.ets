@@ -23,7 +23,7 @@ import { defaultMessageDataList } from '../config/defaultMessageDataList'
 
 @Component
 export struct MainPage {
-    @Provide navTitle: string = ''
+    @Provide defaultChatTitle: string = ''
     @Provide inputMessage: string = ''
     @Provide messageDataList: MessageData[] = []
     @Provide isSelectMode: boolean = false
@@ -68,9 +68,9 @@ export struct MainPage {
         this.rdbStore = await this.getRdbStore()
         if (this.rdbStore.version == 0) {
             this.rdbStore.version = 1
-            console.log('start initTables')
+            // console.log('start initTables')
             await initTables(this.rdbStore).catch((error: BusinessError) => {
-                console.error('initTables', error.message)
+                // console.error('initTables', error.message)
             })
         }
     }
@@ -80,7 +80,7 @@ export struct MainPage {
      */
     initStringValue() {
         const resourceManager = getContext().resourceManager
-        resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.navTitle = value)
+        resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.defaultChatTitle = value)
     }
 
     /**
@@ -100,6 +100,7 @@ export struct MainPage {
                     promptAction.showToast({ message: error.message })
                 }
             },
+            showInSubWindow: true
         })
     }
 
@@ -120,7 +121,7 @@ export struct MainPage {
         // 初始化【历史消息】弹窗控制器
         this.initChatListDialogController()
         this.initRdbRestore().catch((error: BusinessError) => {
-            console.error(error.message)
+            // console.error(error.message)
         }).then(() => {
             this.chatDataList = getAllChatDataSorted(this.rdbStore)
             // 如果数据库中的 `chat` 表为空，则创建新的 `chat`
@@ -135,8 +136,12 @@ export struct MainPage {
     initChatListDialogController() {
         this.chatListDialogController = new CustomDialogController({
             builder: ChatListDialog({
-                showChat: this.showChat,
-                unshiftNewChatToList: this.unshiftNewChatToList
+                showChat: index => {
+                    this.showChat(index)
+                },
+                unshiftNewChatToList: () => {
+                    this.unshiftNewChatToList()
+                }
             }),
         })
     }
@@ -179,7 +184,7 @@ export struct MainPage {
      * 使用 `Array.unshift()` 实现插入元素到数组开头
      */
     unshiftNewChatToList() {
-        const newChatData = createChat(this.rdbStore, '新的聊天', this.defaultOpenaiModel)
+        const newChatData = createChat(this.rdbStore, this.defaultChatTitle, this.defaultOpenaiModel)
         insertMessages(this.rdbStore, newChatData.id, defaultMessageDataList())
         this.chatDataList.unshift(newChatData)
     }
@@ -188,7 +193,6 @@ export struct MainPage {
     showChat(index: number) {
         this.currentChatIndex = index
         this.messageDataList = getMessagesByChatID(this.rdbStore, this.chatDataList[this.currentChatIndex].id)
-        this.navTitle = this.chatDataList[this.currentChatIndex].title
     }
 
     build() {
@@ -202,7 +206,7 @@ export struct MainPage {
                 textAreaController: this.textAreaController,
             })
         }
-        .title(this.navTitle)
+        .title(this.chatDataList[this.currentChatIndex]?.title || this.defaultChatTitle)
         .onTouch(() => {
             this.pageHasTouch = true
         })

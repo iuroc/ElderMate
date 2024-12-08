@@ -7,7 +7,7 @@ import { MessageData } from './MessageListItem'
 import { preferences, relationalStore } from '@kit.ArkData'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { OpenAI } from '@iuroc/openai'
-import { ChatCompletionMessageParam, ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
+import { ChatCompletionMessageParam } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
 import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
 import { ChatData, insertMessage, updateMessage } from '../utils/db'
 
@@ -153,7 +153,6 @@ export struct BottomPanel {
                 this.isChatRequesting = false
                 // 停止网络请求
                 this.requestSession.cancel()
-                // 最新一条消息列表项的下标
                 this.updateLatestMessage()
             })
             .flexShrink(0)
@@ -244,7 +243,7 @@ export struct BottomPanel {
                 } as ChatCompletionMessageParam
             }),
             stream: true
-        }, { onData })
+        }, { onData, requestConfiguration: { proxy: 'system' } })
 
         this.requestSession = result.session
         result.response.then(() => {
