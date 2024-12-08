@@ -1,4 +1,5 @@
 import { ChatCompletions } from './ChatCompletions'
+import { Models } from './Models'
 import { ClientOptions } from './openai@4.73.1'
 
 // 原则：全力沿用官方标识符命名和文件目录结构，可对原版进行删减
@@ -8,6 +9,7 @@ export class OpenAI {
     public chat: Chat = {
         completions: new ChatCompletions(this)
     }
+    public models: Models = new Models(this)
 
     constructor(options?: ClientOptions) {
         this.options.apiKey = options?.apiKey
