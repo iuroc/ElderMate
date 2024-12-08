@@ -6,72 +6,10 @@ import { relationalStore } from "@kit.ArkData"
 import { BSColor, BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 
 @CustomDialog
-struct RenameDialog {
-    controller: CustomDialogController
-    @Link chatDataIndex: number
-    @Consume rdbStore: relationalStore.RdbStore
-    @Consume chatDataList: ChatData[]
-    @State text: string = ''
-    @Consume defaultChatTitle: string
-    @Consume themeColor: BSColorNameMap
-
-    aboutToAppear(): void {
-        this.text = this.chatDataList[this.chatDataIndex].title
-    }
-
-    build() {
-        CustomContentDialog({
-            primaryTitle: '重命名对话',
-            contentBuilder: () => {
-                this.Body()
-            },
-            buttons: [
-                {
-                    value: '取消',
-                    fontColor: getColorGroup(this.themeColor).main,
-                    action: () => {
-                        this.controller.close()
-                    }
-                },
-                {
-                    value: '确定',
-                    background: getColorGroup(this.themeColor).main,
-                    fontColor: BSColor.white,
-                    action: () => {
-                        this.updateChatTitle()
-                        this.controller.close()
-                    },
-                },
-            ]
-        })
-    }
-
-    updateChatTitle() {
-        this.chatDataList[this.chatDataIndex].title = this.text || this.defaultChatTitle
-        const predicates = new relationalStore.RdbPredicates('chat')
-        predicates.equalTo('id', this.chatDataList[this.chatDataIndex].id)
-        this.rdbStore.updateSync({ title: this.text }, predicates)
-    }
-
-    @Builder
-    Body() {
-        Column() {
-            TextInput({ text: $$this.text, placeholder: '请输入新的标题' })
-                .defaultFocus(true)
-        }
-    }
-}
-
-@CustomDialog
 export struct ChatListDialog {
-    controller: CustomDialogController
-    @State renameDialogChatDataIndex: number = 0
-    renameDialogController = new CustomDialogController({
-        builder: RenameDialog({
-            chatDataIndex: this.renameDialogChatDataIndex
-        }),
-        showInSubWindow: true,
-    })
+    @Require chatRenameDialogController: CustomDialogController
+    @Require controller: CustomDialogController
+    @Consume renameDialogChatDataIndex: number
     @Consume chatDataList: ChatData[]
     @Consume currentChatIndex: number
     @Consume messageDataList: MessageData[]
@@ -90,11 +28,11 @@ export struct ChatListDialog {
             buttons: [
                 {
                     value: '关闭',
-                    background: getColorGroup(this.themeColor).background,
-                    fontColor: getColorGroup(this.themeColor).font,
+                    background: getColorGroup(this.themeColor).main,
+                    fontColor: BSColor.white,
                     action: () => {
                         this.controller.close()
-                    }
+                    },
                 }
             ],
             contentAreaPadding: { left: 0, right: 0 }
@@ -139,7 +77,7 @@ export struct ChatListDialog {
                                 value: $r('app.media.rename'),
                                 action: () => {
                                     this.renameDialogChatDataIndex = index
-                                    this.renameDialogController.open()
+                                    this.chatRenameDialogController.open()
                                 }
                             }
                         }

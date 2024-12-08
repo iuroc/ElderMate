@@ -19,6 +19,7 @@ import { url } from '@kit.ArkTS'
 import { promptAction } from '@kit.ArkUI'
 import { ChatListDialog } from './ChatListDialog'
 import { defaultMessageDataList } from '../config/defaultMessageDataList'
+import { RenameDialog } from './RenameDialog'
 
 /**
  * 聊天助手页面组件
@@ -57,6 +58,7 @@ export struct MainPage {
     public messageListScroller = new Scroller()
     public settingDialogController: CustomDialogController = Object()
     public chatListDialogController: CustomDialogController = Object()
+    public chatRenameDialogController: CustomDialogController = Object()
     /** 创建新对话时，默认的对话标题 */
     @Provide defaultChatTitle: string = ''
     @Provide inputMessage: string = ''
@@ -82,6 +84,7 @@ export struct MainPage {
     @Provide chatDataList: ChatData[] = []
     @Provide currentChatIndex: number = 0
     @Provide isChatRequesting: boolean = false
+    @Provide renameDialogChatDataIndex: number = 0
 
     public currentChat() {
         return this.chatDataList[this.currentChatIndex]
@@ -149,6 +152,8 @@ export struct MainPage {
         this.initPreferences()
         // 初始化【设置】弹窗控制器
         this.initSettingDialogController()
+        // 初始化【重命名对话标题】弹窗控制器
+        this.initChatRenameDialogController()
         // 初始化【历史消息】弹窗控制器
         this.initChatListDialogController()
         this.initRdbRestore().then(() => {
@@ -162,6 +167,14 @@ export struct MainPage {
         })
     }
 
+    // 初始化【重命名对话标题】弹窗控制器
+    initChatRenameDialogController() {
+        this.chatRenameDialogController = new CustomDialogController({
+            builder: RenameDialog({}),
+            showInSubWindow: true
+        })
+    }
+
     /** 初始化【历史消息】弹窗控制器 */
     initChatListDialogController() {
         this.chatListDialogController = new CustomDialogController({
@@ -172,6 +185,8 @@ export struct MainPage {
                 unshiftNewChatToList: () => {
                     this.unshiftNewChatToList()
                 },
+                controller: this.chatListDialogController,
+                chatRenameDialogController: this.chatRenameDialogController
             }),
         })
     }

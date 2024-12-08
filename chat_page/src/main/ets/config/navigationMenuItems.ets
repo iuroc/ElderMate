@@ -50,7 +50,15 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
             }
         },
         {
-            value: '设置',
+            value: '修改标题',
+            symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rename')),
+            action: () => {
+                that.renameDialogChatDataIndex = that.currentChatIndex
+                that.chatRenameDialogController.open()
+            }
+        },
+        {
+            value: '更多设置',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
             action: () => {
                 that.settingDialogController.open()
