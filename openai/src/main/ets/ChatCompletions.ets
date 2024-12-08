@@ -7,6 +7,7 @@ import { ChatCompletionChunk, ChatCompletionCreateParamsBase } from './openai@4.
 import type { OpenAI } from './OpenAI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { buffer } from '@kit.ArkTS'
+import { BusinessError } from '@kit.BasicServicesKit'
 
 export class ChatCompletions {
     private client: OpenAI
@@ -51,11 +52,13 @@ export class ChatCompletions {
             requestConfiguration: options?.requestConfiguration
         })
         let oldString = ''
+        let allResponseText = ''
         const destination: rcp.ResponseBodyDestination | undefined = options?.onData
             ? {
                 kind: 'stream', stream: {
                     async write(data) {
                         const rawString = buffer.from(data).toString('utf-8')
+                        allResponseText += rawString
                         const workString = oldString + rawString
                         oldString = ''
                         const lines = workString.split('\n')
@@ -76,14 +79,31 @@ export class ChatCompletions {
                     }
                 }
             } : undefined
-        return {
-            session,
-            response: session.post(this.apiURL, JSON.stringify(body), destination).finally(() => {
-                console.log('session.close()', session)
+        const response = session.post(this.apiURL, JSON.stringify(body), destination)
+        response.then(() => {
+            if (allResponseText.trim().startsWith('data: ')) {
+                return
+            }
+            try {
+                const error = JSON.parse(allResponseText) as ErrorJSON
+                if (error.error?.message) {
+                    options?.onError?.(new Error(error.error.message))
+                }
+            } finally {
+            }
+        }).catch((error: BusinessError<string>) => options?.onError?.(new Error(error.data)))
+            .finally(() => {
                 session.close()
             })
+        return {
+            session,
+            response
         }
     }
+}
+
+export interface ErrorJSON {
+    error?: Record<'message', string | undefined>
 }
 
 export interface ChatCompletionsReturnType {
@@ -93,7 +113,10 @@ export interface ChatCompletionsReturnType {
 
 export interface ChatCompletionsCreateOptions {
     onData?: OnDataCallback
+    onError?: OnErrorCallback
     requestConfiguration?: rcp.Configuration
 }
+
+export type OnErrorCallback = (error: Error) => void
 
 export type OnDataCallback = (chunks: ChatCompletionChunk[]) => Promise<void | number> | void | number

@@ -32,7 +32,9 @@ export class Models {
             headers,
             requestConfiguration: options?.requestConfiguration
         })
-        const response = await session.get(this.apiURL)
+        const response = await session.get(this.apiURL).finally(() => {
+            session.close()
+        })
         const body = JSON.parse(buffer.from(response.body).toString('utf-8')) as ModelsResponse
         return body.data
     }

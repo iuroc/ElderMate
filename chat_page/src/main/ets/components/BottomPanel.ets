@@ -8,7 +8,7 @@ import { preferences, relationalStore } from '@kit.ArkData'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { OpenAI } from '@iuroc/openai'
 import { ChatCompletionMessageParam } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources'
-import { OnDataCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
+import { OnDataCallback, OnErrorCallback } from '@iuroc/openai/src/main/ets/ChatCompletions'
 import { ChatData, insertMessage, updateMessage } from '../utils/db'
 
 @Component
@@ -39,7 +39,7 @@ export struct BottomPanel {
     @Consume defaultChatTitle: string
 
     aboutToDisappear(): void {
-        console.log('页面销毁')
+        this.updateLatestMessage()
     }
 
     async aboutToAppear() {
@@ -168,11 +168,6 @@ export struct BottomPanel {
         const lestItemIndex = this.messageDataList.length - 1
         // 最新一条消息列表项
         const lastItem = this.messageDataList[lestItemIndex]
-        // 如果第一次流式输出未完成，则将消息内容设置未已停止回答，并清除其 role
-        if (this.showRequestStartTip) {
-            lastItem.role = null
-            lastItem.content = '已停止回答'
-        }
         // 更新数据库中的 message 记录为最新的响应状态
         updateMessage(this.rdbStore, {
             content: lastItem.content,
@@ -245,6 +240,21 @@ export struct BottomPanel {
             responseMessageData.content = textContent
         }
 
+        const onError: OnErrorCallback = error => {
+            if (error.message == 'Request is canceled') {
+                if (this.showRequestStartTip) {
+                    responseMessageData.content = '已停止回答'
+                } else {
+                    return
+                }
+            } else {
+                responseMessageData.content = error.message
+            }
+            responseMessageData.role = null
+            this.updateLatestMessage()
+            this.isChatRequesting = false
+        }
+
         /** OpenAI 请求工具对象 */
         const openai = new OpenAI({
             apiKey: this.openaiApiKey,
@@ -259,12 +269,25 @@ export struct BottomPanel {
                 } as ChatCompletionMessageParam
             }),
             stream: true
-        }, { onData, requestConfiguration: { proxy: 'system' } })
+        }, {
+            onData,
+            onError,
+            requestConfiguration: {
+                proxy: 'system',
+                security: {
+                    remoteValidation: 'skip'
+                },
+                transfer: {
+                    timeout: {
+                        connectMs: 10000
+                    }
+                }
+            },
+        })
 
         this.requestSession = result.session
-        result.response.then(() => {
+        result.response.then(result => {
             this.isChatRequesting = false
-
             // 更新 message 记录的 content 值
             this.updateLatestMessage()
         })
