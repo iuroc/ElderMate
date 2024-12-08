@@ -57,6 +57,7 @@ export struct MainPage {
     public messageListScroller = new Scroller()
     public settingDialogController: CustomDialogController = Object()
     public chatListDialogController: CustomDialogController = Object()
+    /** 创建新对话时，默认的对话标题 */
     @Provide defaultChatTitle: string = ''
     @Provide inputMessage: string = ''
     @Provide messageDataList: MessageData[] = []
@@ -102,8 +103,10 @@ export struct MainPage {
      * 从 resourceManager 载入字符串资源
      */
     initStringValue() {
-        const resourceManager = getContext().resourceManager
-        resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.defaultChatTitle = value)
+        if (this.defaultChatTitle == '') {
+            const resourceManager = getContext().resourceManager
+            resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.defaultChatTitle = value)
+        }
     }
 
     /**
@@ -151,7 +154,8 @@ export struct MainPage {
             if (this.chatDataList.length == 0) {
                 this.unshiftNewChatToList()
             }
-            this.showChat(0)
+            this.currentChatIndex = Math.min(this.currentChatIndex, this.chatDataList.length - 1)
+            this.showChat(this.currentChatIndex)
         })
     }
 
