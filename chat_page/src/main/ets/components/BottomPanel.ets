@@ -35,6 +35,7 @@ export struct BottomPanel {
     @Consume chatDataList: ChatData[]
     @Consume rdbStore: relationalStore.RdbStore
     @Consume currentChatIndex: number
+    @Consume autoScrollToBottom: boolean
 
     aboutToDisappear(): void {
         console.log('页面销毁')
@@ -190,6 +191,7 @@ export struct BottomPanel {
         const messageWillSend = this.inputMessage.trim()
         // 清空消息输入框
         this.inputMessage = ''
+        this.autoScrollToBottom = true
         /** 包含在 Request 里的 MessageData */
         const requestMessageData = new MessageData({
             role: 'user',

@@ -48,10 +48,15 @@ export struct MessageList {
         })
         .onReachEnd(() => {
             this.autoScrollToBottom = true
+            console.log('this.autoScrollToBottom = true')
         })
         .onWillScroll((_xOffset, yOffset, _scrollState, scrollSource) => {
-            if (yOffset < 0 && scrollSource != ScrollSource.EDGE_EFFECT) {
-                this.autoScrollToBottom = false
+            // 手动滚动离开底部，禁用自动滚动底部
+            if (yOffset < -10 && scrollSource != ScrollSource.EDGE_EFFECT) {
+                if (this.messageListScroller.currentOffset().yOffset > 0) {
+                    console.log('this.autoScrollToBottom = false', yOffset)
+                    this.autoScrollToBottom = false
+                }
             }
         })
     }

@@ -102,12 +102,16 @@ export struct SettingDialog {
 
         Row({ space: 10 }) {
             Text('接口密钥')
-            TextInput({ placeholder: 'sk-xxxx', text: $$this.openaiApiKey }).layoutWeight(1)
+            TextInput({ placeholder: 'sk-xxxx', text: $$this.openaiApiKey })
+                .layoutWeight(1)
+                .enableKeyboardOnFocus(false)
         }
 
         Row({ space: 10 }) {
             Text('接口地址')
-            TextInput({ placeholder: 'https://api.openai.com/v1', text: $$this.openaiBaseURL }).layoutWeight(1)
+            TextInput({ placeholder: 'https://api.openai.com/v1', text: $$this.openaiBaseURL })
+                .layoutWeight(1)
+                .enableKeyboardOnFocus(false)
         }
     }
 }
