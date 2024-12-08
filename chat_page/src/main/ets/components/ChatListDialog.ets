@@ -3,7 +3,7 @@ import { ComposeListItem, CustomContentDialog, IconType } from "@kit.ArkUI"
 import { getDatetimeString } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
 import { relationalStore } from "@kit.ArkData"
-import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
+import { BSColor, BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 
 @CustomDialog
 struct RenameDialog {
@@ -36,11 +36,11 @@ struct RenameDialog {
                 {
                     value: '确定',
                     background: getColorGroup(this.themeColor).main,
+                    fontColor: BSColor.white,
                     action: () => {
                         this.updateChatTitle()
                         this.controller.close()
                     },
-                    buttonStyle: ButtonStyleMode.EMPHASIZED
                 },
             ]
         })
@@ -89,7 +89,7 @@ export struct ChatListDialog {
             },
             buttons: [
                 {
-                    value: '取消',
+                    value: '关闭',
                     background: getColorGroup(this.themeColor).background,
                     fontColor: getColorGroup(this.themeColor).font,
                     action: () => {

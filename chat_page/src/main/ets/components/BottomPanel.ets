@@ -35,6 +35,8 @@ export struct BottomPanel {
     @Consume rdbStore: relationalStore.RdbStore
     @Consume currentChatIndex: number
     @Consume autoScrollToBottom: boolean
+    @Require updateCurrentChat: (values: relationalStore.ValuesBucket) => void = Object()
+    @Consume defaultChatTitle: string
 
     aboutToDisappear(): void {
         console.log('页面销毁')
@@ -196,18 +198,34 @@ export struct BottomPanel {
             inRequest: true,
         })
         // 将新产生的 Message 插入到数据库，并更新 latestId
-        requestMessageData.id =
-            insertMessage(this.rdbStore, this.chatDataList[this.currentChatIndex].id, requestMessageData)
+        requestMessageData.id = insertMessage(
+            this.rdbStore,
+            this.chatDataList[this.currentChatIndex].id,
+            requestMessageData)
         // 将需要发送的消息添加到页面列表
         this.messageDataList.push(requestMessageData)
+
+        // 更新当前 chat 的标题为第一次 role=user 的消息的前 10 字
+        if (this.messageDataList.filter(i => i.role == 'user' && !i.hidden).length == 1 &&
+            this.chatDataList[this.currentChatIndex].title == this.defaultChatTitle) {
+            const newTitle = requestMessageData.content.slice(0, 10)
+            this.updateCurrentChat({
+                title: newTitle
+            })
+            this.chatDataList[this.currentChatIndex].title = newTitle
+        }
+
         // 包含在响应中的 MessageData 的容器
         const responseMessageData = new MessageData({
             role: 'assistant',
             content: this.requestStartTip,
             inRequest: true,
         })
-        responseMessageData.id =
-            insertMessage(this.rdbStore, this.chatDataList[this.currentChatIndex].id, responseMessageData)
+        responseMessageData.id = insertMessage(
+            this.rdbStore,
+            this.chatDataList[this.currentChatIndex].id,
+            responseMessageData
+        )
         this.messageDataList.push(responseMessageData)
         /** 开始请求中状态 */
         this.isChatRequesting = true

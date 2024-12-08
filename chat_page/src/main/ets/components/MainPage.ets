@@ -28,7 +28,7 @@ import { defaultMessageDataList } from '../config/defaultMessageDataList'
  * const dataPreferences = preferences.getPreferencesSync(getContext(), { name: 'chat' })
  *
  * // 设置 openai_api_key
- * dataPreferences.putSync('openai_api_key', `sk-xxxxxxx`)
+ * dataPreferences.putSync('openai_api_key', `sk-xxx`)
  *
  * // 设置 openai_base_url
  * dataPreferences.putSync('openai_base_url', `https://api.openai.com/v1`)
@@ -122,7 +122,7 @@ export struct MainPage {
                         this.saveOpenAIConfig()
                     }
                     // 弹窗关闭时，更新数据库中当前 chat 的模型
-                    this.updateModel()
+                    this.updateCurrentChat({ model: this.chatDataList[this.currentChatIndex].model })
                     this.settingDialogController.close()
                     this.getUIContext().getFocusController().clearFocus()
                 } catch (error) {
@@ -132,11 +132,14 @@ export struct MainPage {
         })
     }
 
-    /** 更新当前 `chat` 记录的 `model` */
-    updateModel() {
+    /**
+     * 更新 `currentChatIndex` 对应的 chat 记录
+     * @param values
+     */
+    updateCurrentChat(values: relationalStore.ValuesBucket) {
         const predicates = new relationalStore.RdbPredicates('chat')
         predicates.equalTo('id', this.chatDataList[this.currentChatIndex].id)
-        this.rdbStore.updateSync({ model: this.chatDataList[this.currentChatIndex].model }, predicates)
+        this.rdbStore.updateSync(values, predicates)
     }
 
     aboutToAppear() {
@@ -229,6 +232,9 @@ export struct MainPage {
             }).layoutWeight(1)
             BottomPanel({
                 messageListScroller: this.messageListScroller,
+                updateCurrentChat: values => {
+                    this.updateCurrentChat(values)
+                }
             })
         }
         .title(this.chatDataList[this.currentChatIndex]?.title || this.defaultChatTitle)
