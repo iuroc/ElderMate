@@ -2,7 +2,6 @@ import { ChatData, deleteChatById, deleteMessagesByChatId, } from "../utils/db"
 import { ComposeListItem, CustomContentDialog, IconType } from "@kit.ArkUI"
 import { getDatetimeString } from "../utils/utils"
 import { MessageData } from "./MessageListItem"
-import { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat"
 import { relationalStore } from "@kit.ArkData"
 import { BSColorNameMap, getColorGroup } from "@iuroc/bootstrap5-color"
 
@@ -78,7 +77,6 @@ export struct ChatListDialog {
     @Consume messageDataList: MessageData[]
     @Consume rdbStore: relationalStore.RdbStore
     @Consume themeColor: BSColorNameMap
-    @Consume defaultOpenaiModel: ChatModel
     @Require showChat: (index: number) => void = Object()
     @Require unshiftNewChatToList: () => void = Object()
     @Consume autoScrollToBottom: boolean

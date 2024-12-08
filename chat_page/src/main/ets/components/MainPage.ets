@@ -14,51 +14,77 @@ import {
     createChat,
     insertMessages
 } from '../utils/db'
-import { BusinessError } from '@kit.BasicServicesKit'
 import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat'
 import { url } from '@kit.ArkTS'
 import { promptAction } from '@kit.ArkUI'
 import { ChatListDialog } from './ChatListDialog'
 import { defaultMessageDataList } from '../config/defaultMessageDataList'
 
+/**
+ * 聊天助手页面组件
+ *
+ * ```
+ * // 配置用户首选项
+ * const dataPreferences = preferences.getPreferencesSync(getContext(), { name: 'chat' })
+ *
+ * // 设置 openai_api_key
+ * dataPreferences.putSync('openai_api_key', `sk-xxxxxxx`)
+ *
+ * // 设置 openai_base_url
+ * dataPreferences.putSync('openai_base_url', `https://api.openai.com/v1`)
+ *
+ * // 配置关系型数据库
+ * const getRdbStore = async () => {
+ *     return relationalStore.getRdbStore(getContext(), {
+ *         name: 'chat.db',
+ *         securityLevel: relationalStore.SecurityLevel.S1
+ *     })
+ * }
+ *
+ * // 使用组件
+ * ChatPage({
+ *     dataPreferences,
+ *     getRdbStore,
+ * })
+ * ```
+ */
+
 @Component
 export struct MainPage {
+    @Prop defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
+    @Prop defaultOpenaiBaseURL: string = 'https://api.openai.com/v1'
+    @Prop defaultThemeColor: BSColorNameMap = 'success'
+    public messageListScroller = new Scroller()
+    public settingDialogController: CustomDialogController = Object()
+    public chatListDialogController: CustomDialogController = Object()
     @Provide defaultChatTitle: string = ''
     @Provide inputMessage: string = ''
     @Provide messageDataList: MessageData[] = []
     @Provide isSelectMode: boolean = false
     /** 页面是否被触摸，从第一次触摸开始，该值由 `false` 变为 `true` */
     @Provide pageHasTouch: boolean = false
-    public messageListScroller = new Scroller()
-    public textAreaController = new TextAreaController()
     @Provide isTextSelectModalShow: boolean = false
     @Provide textSelectModalText: string = ''
-    settingDialogController: CustomDialogController = Object()
-    chatListDialogController: CustomDialogController = Object()
     /** 用户首选项 */
     @Require @Provide dataPreferences: preferences.Preferences = Object()
+    @Require getRdbStore: () => Promise<relationalStore.RdbStore> = Object()
     /** 关系型数据库 */
     @Provide rdbStore: relationalStore.RdbStore = Object()
-    @Require getRdbStore: () => Promise<relationalStore.RdbStore> = Object()
     /** 是否开启自动滚动到底部（当列表长度增加时） */
     @Provide autoScrollToBottom: boolean = true
     /** 是否显示 OpenAI 设置菜单 */
     @Provide openaiCanConfig: boolean = true
-    @Provide defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
-    defaultOpenaiBaseURL = 'https://api.openai.com/v1'
-    defaultThemeColor: BSColorNameMap = 'success'
     @Provide openaiApiKey: string = ''
     @Provide openaiBaseURL: string = ''
     @Provide themeColor: BSColorNameMap = this.defaultThemeColor
     /** Chat 列表，按 ID 降序排列，第一项为最新记录 */
     @Provide chatDataList: ChatData[] = []
     @Provide currentChatIndex: number = 0
+    @Provide isChatRequesting: boolean = false
 
-    currentChat() {
+    public currentChat() {
         return this.chatDataList[this.currentChatIndex]
     }
-
-    @Provide isChatRequesting: boolean = false
 
     /**
      * 调用 `getRdbStore` 同步获取数据库连接，并调用 `initTables` 初始化创建数据表
@@ -68,10 +94,7 @@ export struct MainPage {
         this.rdbStore = await this.getRdbStore()
         if (this.rdbStore.version == 0) {
             this.rdbStore.version = 1
-            // console.log('start initTables')
-            await initTables(this.rdbStore).catch((error: BusinessError) => {
-                // console.error('initTables', error.message)
-            })
+            await initTables(this.rdbStore)
         }
     }
 
@@ -92,15 +115,17 @@ export struct MainPage {
             onWillDismiss: () => {
                 try {
                     // 弹窗关闭时，保存 Preferences 中的 OpenAI 配置
-                    this.saveOpenAIConfig()
+                    if (this.openaiCanConfig) {
+                        this.saveOpenAIConfig()
+                    }
                     // 弹窗关闭时，更新数据库中当前 chat 的模型
                     this.updateModel()
                     this.settingDialogController.close()
+                    this.getUIContext().getFocusController().clearFocus()
                 } catch (error) {
                     promptAction.showToast({ message: error.message })
                 }
             },
-            showInSubWindow: true
         })
     }
 
@@ -120,9 +145,7 @@ export struct MainPage {
         this.initSettingDialogController()
         // 初始化【历史消息】弹窗控制器
         this.initChatListDialogController()
-        this.initRdbRestore().catch((error: BusinessError) => {
-            // console.error(error.message)
-        }).then(() => {
+        this.initRdbRestore().then(() => {
             this.chatDataList = getAllChatDataSorted(this.rdbStore)
             // 如果数据库中的 `chat` 表为空，则创建新的 `chat`
             if (this.chatDataList.length == 0) {
@@ -141,7 +164,7 @@ export struct MainPage {
                 },
                 unshiftNewChatToList: () => {
                     this.unshiftNewChatToList()
-                }
+                },
             }),
         })
     }
@@ -199,11 +222,9 @@ export struct MainPage {
         NavDestination() {
             MessageList({
                 messageListScroller: this.messageListScroller,
-                textAreaController: this.textAreaController,
             }).layoutWeight(1)
             BottomPanel({
                 messageListScroller: this.messageListScroller,
-                textAreaController: this.textAreaController,
             })
         }
         .title(this.chatDataList[this.currentChatIndex]?.title || this.defaultChatTitle)

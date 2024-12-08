@@ -43,17 +43,6 @@ export struct SettingDialog {
                 this.OpenAISetting()
             }
         }
-        .margin({
-            top: 10,
-            bottom: 30
-        })
-
-        Button('关闭')
-            .width('100%')
-            .backgroundColor(getColorGroup(this.themeColor).main)
-            .onClick(() => {
-                this.controller.close()
-            })
     }
 
     @Builder

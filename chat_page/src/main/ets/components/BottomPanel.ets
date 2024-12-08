@@ -20,7 +20,6 @@ export struct BottomPanel {
     @Consume pathInfos: NavPathStack
     @Consume isSelectMode: boolean
     @Require messageListScroller: Scroller = Object()
-    @Require textAreaController: TextAreaController = Object()
     @Consume isChatRequesting: boolean
     @Consume dataPreferences: preferences.Preferences
     /** 是否显示请求开始时的提示文本，比如：正在思考
@@ -123,7 +122,6 @@ export struct BottomPanel {
         TextArea({
             text: $$this.inputMessage,
             placeholder: $r('app.string.placeholder'),
-            controller: this.textAreaController,
         })
             .layoutWeight(1)
             .enableKeyboardOnFocus(false)

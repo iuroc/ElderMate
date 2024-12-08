@@ -5,7 +5,6 @@ export struct MessageList {
     @Consume messageDataList: MessageData[]
     @Require messageListScroller = new Scroller()
     @Consume pageHasTouch: boolean
-    @Require textAreaController = new TextAreaController()
     @Consume isSelectMode: boolean
     @Consume autoScrollToBottom: boolean
 
@@ -43,7 +42,7 @@ export struct MessageList {
         .height('100%')
         .onTouch(event => {
             if (event.type == TouchType.Down) {
-                this.textAreaController.stopEditing()
+                this.getUIContext().getFocusController().clearFocus()
             }
         })
         .onReachEnd(() => {
