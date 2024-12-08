@@ -19,10 +19,6 @@ struct Page {
                 .onAppear(() => {
                     this.controller.enableSafeBrowsing(false)
                 })
-                .onProgressChange(event => {
-                    console.log(JSON.stringify(event))
-                    console.log(this.controller.getTitle())
-                })
                 .domStorageAccess(true)
         }.hideTitleBar(true)
     }
