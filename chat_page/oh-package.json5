@@ -1,13 +1,23 @@
 {
-  "name": "@iuroc/chat-page",
-  "version": "1.0.0",
-  "description": "Please describe the basic information.",
-  "main": "Index.ets",
-  "author": "iuroc",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "@iuroc/openai": "^1.0.7"
-  },
-  "devDependencies": {},
-  "dynamicDependencies": {}
+    "name": "@iuroc/chat-page",
+    "version": "1.0.0",
+    "description": "Please describe the basic information.",
+    "main": "Index.ets",
+    "author": "iuroc",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@iuroc/openai": "^1.0.7"
+    },
+    "keywords": [
+        "chat",
+        "chatgpt",
+        "OpenAI",
+        "page",
+        "component",
+        "NavDestination"
+    ],
+    "repository": "https://github.com/iuroc/ElderMate/tree/main/chat_page",
+    "homepage": "https://github.com/iuroc/ElderMate/tree/main/chat_page#readme",
+    "devDependencies": {},
+    "dynamicDependencies": {}
 }
