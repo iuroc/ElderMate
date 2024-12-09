@@ -1,14 +1,13 @@
 {
-    "name": "@iuroc/chat-page",
-    "version": "1.0.0",
-    "description": "Please describe the basic information.",
-    "main": "Index.ets",
-    "author": "",
-    "license": "Apache-2.0",
-    "dependencies": {
-        // 等该项目完全开发完成，再独立出去成为三方模块
-        "@iuroc/openai": "file:../openai"
-    },
-    "devDependencies": {},
-    "dynamicDependencies": {}
+  "name": "@iuroc/chat-page",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@iuroc/openai": "file:../openai"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
 }
