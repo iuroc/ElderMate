@@ -4,7 +4,7 @@ import { preferences } from "@kit.ArkData"
 import type { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat"
 import { chatModels as defaultChatModels } from "../config/chatModels"
 import { ChatData } from "../utils/db"
-import { OpenAI } from "@iuroc/openai/src/main/ets/OpenAI"
+import { OpenAI } from "@iuroc/openai"
 import { BusinessError } from "@kit.BasicServicesKit"
 
 const colorNameMap: Array<BSColorNameMap> = [

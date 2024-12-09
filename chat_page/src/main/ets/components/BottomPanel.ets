@@ -286,7 +286,7 @@ export struct BottomPanel {
         })
 
         this.requestSession = result.session
-        result.response.then(result => {
+        result.response.then(_result => {
             this.isChatRequesting = false
             // 更新 message 记录的 content 值
             this.updateLatestMessage()

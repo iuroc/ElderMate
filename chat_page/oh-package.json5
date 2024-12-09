@@ -6,7 +6,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@iuroc/openai": "file:../openai"
+    "@iuroc/openai": "^1.0.7"
   },
   "devDependencies": {},
   "dynamicDependencies": {}
