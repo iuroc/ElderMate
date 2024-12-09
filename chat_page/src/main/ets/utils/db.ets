@@ -3,7 +3,6 @@ import { ChatCompletionMessageParam_role } from '@iuroc/openai/src/main/ets/type
 import { relationalStore } from '@kit.ArkData'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { MessageData } from '../components/MessageListItem'
-import { defaultMessageDataList } from '../config/defaultMessageDataList'
 import { getDatetimeString } from './utils'
 
 /**
@@ -31,7 +30,9 @@ export async function initTables(rdbStore: relationalStore.RdbStore) {
     )`)
 }
 
-/** 将沙箱中的数据库目录复制到选择器选择的目录 */
+/** 将沙箱中的数据库目录复制到选择器选择的目录
+ * @deprecated
+ */
 export async function copyDatabaseDir() {
     const databaseDir = getContext().databaseDir
     const documentViewPicker = new picker.DocumentViewPicker()
@@ -58,18 +59,6 @@ export function getMessagesByChatID(rdbStore: relationalStore.RdbStore, chatId: 
         }))
     }
     return messageDataList
-}
-
-/**
- * 查询最新一条 Chat 表记录
- * @param rdbStore
- */
-export function getLatestChat(rdbStore: relationalStore.RdbStore): ChatData | null {
-    const result = rdbStore.querySqlSync(`SELECT * FROM "chat" ORDER BY "id" DESC LIMIT 1`)
-    if (result.goToNextRow()) {
-        return getChatDataFromResultSet(result)
-    }
-    return null
 }
 
 /**
@@ -117,15 +106,6 @@ export function createChat(
     })
     return new ChatData(id, title, model, createTime)
 }
-
-// interface MessageInsertValues {
-//     role: ChatCompletionMessageParam_role | null
-//     content: string
-//     in_request: number
-//     hidden: number
-//     chat_id: number
-//     send_time: string
-// }
 
 /**
  * 批量插入消息数据到 `message` 表
@@ -200,24 +180,6 @@ export function deleteMessagesByChatId(rdbStore: relationalStore.RdbStore, chatI
     const predicates = new relationalStore.RdbPredicates('message')
     predicates.equalTo('chat_id', chatId)
     return rdbStore.deleteSync(predicates)
-}
-
-/** 创建新的 chat 记录，并重置当前的聊天记录列表为新 chat 的
- *
- * @deprecated
- */
-export function createNewChatForPage(rdbStore: relationalStore.RdbStore, chatDataList: ChatData[], model: ChatModel) {
-    const newChatData = createChat(rdbStore, '新的聊天', model)
-    insertMessages(rdbStore, newChatData.id, defaultMessageDataList())
-    chatDataList.push(newChatData)
-    return newChatData
-}
-
-/**
- * 对 `chatDataList` 排序，`id` 更大的排在前面，第一项表示最新插入的记录
- */
-export function sortChatList(chatDataList: ChatData[]): ChatData[] {
-    return chatDataList.sort((a, b) => b.id - a.id)
 }
 
 /** 根据 chat_id 删除 chat，注意需要先删除 message，否则有外键冲突 */

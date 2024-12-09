@@ -1,19 +1,9 @@
-import { MessageData } from "../components/MessageListItem"
-import { BusinessError, pasteboard } from "@kit.BasicServicesKit"
-import { promptAction } from "@kit.ArkUI"
-import { systemShare } from "@kit.ShareKit"
-import { preferences, uniformTypeDescriptor as utd } from '@kit.ArkData'
-import { common, wantConstant } from "@kit.AbilityKit"
-import { ClientOptions } from "@iuroc/openai/src/main/ets/openai@4.73.1"
-import { ChatModel } from "@iuroc/openai/src/main/ets/openai@4.73.1/resources/chat/chat"
-
-export class BooleanValue {
-    value: boolean
-
-    constructor(value = false) {
-        this.value = value
-    }
-}
+import { MessageData } from '../components/MessageListItem'
+import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
+import { promptAction } from '@kit.ArkUI'
+import { systemShare } from '@kit.ShareKit'
+import { uniformTypeDescriptor as utd } from '@kit.ArkData'
+import { common, wantConstant } from '@kit.AbilityKit'
 
 /** 是否全部选中状态 */
 export function isAllSelected(messageDataList: MessageData[]): boolean {
@@ -94,13 +84,6 @@ export async function sendMailWithToast(title: string, content: string) {
 /** 调用系统文本分享时的标题 */
 export async function getShareTextTitle() {
     return getContext().resourceManager.getStringValue($r('app.string.text_share_title'))
-}
-
-
-interface OpenaiConfig {
-    apiKey: string
-    baseURL: string
-    model: ChatModel | ''
 }
 
 export function getDatetimeString(date: Date): string {
