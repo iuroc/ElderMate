@@ -175,7 +175,10 @@ export struct MainPage {
     initChatRenameDialogController() {
         this.chatRenameDialogController = new CustomDialogController({
             builder: RenameDialog({}),
-            showInSubWindow: true
+            showInSubWindow: true,
+            onWillDismiss: () => {
+                this.getUIContext().getFocusController().clearFocus()
+            }
         })
     }
 
