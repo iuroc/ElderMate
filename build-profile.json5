@@ -26,18 +26,6 @@
     },
     "modules": [
         {
-            "name": "main",
-            "srcPath": "./main",
-            "targets": [
-                {
-                    "name": "default",
-                    "applyToProducts": [
-                        "default"
-                    ]
-                }
-            ]
-        },
-        {
             "name": "chat_page",
             "srcPath": "./chat_page",
         },
