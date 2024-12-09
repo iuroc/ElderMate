@@ -14,7 +14,7 @@ import {
 export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
     return [
         {
-            value: '复制文本',
+            value: $r('app.string.copy_text'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
             action: () => {
                 copyTextWithToast(that.mergeSelectedContent()).finally(() => {
@@ -23,7 +23,7 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
             }
         },
         {
-            value: '分享文本',
+            value: $r('app.string.share_text'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
             action: async () => {
                 systemShareTextWithToast(await getShareTextTitle(), that.mergeSelectedContent()).finally(() => {
@@ -32,7 +32,7 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
             },
         },
         {
-            value: '发送到邮箱',
+            value: $r('app.string.send_to_email'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
             action: async () => {
                 sendMailWithToast(await getShareTextTitle(), that.mergeSelectedContent()).finally(() => {
@@ -41,13 +41,14 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
             }
         },
         {
-            value: '删除消息',
+            value: $r('app.string.delete_message'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
-            action: () => {
+            action: async () => {
                 AlertDialog.show({
-                    title: '操作提示',
+                    title: await getContext().resourceManager.getStringValue($r('app.string.operation_tip')),
                     primaryButton: {
-                        value: '确定', fontColor: BSColor.danger, action: () => {
+                        value: await getContext().resourceManager.getStringValue($r('app.string.confirm_button')),
+                        fontColor: BSColor.danger, action: () => {
                             selectedItems(that.messageDataList).forEach(needDeleteItem => {
                                 that.messageDataList.splice(
                                     that.messageDataList.findIndex(item => item.id == needDeleteItem.id),
@@ -59,10 +60,11 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
                         }
                     },
                     secondaryButton: {
-                        value: '取消', action: () => {
+                        value: await getContext().resourceManager.getStringValue($r('app.string.cancel_button')),
+                        action: () => {
                         }
                     },
-                    message: '确定要删除所选的消息吗？'
+                    message: await getContext().resourceManager.getStringValue($r('app.string.confirm_delete_message'))
                 })
             },
         },

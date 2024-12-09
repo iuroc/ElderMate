@@ -19,6 +19,90 @@
     {
       "name": "text_share_title",
       "value": "Text shared by the chat assistant"
+    },
+    {
+      "name": "select_all",
+      "value": "Select All"
+    },
+    {
+      "name": "deselect_all",
+      "value": "Deselect All"
+    },
+    {
+      "name": "exit_multi_select",
+      "value": "Exit Select"
+    },
+    {
+      "name": "selected_item_actions",
+      "value": "Actions"
+    },
+    {
+      "name": "copy_text",
+      "value": "Copy Text"
+    },
+    {
+      "name": "select_text",
+      "value": "Select Text"
+    },
+    {
+      "name": "share_text",
+      "value": "Share Text"
+    },
+    {
+      "name": "multi_select_mode",
+      "value": "Multi-select Mode"
+    },
+    {
+      "name": "send_to_email",
+      "value": "Send to Email"
+    },
+    {
+      "name": "delete_message",
+      "value": "Delete Message"
+    },
+    {
+      "name": "confirm_button",
+      "value": "Confirm"
+    },
+    {
+      "name": "operation_tip",
+      "value": "Operation Tip"
+    },
+    {
+      "name": "cancel_button",
+      "value": "Cancel"
+    },
+    {
+      "name": "confirm_delete_message",
+      "value": "Are you sure you want to delete the selected messages?"
+    },
+    {
+      "name": "clear_current_message_list",
+      "value": "Clear Current Message List"
+    },
+    {
+      "name": "create_new_conversation",
+      "value": "Create New Conversation"
+    },
+    {
+      "name": "confirm_clear_message_list",
+      "value": "Are you sure you want to clear the current message list?"
+    },
+    {
+      "name": "conversation_history",
+      "value": "Conversation History"
+    },
+    {
+      "name": "modify_title",
+      "value": "Modify Title"
+    },
+    {
+      "name": "more_settings",
+      "value": "More Settings"
+    },
+    {
+      "name": "cancel_generation",
+      "value": "Cancel"
     }
   ]
 }

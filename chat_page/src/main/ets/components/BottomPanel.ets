@@ -87,22 +87,23 @@ export struct BottomPanel {
     /** 多选状态下的底部操作面板 */
     @Builder
     SelectPanel() {
-        Button((isAllSelected(this.messageDataList) ? '全不选' : '全选')).onClick(() => {
-            const newSelectedStatus = !isAllSelected(this.messageDataList)
-            this.messageDataList.forEach(item => item.selected = newSelectedStatus)
-        })
+        Button((isAllSelected(this.messageDataList) ? $r('app.string.deselect_all') : $r('app.string.select_all')))
+            .onClick(() => {
+                const newSelectedStatus = !isAllSelected(this.messageDataList)
+                this.messageDataList.forEach(item => item.selected = newSelectedStatus)
+            })
             .backgroundColor(
                 isAllSelected(this.messageDataList) ? BSColor.warning_bg_subtle : BSColor.success_bg_subtle
             )
             .fontColor(
                 isAllSelected(this.messageDataList) ? BSColor.warning_text_emphasis : BSColor.success_text_emphasis
             )
-        Button('退出多选', { buttonStyle: ButtonStyleMode.NORMAL })
+        Button($r('app.string.exit_multi_select'), { buttonStyle: ButtonStyleMode.NORMAL })
             .fontColor(getColorGroup(this.themeColor).main)
             .onClick(() => {
                 this.quitSelectMode()
             })
-        Button('选中项操作')
+        Button($r('app.string.selected_item_actions'))
             .backgroundColor(getColorGroup(this.themeColor).main)
             .bindMenu(selectPanelMenuElements(this))
             .enabled(selectedItems(this.messageDataList).length > 0)
@@ -144,7 +145,7 @@ export struct BottomPanel {
     /** 停止生成按钮 */
     @Builder
     CancelGenerate() {
-        Button('取消生成', {
+        Button($r('app.string.cancel_generation'), {
             buttonStyle: ButtonStyleMode.NORMAL,
         })
             .fontColor(Color.Black)

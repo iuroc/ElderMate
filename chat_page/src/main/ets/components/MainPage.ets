@@ -3,7 +3,10 @@ import { BottomPanel } from './BottomPanel'
 import { MessageList } from './MessageList'
 import { MessageData } from './MessageListItem'
 import { TextSelectModal } from './TextSelectModal'
-import { navigationMenuItems } from '../config/navigationMenuItems'
+import {
+    navigationMenuItems,
+    ____navigationMenuItems as navigationMenuItemsPromise
+} from '../config/navigationMenuItems'
 import { SettingDialog } from './SettingDialog'
 import { preferences, relationalStore } from '@kit.ArkData'
 import {
@@ -52,9 +55,9 @@ import { RenameDialog } from './RenameDialog'
 
 @Component
 export struct MainPage {
-    @Prop defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
-    @Prop defaultOpenaiBaseURL: string = 'https://api.openai.com/v1'
-    @Prop defaultThemeColor: BSColorNameMap = 'success'
+    defaultOpenaiModel: ChatModel = 'gpt-4o-mini'
+    defaultOpenaiBaseURL: string = 'https://api.openai.com/v1'
+    defaultThemeColor: BSColorNameMap = 'success'
     public messageListScroller = new Scroller()
     public settingDialogController: CustomDialogController = Object()
     public chatListDialogController: CustomDialogController = Object()
@@ -89,6 +92,7 @@ export struct MainPage {
      * 创建新的聊天时，默认载入的聊天记录，可外部传参替换该数组。
      */
     @Provide defaultMessageDataList: MessageData[] = makeDefaultMessageDataList()
+    @State navigationMenuItems: NavigationMenuItem[] = []
 
     public currentChat() {
         return this.chatDataList[this.currentChatIndex]
@@ -149,7 +153,7 @@ export struct MainPage {
         this.rdbStore.updateSync(values, predicates)
     }
 
-    aboutToAppear() {
+    async aboutToAppear() {
         // 从 resourceManager 载入字符串资源
         this.initStringValue()
         // 从 Preferences 中载入 OpenAI 配置
@@ -169,6 +173,9 @@ export struct MainPage {
             this.currentChatIndex = Math.min(this.currentChatIndex, this.chatDataList.length - 1)
             this.showChat(this.currentChatIndex)
         })
+        navigationMenuItemsPromise(this).then(items => {
+            this.navigationMenuItems = items
+        })
     }
 
     // 初始化【重命名对话标题】弹窗控制器
@@ -178,6 +185,7 @@ export struct MainPage {
             showInSubWindow: true,
             onWillDismiss: () => {
                 this.getUIContext().getFocusController().clearFocus()
+                this.chatRenameDialogController.close()
             }
         })
     }

@@ -19,6 +19,90 @@
       {
           "name": "text_share_title",
           "value": "来自聊天助手的文本分享"
+      },
+      {
+          "name": "select_all",
+          "value": "全选"
+      },
+      {
+          "name": "deselect_all",
+          "value": "全不选"
+      },
+      {
+          "name": "exit_multi_select",
+          "value": "退出多选"
+      },
+      {
+          "name": "selected_item_actions",
+          "value": "选中项操作"
+      },
+      {
+          "name": "copy_text",
+          "value": "复制文本"
+      },
+      {
+          "name": "select_text",
+          "value": "选择文本"
+      },
+      {
+          "name": "share_text",
+          "value": "分享文本"
+      },
+      {
+          "name": "multi_select_mode",
+          "value": "多选模式"
+      },
+      {
+          "name": "send_to_email",
+          "value": "发送到邮箱"
+      },
+      {
+          "name": "delete_message",
+          "value": "删除消息"
+      },
+      {
+          "name": "operation_tip",
+          "value": "操作提示"
+      },
+      {
+          "name": "confirm_button",
+          "value": "确定"
+      },
+      {
+          "name": "cancel_button",
+          "value": "取消"
+      },
+      {
+          "name": "confirm_delete_message",
+          "value": "确定要删除所选的消息吗？"
+      },
+      {
+          "name": "create_new_conversation",
+          "value": "创建新对话"
+      },
+      {
+          "name": "clear_current_message_list",
+          "value": "清空当前消息列表"
+      },
+      {
+          "name": "confirm_clear_message_list",
+          "value": "确定要清空当前消息列表吗"
+      },
+      {
+          "name": "conversation_history",
+          "value": "历史对话"
+      },
+      {
+          "name": "modify_title",
+          "value": "修改标题"
+      },
+      {
+          "name": "more_settings",
+          "value": "更多设置"
+      },
+      {
+          "name": "cancel_generation",
+          "value": "取消生成"
       }
   ]
 }

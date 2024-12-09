@@ -14,14 +14,14 @@ import {
 export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
     return [
         {
-            value: '复制文本',
+            value: $r('app.string.copy_text'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
             action: () => {
                 copyTextWithToast(that.messageData.content)
             }
         },
         {
-            value: '选择文本',
+            value: $r('app.string.select_text'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
             action: () => {
                 that.isTextSelectModalShow = true
@@ -29,7 +29,7 @@ export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
             }
         },
         {
-            value: '分享文本',
+            value: $r('app.string.share_text'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
             action: async () => {
                 systemShareTextWithToast(
@@ -39,7 +39,7 @@ export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
             },
         },
         {
-            value: '多选模式',
+            value: $r('app.string.multi_select_mode'),
             enabled: selectableItems(that.messageDataList).length > 1,
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
             action: () => {
@@ -49,7 +49,7 @@ export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
             }
         },
         {
-            value: '发送到邮箱',
+            value: $r('app.string.send_to_email'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
 
             action: async () => {
@@ -57,7 +57,7 @@ export function bubbleMenuElements(that: MessageListItem): MenuElement[] {
             }
         },
         {
-            value: '删除消息',
+            value: $r('app.string.delete_message'),
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
             action: () => {
                 that.messageDataList.forEach((item, index) => {

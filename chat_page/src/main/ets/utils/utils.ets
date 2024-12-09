@@ -95,3 +95,7 @@ export function getDatetimeString(date: Date): string {
     const seconds = date.getSeconds().toString().padStart(2, '0')
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
+
+export async function getResourceStringValue(resource: Resource) {
+    return getContext().resourceManager.getStringValue(resource)
+}
