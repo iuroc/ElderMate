@@ -81,11 +81,13 @@ export struct SettingDialog {
     }
 
     aboutToAppear(): void {
-        this.getModelNamesFromAPI().then(result => {
-            this.chatModels = result || defaultChatModels
-            this.modelsLoading = false
-            this.replaceSelectWithButton = false
-        })
+        if (this.openaiCanConfig) {
+            this.getModelNamesFromAPI().then(result => {
+                this.chatModels = result || defaultChatModels
+                this.modelsLoading = false
+                this.replaceSelectWithButton = false
+            })
+        }
     }
 
     @Builder
