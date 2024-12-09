@@ -1,6 +1,6 @@
 {
     "name": "@iuroc/chat-page",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "基于 OpenAI API 的智能聊天页面 NavDestination 组件",
     "main": "Index.ets",
     "author": "iuroc",

@@ -3,7 +3,6 @@ import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { MainPage } from '../components/MainPage'
 import { deleteMessagesByChatId, insertMessages } from '../utils/db'
 import { selectableItems } from '../utils/utils'
-import { defaultMessageDataList } from './defaultMessageDataList'
 
 export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
     return that.isSelectMode ? [] : [
@@ -29,7 +28,7 @@ export function navigationMenuItems(that: MainPage): NavigationMenuItem[] {
                         fontColor: BSColor.danger,
                         action: () => {
                             deleteMessagesByChatId(that.rdbStore, that.currentChat().id)
-                            that.messageDataList = defaultMessageDataList()
+                            that.messageDataList = that.defaultMessageDataList
                             insertMessages(that.rdbStore, that.currentChat().id, that.messageDataList)
                         }
                     },

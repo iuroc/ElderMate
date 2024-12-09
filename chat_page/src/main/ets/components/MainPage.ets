@@ -18,7 +18,7 @@ import { ChatModel } from '@iuroc/openai/src/main/ets/openai@4.73.1/resources/ch
 import { url } from '@kit.ArkTS'
 import { promptAction } from '@kit.ArkUI'
 import { ChatListDialog } from './ChatListDialog'
-import { defaultMessageDataList } from '../config/defaultMessageDataList'
+import { makeDefaultMessageDataList } from '../config/defaultMessageDataList'
 import { RenameDialog } from './RenameDialog'
 
 /**
@@ -85,6 +85,10 @@ export struct MainPage {
     @Provide currentChatIndex: number = 0
     @Provide isChatRequesting: boolean = false
     @Provide renameDialogChatDataIndex: number = 0
+    /**
+     * 创建新的聊天时，默认载入的聊天记录，可外部传参替换该数组。
+     */
+    @Provide defaultMessageDataList: MessageData[] = makeDefaultMessageDataList()
 
     public currentChat() {
         return this.chatDataList[this.currentChatIndex]
@@ -230,7 +234,7 @@ export struct MainPage {
      */
     unshiftNewChatToList() {
         const newChatData = createChat(this.rdbStore, this.defaultChatTitle, this.defaultOpenaiModel)
-        insertMessages(this.rdbStore, newChatData.id, defaultMessageDataList())
+        insertMessages(this.rdbStore, newChatData.id, this.defaultMessageDataList)
         this.chatDataList.unshift(newChatData)
     }
 
