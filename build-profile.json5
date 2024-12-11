@@ -44,6 +44,10 @@
         {
             "name": "openai",
             "srcPath": "./openai"
+        },
+        {
+            "name": "chat_page_v2",
+            "srcPath": "./chat_page_v2",
         }
     ]
 }

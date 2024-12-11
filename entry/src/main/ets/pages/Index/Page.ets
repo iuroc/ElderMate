@@ -1,16 +1,17 @@
 import { getGreeting } from './utils'
-import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { AppList } from './AppList'
 
 @Entry
-@Component
+@ComponentV2
 struct Index {
-    @State navTitle: string = ''
-    @Provide pathInfos: NavPathStack = new NavPathStack()
+    @Local navTitle: string = ''
+    @Provider() pathInfos: NavPathStack = new NavPathStack()
     scroller = new Scroller()
 
     async aboutToAppear() {
         this.navTitle = await getGreeting()
+        this.pathInfos.pushPath({ name: 'Chat' }, false)
     }
 
     build() {

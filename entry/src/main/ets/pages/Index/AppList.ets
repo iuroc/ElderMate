@@ -1,9 +1,9 @@
 import { IconType, ContentItem, OperateItem, ComposeListItem, } from '@kit.ArkUI'
 
-@Component
+@ComponentV2
 export struct AppList {
-    @Consume pathInfos: NavPathStack
-    scroller = new Scroller()
+    @Consumer() pathInfos: NavPathStack = Object()
+    @Require @Param scroller: Scroller
     listItemDataList: ListItemData[] = []
 
     aboutToAppear(): void {
