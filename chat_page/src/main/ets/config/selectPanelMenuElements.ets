@@ -10,7 +10,7 @@ import {
     systemShareTextWithToast
 } from '../utils/utils'
 
-/** 选择性操作菜单 */
+/** 选中项操作菜单 */
 export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
     return [
         {

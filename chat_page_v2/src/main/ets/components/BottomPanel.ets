@@ -1,8 +1,15 @@
 import { BSColor, getColorGroup } from '@iuroc/bootstrap5-color'
-import { window } from '@kit.ArkUI'
+import { SymbolGlyphModifier, window } from '@kit.ArkUI'
 import { Message } from '../common/Message'
 import { BSColorGroup } from '../common/types'
-import { isAllSelected, selectedItems } from '../common/utils'
+import {
+    copyTextWithToast,
+    getShareTextTitle,
+    isAllSelected,
+    selectedItems,
+    sendMailWithToast,
+    systemShareTextWithToast
+} from '../common/utils'
 
 @ComponentV2
 export struct BottomPanel {
@@ -95,7 +102,8 @@ export struct BottomPanel {
                 this.quitSelectMode()
             })
         Button($r('app.string.selected_item_actions'))
-            .backgroundColor(this.themeColor.main)// .bindMenu(selectPanelMenuElements(this))
+            .backgroundColor(this.themeColor.main)
+            .bindMenu(this.selectPanelMenuElements())
             .enabled(selectedItems(this.messages).length > 0)
     }
 
@@ -103,4 +111,72 @@ export struct BottomPanel {
         this.isSelectMode = false
         this.messages.forEach(message => message.selected = false)
     }
+
+    mergeSelectedContent() {
+        return selectedItems(this.messages)
+            .map(item => `【${item.role}】\n${item.content}`).join('\n')
+    }
+
+    selectPanelMenuElements(): MenuElement[] {
+        return [
+            {
+                value: $r('app.string.copy_text'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
+                action: () => {
+                    copyTextWithToast(this.mergeSelectedContent()).finally(() => {
+                        this.quitSelectMode()
+                    })
+                }
+            },
+            {
+                value: $r('app.string.share_text'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+                action: async () => {
+                    systemShareTextWithToast(await getShareTextTitle(), this.mergeSelectedContent()).finally(() => {
+                        this.quitSelectMode()
+                    })
+                },
+            },
+            {
+                value: $r('app.string.send_to_email'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+                action: async () => {
+                    sendMailWithToast(await getShareTextTitle(), this.mergeSelectedContent()).finally(() => {
+                        this.quitSelectMode()
+                    })
+                }
+            },
+            {
+                value: $r('app.string.delete_message'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
+                action: async () => {
+                    AlertDialog.show({
+                        title: await getContext().resourceManager.getStringValue($r('app.string.operation_tip')),
+                        primaryButton: {
+                            value: await getContext().resourceManager.getStringValue($r('app.string.confirm_button')),
+                            fontColor: BSColor.danger, action: () => {
+                                selectedItems(this.messages).forEach(needDeleteItem => {
+                                    this.messages.splice(
+                                        this.messages.findIndex(item => item.id == needDeleteItem.id),
+                                        1
+                                    )
+                                    // deleteMessageById(that.rdbStore, needDeleteItem.id)
+                                })
+                                this.quitSelectMode()
+                            }
+                        },
+                        secondaryButton: {
+                            value: await getContext().resourceManager.getStringValue($r('app.string.cancel_button')),
+                            action: () => {
+                            }
+                        },
+                        message: await getContext()
+                            .resourceManager
+                            .getStringValue($r('app.string.confirm_delete_message'))
+                    })
+                },
+            },
+        ]
+    }
+
 }

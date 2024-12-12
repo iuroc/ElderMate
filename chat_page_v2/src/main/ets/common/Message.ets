@@ -16,6 +16,8 @@ export interface MessageInit {
     sendTime?: Date
 }
 
+let NEXT_ID = 0
+
 @ObservedV2
 export class Message implements MessageInit {
     @Trace id: number
@@ -27,7 +29,7 @@ export class Message implements MessageInit {
     @Trace sendTime: Date
 
     constructor(init: MessageInit) {
-        this.id = init.id ?? 0
+        this.id = init.id ?? NEXT_ID++
         this.inRequest = init.inRequest ?? true
         this.role = init.role ?? null
         this.content = init.content

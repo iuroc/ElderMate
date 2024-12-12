@@ -1,3 +1,4 @@
+import { BSColor } from '@iuroc/bootstrap5-color'
 import { Message } from '../common/Message'
 import { MessageListItem } from './MessageListItem'
 
@@ -31,11 +32,13 @@ export struct MessageList {
             })
         }
         .padding(15)
+        .align(Alignment.Top)
         .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
         .onTouch(event => {
             if (event.type == TouchType.Down) {
                 this.getUIContext().getFocusController().clearFocus()
             }
         })
+        .height('100%')
     }
 }

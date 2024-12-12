@@ -7,6 +7,8 @@ export interface ChatInit {
     createTime?: Date
 }
 
+let NEXT_ID = 0
+
 @ObservedV2
 export class Chat implements ChatInit {
     @Trace id: number
@@ -15,7 +17,7 @@ export class Chat implements ChatInit {
     @Trace createTime: Date
 
     constructor(init: ChatInit) {
-        this.id = init.id ?? 0
+        this.id = init.id ?? NEXT_ID++
         this.title = init.title || defaultChatTitle
         this.model = init.model || defaultChatModel
         this.createTime = init.createTime || new Date()

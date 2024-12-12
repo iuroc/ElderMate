@@ -1,9 +1,13 @@
 {
-    "name": "@iuroc/chat-page-v2",
-    "version": "1.2.0",
-    "description": "Please describe the basic information.",
-    "main": "Index.ets",
-    "author": "",
-    "license": "Apache-2.0",
-    "dependencies": {}
+  "name": "@iuroc/chat-page-v2",
+  "version": "1.2.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@iuroc/openai": "^1.0.8"
+  },
+  "devDependencies": {},
+  "dynamicDependencies": {}
 }

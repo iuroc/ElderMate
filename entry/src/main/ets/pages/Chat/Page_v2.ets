@@ -6,7 +6,8 @@ struct Page {
     build() {
         ChatPage({
             dataPreferences: preferences.getPreferencesSync(getContext(), { name: 'chat_page' }),
-            loadRdbStore: () => {
+            loadRdbStore: async () => {
+                // await relationalStore.deleteRdbStore(getContext(), 'chat_page.db')
                 return relationalStore.getRdbStore(
                     getContext(),
                     {

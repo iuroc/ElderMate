@@ -1,11 +1,11 @@
 import { MessageList } from './MessageList'
 import { BottomPanel } from './BottomPanel'
 import { BSColorGroup } from '../common/types'
-import { BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
-import { defaultMessages, defaultThemeColorName } from '../common/config'
+import { BSColor, BSColorNameMap, getColorGroup } from '@iuroc/bootstrap5-color'
+import { defaultChatModel, defaultChatTitle, defaultMessages, defaultThemeColorName } from '../common/config'
 import { preferences, relationalStore } from '@kit.ArkData'
 import { promptAction } from '@kit.ArkUI'
-import { initTables } from '../common/db'
+import { createChat, getAllChatSorted, getMessagesByChatID, initTables, insertMessages } from '../common/db'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { Message } from '../common/Message'
 import { Chat } from '../common/Chat'
@@ -26,6 +26,7 @@ export struct MainPage {
     /** 主题色资源 */
     @Provider() themeColor: BSColorGroup = Object()
     messageListScroller = new Scroller()
+    @Provider() currentChatIndex: number = 0
 
     build() {
         NavDestination() {
@@ -48,7 +49,6 @@ export struct MainPage {
     }
 
     initMessages() {
-        this.messages = defaultMessages().concat(exampleMessages())
     }
 
     initRdbStore() {
@@ -56,6 +56,13 @@ export struct MainPage {
             this.rdbStore = rdbStore
             initTables(rdbStore).catch((error: BusinessError) => {
                 promptAction.showToast({ message: `数据表初始化失败：${error.data}` })
+            }).then(() => {
+                this.chats = getAllChatSorted(this.rdbStore)
+                if (this.chats.length == 0) {
+                    console.log('table chat is empty, unshiftNewChatToList.')
+                    this.unshiftNewChatToList()
+                }
+                this.showChat(0)
             })
         }).catch((error: BusinessError) => {
             promptAction.showToast({ message: `载入数据库失败：${error.data}` })
@@ -73,5 +80,22 @@ export struct MainPage {
         } catch (error) {
             promptAction.showToast({ message: `加载主题色失败：${error.message}` })
         }
+    }
+
+    /** 切换当前页面显示的 Chat 信息和消息列表，并更新 `currentChatId` */
+    showChat(index: number) {
+        this.currentChatIndex = index
+        this.messages = getMessagesByChatID(this.rdbStore, this.chats[this.currentChatIndex].id)
+    }
+
+    /**
+     * 创建一条新的 `chat` 记录，并插入到数组的开头，不会刷新当前页面显示内容，需要调用 `showChat` 显示内容
+     *
+     * 使用 `Array.unshift()` 实现插入元素到数组开头
+     */
+    unshiftNewChatToList() {
+        const newChatData = createChat(this.rdbStore, defaultChatTitle, defaultChatModel)
+        insertMessages(this.rdbStore, newChatData.id, defaultMessages())
+        this.chats.unshift(newChatData)
     }
 }
