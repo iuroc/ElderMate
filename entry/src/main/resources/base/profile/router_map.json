@@ -7,7 +7,7 @@
         },
         {
             "name": "Chat",
-            "pageSourceFile": "src/main/ets/pages/Chat/Page.ets",
+            "pageSourceFile": "src/main/ets/pages/Chat/Page_v2.ets",
             "buildFunction": "PageBuilder"
         },
         {
