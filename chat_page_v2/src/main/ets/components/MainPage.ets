@@ -19,28 +19,23 @@ export struct MainPage {
     @Param @Once @Require loadRdbStore: () => Promise<relationalStore.RdbStore>
     /** 关系型数据库 */
     @Local rdbStore: relationalStore.RdbStore = Object()
-    /** 主题色资源 */
-    @Local themeColor: BSColorGroup = Object()
-    /** 消息输入框内容 */
-    @Local messageInputValue: string = ''
     @Local messages: Message[] = []
     @Local chats: Chat[] = []
-    @Local isSelectMode: boolean = false
+    @Provider() isSelectMode: boolean = false
+    @Provider() autoScrollBottom: boolean = true
+    /** 主题色资源 */
+    @Provider() themeColor: BSColorGroup = Object()
+    messageListScroller = new Scroller()
 
     build() {
         NavDestination() {
             MessageList({
-                themeColor: this.themeColor,
-                chats: this.chats,
                 messages: this.messages,
-                isSelectMode: this.isSelectMode
+                scroller: this.messageListScroller
             }).layoutWeight(1)
             BottomPanel({
-                themeColor: this.themeColor!!,
-                inputValue: this.messageInputValue!!,
-                chats: this.chats,
                 messages: this.messages,
-                isSelectMode: this.isSelectMode
+                messageListScroller: this.messageListScroller
             })
         }
         .title('聊天助手')
@@ -53,7 +48,7 @@ export struct MainPage {
     }
 
     initMessages() {
-        this.messages = defaultMessages.concat(exampleMessages)
+        this.messages = defaultMessages().concat(exampleMessages())
     }
 
     initRdbStore() {

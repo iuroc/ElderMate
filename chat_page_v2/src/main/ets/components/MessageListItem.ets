@@ -1,29 +1,59 @@
 import { Message } from '../common/Message'
-import { LengthMetrics } from '@kit.ArkUI'
+import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
 import { BSColorGroup } from '../common/types'
 import { BSColor } from '@iuroc/bootstrap5-color'
+import {
+    copyTextWithToast,
+    getShareTextTitle,
+    selectableItems,
+    sendMailWithToast,
+    systemShareTextWithToast
+} from '../common/utils'
 
 @ComponentV2
 export struct MessageListItem {
     @Param @Require message: Message
-    @Param @Require isSelectMode: boolean
-    @Param @Require themeColor: BSColorGroup = Object()
+    @Local showMenu: boolean = false
+    @Param @Require messages: Message[]
+    @Consumer() themeColor: BSColorGroup = Object()
+    @Consumer() isSelectMode: boolean = false
+    @Consumer() autoScrollBottom: boolean = false
+    @Param @Require index: number
+
+    aboutToAppear(): void {
+    }
 
     build() {
-        Row({ space: 10 }) {
-            if (this.isSelectMode) {
-                this.CheckBox()
+        if (!this.message.hidden && (!this.isSelectMode || this.message.role)) {
+            Flex({
+                space: { main: LengthMetrics.vp(10) },
+                justifyContent: this.makeJustifyContent()
+            }) {
+                if (this.isSelectMode) {
+                    this.CheckBox()
+                    Blank()
+                }
+                if (this.message.role == 'user') {
+                    this.Bubble()
+                    this.Avatar()
+                } else {
+                    this.Avatar()
+                    this.Bubble()
+                }
             }
-            if (this.message.role == 'user') {
-                this.Center()
-                this.Avatar()
-            } else {
-                this.Avatar()
-                this.Center()
-            }
+            .onClick(() => {
+                if (this.isSelectMode) this.toggleSelected()
+            })
         }
-        .width('100%')
-        .alignItems(VerticalAlign.Top)
+    }
+
+    makeJustifyContent() {
+        switch (this.message.role) {
+            case 'user':
+                return FlexAlign.End
+            default:
+                return FlexAlign.Start
+        }
     }
 
     @Builder
@@ -32,7 +62,16 @@ export struct MessageListItem {
             this.Bubble()
         }
         .layoutWeight(1)
-        .alignItems(this.message.role == 'user' ? HorizontalAlign.End : HorizontalAlign.Start)
+        .alignItems(this.makeCenterAlignItems())
+    }
+
+    makeCenterAlignItems() {
+        switch (this.message.role) {
+            case 'user':
+                return HorizontalAlign.End
+            default:
+                return HorizontalAlign.Start
+        }
     }
 
     @Builder
@@ -42,11 +81,9 @@ export struct MessageListItem {
             .select(this.message.selected)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
             .onClick(() => {
-                // this.toggleSelected()
+                this.toggleSelected()
             })
-            .margin({
-                right: 0
-            })
+            .margin(0)
     }
 
     /** 消息列表中的消息气泡 */
@@ -65,27 +102,32 @@ export struct MessageListItem {
             .border(this.makeBubbleBorder())
             .margin(this.makeBubbleMargin())
             .onClick(() => {
-                // if (!this.isSelectMode) {
-                //     if (this.message.role) {
-                //         this.showMenu = true
-                //     }
-                // } else {
-                //     this.toggleSelected()
-                // }
-            }) // .bindMenu(this.showMenu,
-        //     bubbleMenuElements(this),
-        //     {
-        //         enableArrow: true,
-        //         aboutToDisappear: () => {
-        //             this.showMenu = false
-        //         },
-        //     })
+                if (this.isSelectMode) {
+                    this.toggleSelected()
+                } else if (this.message.role) {
+                    this.showMenu = true
+                }
+            })
+            .bindMenu(this.showMenu,
+                this.bubbleMenuElements(),
+                {
+                    enableArrow: true,
+                    aboutToDisappear: () => {
+                        this.showMenu = false
+                    },
+                })
         // .gesture(LongPressGesture().onAction(() => {
         //     if (!this.isSelectMode) {
         //         this.textSelectModalText = this.message.content
         //         this.isTextSelectModalShow = true
         //     }
         // }))
+    }
+
+    toggleSelected() {
+        if (this.isSelectMode && this.message.role) {
+            this.message.selected = !this.message.selected
+        }
     }
 
     /** 聊天内容气泡的外边距 */
@@ -140,6 +182,7 @@ export struct MessageListItem {
                 .avatarStyles()
                 .fontColor([this.makeAvatarSymbolFontColor()])
                 .backgroundColor(Color.White)
+                .flexShrink(0)
         }
     }
 
@@ -184,12 +227,62 @@ export struct MessageListItem {
         }
     }
 
-    makeJustifyContent() {
-        switch (this.message.role) {
-            case 'user':
-                return FlexAlign.End
-            default:
-                return FlexAlign.Start
-        }
+    bubbleMenuElements(): MenuElement[] {
+        return [
+            {
+                value: $r('app.string.copy_text'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.rectangle_on_rectangle')),
+                action: () => {
+                    copyTextWithToast(this.message.content)
+                }
+            },
+            {
+                value: $r('app.string.select_text'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.selector')),
+                action: () => {
+                    // that.isTextSelectModalShow = true
+                    // that.textSelectModalText = that.messageData.content
+                }
+            },
+            {
+                value: $r('app.string.share_text'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.share')),
+                action: async () => {
+                    systemShareTextWithToast(
+                        await getShareTextTitle(),
+                        this.message.content
+                    )
+                },
+            },
+            {
+                value: $r('app.string.multi_select_mode'),
+                enabled: selectableItems(this.messages).length > 1,
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
+                action: () => {
+                    // 禁用自动滚动底部（因为切换多选模式时列表高度会变化，将触发自动滚动底部）
+                    this.autoScrollBottom = false
+                    // 进入多选模式
+                    this.isSelectMode = true
+                    // 选中触发菜单的那条消息
+                    this.message.selected = true
+                }
+            },
+            {
+                value: $r('app.string.send_to_email'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.envelope')),
+
+                action: async () => {
+                    sendMailWithToast(await getShareTextTitle(), this.message.content)
+                }
+            },
+            {
+                value: $r('app.string.delete_message'),
+                symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
+                action: () => {
+                    this.autoScrollBottom = false
+                    this.messages.splice(this.index, 1)
+                },
+            },
+        ]
     }
 }

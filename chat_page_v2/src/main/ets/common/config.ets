@@ -9,6 +9,8 @@ export const defaultChatTitle = '新的聊天'
 
 export const defaultThemeColorName: BSColorNameMap = 'success'
 
-export const defaultMessages: Message[] = [
-    new Message({ role: null, content: '我是智能聊天助手，您可以问我任何问题~' }),
-]
+export function defaultMessages(): Message[] {
+    return [
+        new Message({ role: null, content: '我是智能聊天助手，您可以问我任何问题~' }),
+    ]
+}
