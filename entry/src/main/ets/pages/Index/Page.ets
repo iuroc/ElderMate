@@ -11,7 +11,7 @@ struct Index {
 
     async aboutToAppear() {
         this.navTitle = await getGreeting()
-        this.pathInfos.pushPath({ name: 'Chat' }, false)
+        this.pathInfos.pushPath({ name: 'ChatV2' }, false)
     }
 
     build() {
@@ -42,7 +42,7 @@ struct Index {
             value: '聊天助手',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ellipsis_bubble')),
             action: () => {
-                this.pathInfos.pushPath({ name: 'Chat' })
+                this.pathInfos.pushPath({ name: 'ChatV2' })
             }
         },
         {

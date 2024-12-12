@@ -17,7 +17,6 @@ export struct BottomPanel {
     @State paddingBottom: number = 0
     @Consume messageDataList: MessageData[]
     @Consume themeColor: BSColorNameMap
-    @Consume pathInfos: NavPathStack
     @Consume isSelectMode: boolean
     @Require messageListScroller: Scroller = Object()
     @Consume isChatRequesting: boolean
@@ -40,19 +39,23 @@ export struct BottomPanel {
 
     aboutToDisappear(): void {
         this.updateLatestMessage()
+        window.getLastWindow(getContext()).then(lastWindow => {
+            lastWindow.off('keyboardHeightChange', this.keyboardHeightChange)
+        })
     }
 
-    async aboutToAppear() {
-        const lastWindow = await window.getLastWindow(getContext())
-        lastWindow.on('keyboardHeightChange', height => {
-            // 判断处于 Chat 页面，因为其他页面也会触发该事件，他们属于同一个 window
-            if (this.pathInfos.getAllPathName().slice(-1)[0] == 'Chat') {
-                // 在键盘抬高时，设置底部面板的底边距
-                this.paddingBottom = height > 0 ? 10 : 0
-                // 在键盘抬高时，让列表滚动到底部
-                this.messageListScroller.scrollEdge(Edge.Bottom)
-            }
+    aboutToAppear() {
+        window.getLastWindow(getContext()).then(lastWindow => {
+            lastWindow.on('keyboardHeightChange', this.keyboardHeightChange)
         })
+    }
+
+    keyboardHeightChange = (height: number) => {
+        // 判断处于 Chat 页面，因为其他页面也会触发该事件，他们属于同一个 window
+        // 在键盘抬高时，设置底部面板的底边距
+        this.paddingBottom = height > 0 ? 10 : 0
+        // 在键盘抬高时，让列表滚动到底部
+        this.messageListScroller.scrollEdge(Edge.Bottom)
     }
 
     build() {

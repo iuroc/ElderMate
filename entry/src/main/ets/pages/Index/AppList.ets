@@ -90,7 +90,22 @@ export struct AppList {
                     iconStyle: IconType.HEAD_SCULPTURE,
                     icon: $r('app.media.ellipsis_bubble')
                 },
+                operateItem: {
+                    text: '状态管理V1'
+                },
                 onClick: () => this.pathInfos.pushPath({ name: 'Chat' })
+            },
+            {
+                contentItem: {
+                    primaryText: '智能聊天助手',
+                    secondaryText: '随时陪您聊天和解答问题',
+                    iconStyle: IconType.HEAD_SCULPTURE,
+                    icon: $r('app.media.ellipsis_bubble')
+                },
+                operateItem: {
+                    text: '状态管理V2'
+                },
+                onClick: () => this.pathInfos.pushPath({ name: 'ChatV2' })
             },
             {
                 contentItem: {
