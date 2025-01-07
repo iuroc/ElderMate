@@ -4,7 +4,7 @@ import { BusinessError } from '@kit.BasicServicesKit'
 import { call } from '@kit.TelephonyKit'
 
 @Builder
-export function PhoneGroup(config: PhoneGroupConfig, isPerson = false) {
+export function PhoneGroup(config: PhoneGroupConfig, isPerson = false, addDialogController?: CustomDialogController) {
     Column({ space: 5 }) {
         Text(config.header).fontSize(14).fontColor(BSColor.secondary).width('100%').padding({
             left: 15,
@@ -33,6 +33,9 @@ export function PhoneGroup(config: PhoneGroupConfig, isPerson = false) {
         })
         if (isPerson) {
             Button('新增紧急联系人').margin({ bottom: 10 }).buttonStyle(ButtonStyleMode.TEXTUAL)
+                .onClick(() => {
+                    addDialogController?.open()
+                })
         }
     }
     .padding({ bottom: 4 })

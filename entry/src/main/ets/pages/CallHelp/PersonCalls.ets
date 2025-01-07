@@ -1,6 +1,7 @@
 import { relationalStore } from '@kit.ArkData'
 import { PhoneConfig, PhoneGroup, PhoneGroupConfig } from './PhoneGroup'
 import { BusinessError } from '@kit.BasicServicesKit'
+import { AddPersonCall } from './AddPersonCall'
 
 @ComponentV2
 export struct PersonCalls {
@@ -9,9 +10,16 @@ export struct PersonCalls {
         phones: []
     })
     rdb: relationalStore.RdbStore = Object()
+    addDialogController: CustomDialogController = new CustomDialogController({
+        builder: AddPersonCall({
+            createPersonCall: (name, callNum) => {
+                this.createPersonCall(name, callNum)
+            }
+        })
+    })
 
     aboutToAppear(): void {
-        relationalStore.deleteRdbStore(getContext(), 'CallHelp')
+        // relationalStore.deleteRdbStore(getContext(), 'CallHelp')
         relationalStore.getRdbStore(getContext(), {
             name: 'CallHelp',
             securityLevel: relationalStore.SecurityLevel.S1,
@@ -53,6 +61,8 @@ export struct PersonCalls {
     }
 
     createPersonCall(name: string, callNum: string) {
+        if (!name.trim()) throw new Error('联系人姓名不能为空')
+        if (!callNum.match(/^\d+$/)) throw new Error('输入的手机号码格式不正确')
         this.rdb.insertSync('person_call', {
             'name': name,
             'call_num': callNum
@@ -61,8 +71,7 @@ export struct PersonCalls {
 
     build() {
         Column() {
-            PhoneGroup(this.groupConfig, true)
+            PhoneGroup(this.groupConfig, true, this.addDialogController)
         }
     }
 }
-
