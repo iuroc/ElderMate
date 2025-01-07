@@ -51,6 +51,7 @@ export struct AppList {
                     icon: $r('app.media.person_shield_fill')
                 },
                 onClick: () => {
+                    this.pathInfos.pushPath({ name: 'CallHelp' })
                 }
             },
             {

@@ -178,5 +178,4 @@ export struct BottomPanel {
             },
         ]
     }
-
 }
