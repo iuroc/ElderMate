@@ -1,7 +1,5 @@
 import { BSColor } from '@iuroc/bootstrap5-color'
 import { CustomContentDialog, promptAction } from '@kit.ArkUI'
-import { relationalStore } from '@kit.ArkData'
-import { BusinessError } from '@kit.BasicServicesKit'
 
 @CustomDialog
 export struct AddPersonCall {
@@ -26,7 +24,6 @@ export struct AddPersonCall {
                     action: () => {
                         try {
                             this.createPersonCall(this.name, this.phoneNum)
-                            this.controller.close()
                         } catch (error) {
                             promptAction.showToast(error)
                         }

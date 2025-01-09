@@ -3,7 +3,7 @@ import { IconType, ContentItem, OperateItem, ComposeListItem, } from '@kit.ArkUI
 @ComponentV2
 export struct AppList {
     @Consumer() pathInfos: NavPathStack = Object()
-    @Require @Param scroller: Scroller
+    @Require @Param scroller: Scroller = Object()
     listItemDataList: ListItemData[] = []
 
     aboutToAppear(): void {

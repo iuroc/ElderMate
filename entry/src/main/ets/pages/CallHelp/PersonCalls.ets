@@ -2,6 +2,7 @@ import { relationalStore } from '@kit.ArkData'
 import { PhoneConfig, PhoneGroup, PhoneGroupConfig } from './PhoneGroup'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { AddPersonCall } from './AddPersonCall'
+import { promptAction } from '@kit.ArkUI'
 
 @ComponentV2
 export struct PersonCalls {
@@ -9,11 +10,21 @@ export struct PersonCalls {
         header: '紧急联系人',
         phones: []
     })
-    rdb: relationalStore.RdbStore = Object()
+    @Local rdb: relationalStore.RdbStore = Object()
     addDialogController: CustomDialogController = new CustomDialogController({
         builder: AddPersonCall({
             createPersonCall: (name, callNum) => {
+                if (this.groupConfig.phones.find(value => value.callNum == callNum)) {
+                    return promptAction.showToast({ message: '当前号码已经存在' })
+                }
                 this.createPersonCall(name, callNum)
+                this.groupConfig.phones.push(new PhoneConfig({
+                    primaryText: name,
+                    secondaryText: callNum,
+                    callNum,
+                    icon: $r('app.media.call')
+                }))
+                this.addDialogController.close()
             }
         })
     })
@@ -27,7 +38,6 @@ export struct PersonCalls {
             this.rdb = rdb
             this.initTables().then(() => {
                 this.groupConfig.phones = this.getPersonCalls()
-                console.log(JSON.stringify(this.getPersonCalls()))
             }).catch((error: BusinessError) => {
                 console.error(error.message)
             })
@@ -38,7 +48,7 @@ export struct PersonCalls {
         await this.rdb.executeSql(`CREATE TABLE IF NOT EXISTS "person_call" (
             "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             "name" TEXT NOT NULL,
-            "call_num" TEXT NOT NULL,
+            "call_num" TEXT NOT NULL UNIQUE,
             "create_time" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`)
     }
@@ -71,7 +81,12 @@ export struct PersonCalls {
 
     build() {
         Column() {
-            PhoneGroup(this.groupConfig, true, this.addDialogController)
+            PhoneGroup({
+                config: this.groupConfig,
+                isPerson: true,
+                addDialogController: this.addDialogController,
+                rdbStore: this.rdb
+            })
         }
     }
 }

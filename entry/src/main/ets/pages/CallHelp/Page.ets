@@ -12,7 +12,9 @@ struct Page {
         NavDestination() {
             Scroll() {
                 Column({ space: 15 }) {
-                    PhoneGroup(this.customPhones())
+                    PhoneGroup({
+                        config: this.customPhones()
+                    })
                     PersonCalls()
                 }
                 .padding({
