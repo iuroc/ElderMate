@@ -234,7 +234,7 @@ export struct BottomPanel {
         let textContent = ''
 
         const onData: OnDataCallback = chunks => {
-            const newContent = chunks.map(chunk => chunk.choices[0].delta.content).join('')
+            const newContent = chunks.map(chunk => chunk.choices[0]?.delta.content).join('')
             if (this.showRequestStartTip) {
                 textContent = newContent
                 this.showRequestStartTip = false
