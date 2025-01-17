@@ -1,5 +1,9 @@
 # Changelog
 
+## [v1.0.3] 20245.1.17
+
+修复聊天助手 Failed writing received data to disk/application 报错，详情 [https://developer.huawei.com/consumer/cn/forum/topic/0202172433837171168](https://developer.huawei.com/consumer/cn/forum/topic/0202172433837171168)。
+
 ## [v1.0.2] 2024.12.13
 
 去除对父组件 `@Provide pathInfos` 变量的依赖，采用 `on + off`
