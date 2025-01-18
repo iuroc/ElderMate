@@ -31,6 +31,18 @@
         {
             "name": "greeting_good_evening",
             "value": "晚上好~"
+        },
+        {
+            "name": "login_help_title",
+            "value": "用户帮助"
+        },
+        {
+            "name": "login_help_message",
+            "value": "1. 如何注册账号？\n第一次使用手机号和验证码登录即自动注册账号。\n\n2. 忘记密码怎么办？\n您可以使用验证码登录，然后在个人中心修改密码。\n\n3. 为什么无法发送验证码？\n目前只支持11位纯数字的中国大陆手机号接收验证码。"
+        },
+        {
+            "name": "button_confirm_dialog",
+            "value": "好的"
         }
     ]
 }

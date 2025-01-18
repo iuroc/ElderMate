@@ -1,6 +1,11 @@
 {
     "routerMap": [
         {
+            "name": "Login",
+            "pageSourceFile": "src/main/ets/pages/Login/Page.ets",
+            "buildFunction": "PageBuilder"
+        },
+        {
             "name": "Share",
             "pageSourceFile": "src/main/ets/pages/Share/Page.ets",
             "buildFunction": "PageBuilder"

@@ -31,6 +31,18 @@
         {
             "name": "greeting_good_evening",
             "value": "Good evening~"
+        },
+        {
+            "name": "login_help_title",
+            "value": "User Help"
+        },
+        {
+            "name": "login_help_message",
+            "value": "1. How to Register an Account?\nYour account will be automatically registered when you log in for the first time using your phone number and verification code.\n\n2. What Should I Do If I Forget My Password?\nYou can log in using a verification code and then change your password in the Personal Center.\n\n3. Why Can’t I Receive a Verification Code?\nCurrently, only 11-digit numeric phone numbers from Mainland China are supported for receiving verification codes."
+        },
+        {
+            "name": "button_confirm_dialog",
+            "value": "OK"
         }
     ]
 }

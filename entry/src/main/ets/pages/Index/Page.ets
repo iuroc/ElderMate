@@ -1,6 +1,9 @@
 import { getGreeting } from './utils'
 import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { AppList } from './AppList'
+import { common } from '@kit.AbilityKit'
+import { BSColor } from '@iuroc/bootstrap5-color'
+import { checkToken } from '../Login/util'
 
 @Entry
 @ComponentV2
@@ -8,18 +11,50 @@ struct Index {
     @Local navTitle: string = ''
     @Provider() pathInfos: NavPathStack = new NavPathStack()
     scroller = new Scroller()
+    @Local navigationShow: boolean = false
 
     async aboutToAppear() {
         this.navTitle = await getGreeting()
-        this.pathInfos.pushPath({ name: 'CallHelp' }, false)
+        this.mustCheckToken()
+    }
+
+    mustCheckToken() {
+        checkToken().then(result => {
+            if (result.success) {
+                this.pathInfos.pushPath({ name: 'CallHelp' }, false)
+            } else {
+                this.pathInfos.replacePath({ name: 'Login' }, false)
+            }
+        }).catch(() => {
+            AlertDialog.show({
+                title: '服务器错误',
+                message: '无法连接到服务器，请稍后重试。',
+                primaryButton: {
+                    value: '退出应用',
+                    action: () => {
+                        (getContext() as common.UIAbilityContext).terminateSelf()
+                    },
+                    fontColor: BSColor.danger
+                },
+                secondaryButton: {
+                    value: '重试',
+                    action: () => {
+                        this.mustCheckToken()
+                    }
+                },
+                autoCancel: false
+            })
+        }).finally(() => this.navigationShow = true)
     }
 
     build() {
-        Navigation(this.pathInfos) {
-            AppList({ scroller: this.scroller })
+        if (this.navigationShow) {
+            Navigation(this.pathInfos) {
+                AppList({ scroller: this.scroller })
+            }
+            .title(this.navTitle)
+            .toolbarConfiguration(this.toolbarItems)
         }
-        .title(this.navTitle)
-        .toolbarConfiguration(this.toolbarItems)
     }
 
     /** 底部工具栏配置 */
