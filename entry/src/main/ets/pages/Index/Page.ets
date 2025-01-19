@@ -20,6 +20,7 @@ struct Index {
 
     mustCheckToken() {
         checkToken().then(result => {
+            this.navigationShow = true
             if (result.success) {
                 this.pathInfos.pushPath({ name: 'CallHelp' }, false)
             } else {
@@ -44,7 +45,7 @@ struct Index {
                 },
                 autoCancel: false
             })
-        }).finally(() => this.navigationShow = true)
+        })
     }
 
     build() {
@@ -54,6 +55,12 @@ struct Index {
             }
             .title(this.navTitle)
             .toolbarConfiguration(this.toolbarItems)
+        } else {
+            Column() {
+                LoadingProgress().width(100).height(100)
+            }
+            .margin({ top: 100 })
+            .width('100%')
         }
     }
 

@@ -21,8 +21,8 @@ struct Page {
 
 @ComponentV2
 struct PageContent {
-    @Local phone: string = '18870142713' // 生产环境置空
-    @Local verCode: string = '12345' // 生产环境置空
+    @Local phone: string = '' // 生产环境置空
+    @Local verCode: string = '' // 生产环境置空
     @Local password: string = '' // 生产环境置空
     @Local loginMode: 'verCode' | 'password' = 'verCode'
     @Consumer() pathInfos: NavPathStack = new NavPathStack()

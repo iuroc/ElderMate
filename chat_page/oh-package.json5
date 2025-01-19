@@ -1,12 +1,13 @@
 {
     "name": "@iuroc/chat-page",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "基于 OpenAI API 的智能聊天页面 NavDestination 组件",
     "main": "Index.ets",
     "author": "iuroc",
     "license": "Apache-2.0",
     "dependencies": {
-        "@iuroc/openai": "^1.0.8"
+        "@iuroc/openai": "^1.0.8",
+        "@iuroc/bootstrap5-color": "^1.0.5"
     },
     "keywords": [
         "chat",

@@ -6,7 +6,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@iuroc/openai": "^1.0.8"
+    "@iuroc/openai": "^1.0.8",
+    "@iuroc/bootstrap5-color": "^1.0.5"
   },
   "devDependencies": {},
   "dynamicDependencies": {}
