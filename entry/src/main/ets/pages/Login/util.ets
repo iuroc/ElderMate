@@ -11,7 +11,7 @@ import { preferences } from '@kit.ArkData'
  */
 export async function sendVerCode(phone: string) {
     const request = http.createHttp()
-    const response = await request.request(`${apiOrigin}/api/verCode/send`, {
+    const response = await request.request(`${apiOrigin}/api/user/verCode/send`, {
         method: http.RequestMethod.POST,
         extraData: new url.URLParams({ phone }).toString(),
         expectDataType: http.HttpDataType.OBJECT
@@ -27,15 +27,22 @@ interface User {
 }
 
 interface LoginResult {
-    user: User,
+    user: User
     token: string
 }
 
 export async function loginOrRegister(phone: string, verCode: string, password: string) {
     const request = http.createHttp()
+    const params = new url.URLParams({ phone })
+    if (password) {
+        params.set('password', password)
+    }
+    if (verCode) {
+        params.set('verCode', verCode)
+    }
     const response = await request.request(`${apiOrigin}/api/user/loginOrRegister`, {
         method: http.RequestMethod.POST,
-        extraData: new url.URLParams({ phone, verCode, password }).toString(),
+        extraData: params.toString(),
         expectDataType: http.HttpDataType.OBJECT
     })
     return response.result as ApiResponse<LoginResult>
@@ -77,7 +84,7 @@ export function getUserInfo(): User {
 export async function checkToken(): Promise<ApiResponse> {
     const data = await preferences.getPreferences(getContext(), 'user')
     const token = await data.get('token', '')
-    const url = apiOrigin + '/api/checkToken'
+    const url = apiOrigin + '/api/user/checkToken'
     const request = http.createHttp()
     const response = await request.request(url, {
         header: { token },

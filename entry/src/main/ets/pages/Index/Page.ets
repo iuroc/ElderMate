@@ -22,11 +22,12 @@ struct Index {
         checkToken().then(result => {
             this.navigationShow = true
             if (result.success) {
-                this.pathInfos.pushPath({ name: 'CallHelp' }, false)
+                this.pathInfos.pushPath({ name: 'Share' }, false)
             } else {
                 this.pathInfos.replacePath({ name: 'Login' }, false)
             }
         }).catch(() => {
+            this.navigationShow = false
             AlertDialog.show({
                 title: '服务器错误',
                 message: '无法连接到服务器，请稍后重试。',
@@ -84,7 +85,7 @@ struct Index {
             value: '聊天助手',
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ellipsis_bubble')),
             action: () => {
-                this.pathInfos.pushPath({ name: 'ChatV2' })
+                this.pathInfos.pushPath({ name: 'Chat' })
             }
         },
         {

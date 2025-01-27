@@ -103,6 +103,10 @@
     {
       "name": "cancel_generation",
       "value": "Cancel"
+    },
+    {
+      "name": "WRITE_IMAGEVIDEO_REASON",
+      "value": "保存图片到相册"
     }
   ]
 }

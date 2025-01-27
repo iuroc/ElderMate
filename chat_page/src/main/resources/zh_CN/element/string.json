@@ -103,6 +103,10 @@
       {
           "name": "cancel_generation",
           "value": "取消生成"
+      },
+      {
+          "name": "WRITE_IMAGEVIDEO_REASON",
+          "value": ""
       }
   ]
 }

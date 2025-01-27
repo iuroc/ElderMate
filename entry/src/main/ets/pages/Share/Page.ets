@@ -1,4 +1,4 @@
-@Component
+@ComponentV2
 struct Page {
     build() {
         NavDestination() {
