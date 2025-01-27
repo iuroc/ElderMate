@@ -1,8 +1,3 @@
-import { preferences } from "@kit.ArkData"
-import { apiOrigin } from "../../common/config"
-import { http } from "@kit.NetworkKit"
-import { ApiResponse } from "../../common/types"
-
 /** 根据当前时间返回问候语 */
 export async function getGreeting(): Promise<string> {
     const resourceManager = getContext().resourceManager

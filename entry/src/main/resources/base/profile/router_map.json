@@ -11,6 +11,11 @@
             "buildFunction": "PageBuilder"
         },
         {
+            "name": "ShareEdit",
+            "pageSourceFile": "src/main/ets/pages/Share/Edit/Page.ets",
+            "buildFunction": "PageBuilder"
+        },
+        {
             "name": "Chat",
             "pageSourceFile": "src/main/ets/pages/Chat/Page.ets",
             "buildFunction": "PageBuilder"

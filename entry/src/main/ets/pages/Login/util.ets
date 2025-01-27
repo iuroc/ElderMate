@@ -20,7 +20,7 @@ export async function sendVerCode(phone: string) {
 }
 
 interface User {
-    uuid: string
+    id: string
     phone: string
     nickName: string
     createTime: Date
@@ -50,14 +50,14 @@ export async function loginOrRegister(phone: string, verCode: string, password: 
 
 /** 保存用户信息
  *
- * - uuid 唯一标识用户
+ * - id 唯一标识用户
  * - phone 用户手机号，可于个人中心修改
  * - nickName 用户昵称，可于个人中心修改
  * - createTime 用户注册时间
  */
 export function saveUserInfo(user: User) {
     const data = preferences.getPreferencesSync(getContext(), { name: 'user' })
-    data.putSync('uuid', user.uuid)
+    data.putSync('id', user.id)
     data.putSync('phone', user.phone)
     data.putSync('nickName', user.nickName)
     data.putSync('createTime', user.createTime)
@@ -67,7 +67,7 @@ export function saveUserInfo(user: User) {
 export function getUserInfo(): User {
     const data = preferences.getPreferencesSync(getContext(), { name: 'user' })
     return {
-        uuid: data.getSync('uuid', ''),
+        id: data.getSync('id', ''),
         phone: data.getSync('phone', ''),
         nickName: data.getSync('nickName', ''),
         createTime: data.getSync('createTime', '')
