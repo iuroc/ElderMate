@@ -1,10 +1,7 @@
-import { BSColor } from "@iuroc/bootstrap5-color"
-import { display, LengthMetrics, SymbolGlyphModifier } from "@kit.ArkUI"
-import { photoAccessHelper } from "@kit.MediaLibraryKit"
-import { fileUri } from "@kit.CoreFileKit"
-import { filePreview } from "@kit.PreviewKit"
-import { extToMime } from "../../../common/utils"
-import { unifiedDataChannel } from "@kit.ArkData"
+import { BSColor } from '@iuroc/bootstrap5-color'
+import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { ImageSelectBox } from './ImageSelectBox'
+import { unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
 
 @ComponentV2
 struct Page {
@@ -37,7 +34,7 @@ struct Page {
                             showDeleteArea: this.showDeleteArea,
                             changeShowDeleteArea: value => {
                                 this.showDeleteArea = value
-                            }
+                            },
                         }).padding(15)
                     }
                 }
@@ -56,11 +53,11 @@ struct Page {
     DragDeleteArea() {
         if (this.showDeleteArea) {
             Column() {
-                Text('拖动到此处删除').fontColor(Color.White)
+                Text(this.deleteAreaDragEnter ? '松手即可删除' : '拖动到此处删除').fontColor(Color.White)
             }
             .padding({ top: 15, bottom: 15 })
             .width('100%')
-            .backgroundColor(BSColor.danger)
+            .backgroundColor(this.deleteAreaDragEnter ? '#a42834' : BSColor.danger)
             .alignRules({
                 bottom: {
                     anchor: '__container__',
@@ -68,7 +65,9 @@ struct Page {
                 }
             })
             .onDrop(event => {
-                // console.log((event.getData().getRecords()[0].getValue() as unifiedDataChannel.Image).imageUri)  // 报错了，下次从这里继续开发
+                const record = event.getData().getRecords()[0] as unifiedDataChannel.PlainText
+                const imageIndex = parseInt(record.textContent)
+                this.images.splice(imageIndex, 1)
             })
             .onDragEnter(() => {
                 this.deleteAreaDragEnter = true
@@ -87,107 +86,6 @@ struct Page {
                 isEnabled: this.content.trim().length > 0
             }
         ]
-    }
-}
-
-@ComponentV2
-struct ImageSelectBox {
-    @Require @Param images: string[]
-    @Local itemHeight: number = 0
-    @Require @Param showDeleteArea: boolean
-    @Event changeShowDeleteArea: (value: boolean) => void
-    columCount = 3
-    columGap = 10
-    /** 最多允许的配图数量 */
-    maxImageCount = 9
-
-    aboutToAppear(): void {
-        const defaultDisplay = display.getDefaultDisplaySync()
-        this.itemHeight = (px2vp(defaultDisplay.width) - (this.columCount + 1) * this.columGap) / 3
-    }
-
-    build() {
-        Grid() {
-            ForEach(this.images, (image: string, index) => {
-                GridItem() {
-                    Column() {
-                        Image(image)
-                            .onClick(() => {
-                                filePreview.openPreview(getContext(), {
-                                    uri: image,
-                                    title: '预览图片',
-                                    mimeType: extToMime(image.substring(image.lastIndexOf('.')))[0]
-                                })
-                            })
-                            .onPreDrag(status => {
-                                if (status == PreDragStatus.READY_TO_TRIGGER_DRAG_ACTION) {
-                                    this.changeShowDeleteArea(true)
-                                } else if (status == PreDragStatus.PREVIEW_LANDING_STARTED) {
-                                    this.changeShowDeleteArea(false)
-                                }
-                            })
-                            .onDragStart(event => {
-                                const text = new unifiedDataChannel.PlainText()
-                                text.textContent = image
-                                const unifiedData = new unifiedDataChannel.UnifiedData(text)
-                                // event.setData(unifiedData)
-                            })
-                            .onDragEnd(() => {
-                                this.changeShowDeleteArea(false)
-                            })
-                    }
-                    .height(this.itemHeight)
-                    .width('100%')
-                    .onClick(() => {
-                        this.images.splice(index, 1)
-                    })
-                }
-            })
-            if (this.images.length < this.maxImageCount) {
-                this.AddBox()
-            }
-        }
-        .columnsTemplate(new Array(this.columCount).fill('1fr').join(' '))
-        .columnsGap(this.columGap)
-        .rowsGap(this.columGap)
-        .onTouch(event => {
-            if (event.type == TouchType.Down) {
-                this.getUIContext().getFocusController().clearFocus()
-            }
-        })
-    }
-
-    @Builder
-    GridItem() {
-
-    }
-
-    @Builder
-    AddBox() {
-        GridItem() {
-            Column() {
-                SymbolGlyph($r('sys.symbol.plus')).fontSize(40).fontColor([BSColor.secondary])
-                    .fontWeight(FontWeight.Normal)
-            }
-            .height(this.itemHeight)
-            .width('100%')
-            .backgroundColor('#f7f7f7')
-            .justifyContent(FlexAlign.Center)
-            .onClick(() => {
-                const photoSelectOptions = new photoAccessHelper.PhotoSelectOptions()
-                photoSelectOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE
-                photoSelectOptions.maxSelectNumber = this.maxImageCount
-                photoSelectOptions.isOriginalSupported = true
-                photoSelectOptions.preselectedUris = [...this.images]
-                const photoViewPicker = new photoAccessHelper.PhotoViewPicker()
-                photoViewPicker.select(photoSelectOptions).then(result => {
-                    if (result.photoUris.length > 0) {
-                        this.images.splice(0)
-                        this.images.push(...result.photoUris)
-                    }
-                })
-            })
-        }
     }
 }
 

@@ -1,4 +1,4 @@
-import { uniformTypeDescriptor } from '@kit.ArkData'
+import { unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
 
 /**
  * 根据文件后缀查询 Mime 类型
