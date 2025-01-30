@@ -66,6 +66,7 @@ struct Page {
             Text(post.user.nickName)
                 .fontColor(BSColor.primary_text_emphasis)
                 .fontWeight(FontWeight.Regular)
+                .wordBreak(WordBreak.BREAK_ALL)
             Text(post.content)
             if (post.images.length > 0) {
                 Grid() {
@@ -161,6 +162,12 @@ struct Page {
             ForEach(post.comments_of_post, (comment: ShareCommentObservedV2, index) => {
                 Text() {
                     Span(comment.user.nickName).fontWeight(FontWeight.Regular).fontColor(BSColor.primary_text_emphasis)
+                    if (comment.parent_comment_nickName) {
+                        Span('回复')
+                        Span(comment.parent_comment_nickName)
+                            .fontWeight(FontWeight.Regular)
+                            .fontColor(BSColor.primary_text_emphasis)
+                    }
                     Span(': ')
                     Span(comment.content)
                 }
@@ -170,6 +177,7 @@ struct Page {
                     top: 7,
                     bottom: 7
                 })
+                .wordBreak(WordBreak.BREAK_ALL)
                 .border({
                     width: { top: index == 0 ? 0 : 1 },
                     color: '#DDDDDD'
@@ -185,7 +193,7 @@ struct Page {
 }
 
 @ObservedV2
-export class ShareCommentObservedV2 {
+export class ShareContentObservedV2 {
     @Trace
     id: number = 0
     @Trace
@@ -198,12 +206,18 @@ export class ShareCommentObservedV2 {
     likeCount: number = 0
     @Trace
     isDeleted: number = 0
-    @Trace
-    type = 'comment'
 }
 
 @ObservedV2
-export class SharePostObservedV2 extends ShareCommentObservedV2 {
+export class ShareCommentObservedV2 extends ShareContentObservedV2 {
+    @Trace
+    type = 'comment'
+    @Trace
+    parent_comment_nickName?: string = ''
+}
+
+@ObservedV2
+export class SharePostObservedV2 extends ShareContentObservedV2 {
     @Trace
     type = 'post'
     @Trace

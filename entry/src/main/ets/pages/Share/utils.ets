@@ -90,10 +90,11 @@ export interface CreateShareResult {
     isDeleted: number
 }
 
-export interface ISharePost extends IShareComment {
+export interface ISharePost extends IShareContent {
     comments_of_post: IShareComment[]
     images: ImageInShareContent[]
     isLike: boolean
+    type: 'post'
 }
 
 export interface ImageInShareContent {
@@ -101,14 +102,23 @@ export interface ImageInShareContent {
     url: string
 }
 
-export interface IShareComment {
+export interface IShareContent {
     id: number
     user: IUserInContent
     content: string
     createTime: string
     likeCount: number
     isDelete: number
-    type: 'post' | 'comment'
+}
+
+export interface IShareComment extends IShareContent {
+    type: 'comment'
+    parent_comment: IParentComment | null
+}
+
+export interface IParentComment {
+    id: number
+    user: IUserInContent
 }
 
 interface IUserInContent {
@@ -156,6 +166,7 @@ export function iSharePostToObservedV2(list: ISharePost[]) {
             shareComment.createTime = comment.createTime
             shareComment.likeCount = comment.likeCount
             shareComment.isDeleted = comment.isDelete
+            shareComment.parent_comment_nickName = comment.parent_comment?.user.nickName
             return shareComment
         }) as ShareCommentObservedV2[]
         return sharePost
