@@ -93,6 +93,7 @@ export interface CreateShareResult {
 export interface ISharePost extends IShareComment {
     comments_of_post: IShareComment[]
     images: ImageInShareContent[]
+    isLike: boolean
 }
 
 export interface ImageInShareContent {
@@ -146,6 +147,7 @@ export function iSharePostToObservedV2(list: ISharePost[]) {
         sharePost.likeCount = item.likeCount
         sharePost.isDeleted = item.isDelete
         sharePost.images = item.images.map(i => i.url)
+        sharePost.isLike = item.isLike
         sharePost.comments_of_post = item.comments_of_post.map(comment => {
             const shareComment = new ShareCommentObservedV2()
             shareComment.id = comment.id
@@ -158,4 +160,23 @@ export function iSharePostToObservedV2(list: ISharePost[]) {
         }) as ShareCommentObservedV2[]
         return sharePost
     }) as SharePostObservedV2[]
+}
+
+/** 反转点赞状态，返回点赞后的状态 */
+export async function shareLike(id: number) {
+    const request = http.createHttp()
+    const response = await request.request(apiOrigin + '/api/share/like', {
+        method: http.RequestMethod.POST,
+        extraData: `id=${id}`,
+        header: {
+            token: await getToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        expectDataType: http.HttpDataType.OBJECT
+    })
+    const result = response.result as ApiResponse<boolean>
+    if (result.success) {
+        return result.data
+    }
+    throw new Error(result.message)
 }

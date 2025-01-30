@@ -1,10 +1,10 @@
 import { BSColor } from "@iuroc/bootstrap5-color"
-import { display, SymbolGlyphModifier } from "@kit.ArkUI"
+import { display, promptAction, SymbolGlyphModifier } from "@kit.ArkUI"
 import { apiOrigin } from "../../common/config"
-import { getSharePostList, ISharePost, iSharePostToObservedV2 } from "./utils"
+import { getSharePostList, ISharePost, iSharePostToObservedV2, shareLike } from "./utils"
 import { filePreview } from "@kit.PreviewKit"
 import { extname, extToMime } from "../../common/utils"
-import { request } from "@kit.BasicServicesKit"
+import { BusinessError, request } from "@kit.BasicServicesKit"
 import { fileIo, fileUri } from "@kit.CoreFileKit"
 
 @ComponentV2
@@ -110,10 +110,21 @@ struct Page {
                     .fontWeight(FontWeight.Normal)
                     .layoutWeight(1)
                 Button() {
-                    SymbolGlyph($r('sys.symbol.heart')).fontSize(18)
+                    if (post.isLike) {
+                        SymbolGlyph($r('sys.symbol.heart_fill')).fontSize(18).fontColor([BSColor.danger])
+                    } else {
+                        SymbolGlyph($r('sys.symbol.heart')).fontSize(18)
+                    }
                 }
                 .padding(6)
                 .buttonStyle(ButtonStyleMode.NORMAL)
+                .onClick(() => {
+                    shareLike(post.id).then(result => {
+                        post.isLike = result
+                    }).catch((error: Error) => {
+                        promptAction.showToast({ message: error.message })
+                    })
+                })
 
                 Button() {
                     SymbolGlyph($r('sys.symbol.message')).fontSize(18)
@@ -167,6 +178,8 @@ export class SharePostObservedV2 extends ShareCommentObservedV2 {
     type = 'post'
     @Trace
     images: string[] = []
+    @Trace
+    isLike: boolean = false
     @Trace
     comments_of_post: ShareCommentObservedV2[] = []
 }
