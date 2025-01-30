@@ -3,6 +3,9 @@ import { BusinessError, request } from '@kit.BasicServicesKit'
 import { apiOrigin } from '../../common/config'
 import { getToken } from '../Login/util'
 import { extname, extToMime } from '../../common/utils'
+import { http } from '@kit.NetworkKit'
+import { url } from '@kit.ArkTS'
+import { ApiResponse } from '../../common/types'
 
 export function readFile(path: string): ArrayBuffer {
     const file = fileIo.openSync(path, fileIo.OpenMode.READ_ONLY)
@@ -12,7 +15,7 @@ export function readFile(path: string): ArrayBuffer {
     return data
 }
 
-export async function uploadImage(uris: string[]) {
+export async function uploadImage(uris: string[]): Promise<request.UploadTask> {
     const cacheDir = getContext().cacheDir
     const files: request.File[] = []
     uris.forEach((uri, index) => {
@@ -36,16 +39,52 @@ export async function uploadImage(uris: string[]) {
             name: 'file'
         })
     })
-    request.uploadFile(getContext(), {
+    return request.uploadFile(getContext(), {
         url: apiOrigin + '/api/share/uploadImage',
         header: { token: await getToken() },
         method: 'POST',
         files: files,
         data: []
-    }).then(task => {
-        task.on('complete', states => console.log('complete'))
-        task.on('fail', states => console.error('fail'))
-    }).catch((error: BusinessError) => {
-        console.error(error.message)
     })
+}
+
+
+/**
+ * 发布内容或评论
+ * @param content 发布的内容
+ * @param type 发布的内容类型，post 帖子 comment 评论
+ * @param images 发布帖子时的配图
+ * @returns 发布后产生的新纪录
+ */
+export async function createShare(content: string, type: 'post' | 'comment', images: string[] = []) {
+    const request = http.createHttp()
+    const params = new url.URLParams({
+        content,
+        type,
+    })
+    if (type == 'post' && images.length > 0) {
+        params.set('images', images.join('|'))
+    }
+    const response = await request.request(apiOrigin + '/api/share/create', {
+        method: http.RequestMethod.POST,
+        header: {
+            token: await getToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        extraData: params.toString(),
+        expectDataType: http.HttpDataType.OBJECT
+    })
+    const result = response.result as ApiResponse<CreateShareResult>
+    if (result.success) {
+        return result.data
+    } else {
+        throw new Error(result.message)
+    }
+}
+
+interface CreateShareResult {
+    id: number
+    createTime: string
+    likeCount: number
+    isDeleted: number
 }

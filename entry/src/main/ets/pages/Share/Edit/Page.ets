@@ -1,8 +1,10 @@
 import { BSColor } from '@iuroc/bootstrap5-color'
-import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
+import { CustomContentDialog, LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { ImageSelectBox } from './ImageSelectBox'
-import { unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
-import { uploadImage } from '../utils'
+import { unifiedDataChannel } from '@kit.ArkData'
+import { createShare, uploadImage } from '../utils'
+import { ApiResponse } from '../../../common/types'
+import { BusinessError } from '@kit.BasicServicesKit'
 
 @ComponentV2
 struct Page {
@@ -10,6 +12,8 @@ struct Page {
     @Local images: string[] = []
     @Local showDeleteArea: boolean = false
     @Local deleteAreaDragEnter: boolean = false
+    @Consumer() pathInfos: NavPathStack = new NavPathStack()
+    private progressDialogId = 0
 
     aboutToAppear(): void {
 
@@ -87,13 +91,82 @@ struct Page {
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.checkmark')),
                 isEnabled: this.content.trim().length > 0,
                 action: () => {
-                    const content = this.content.trim()
-                    const images = this.images
-                    uploadImage(images)
+                    const imageURLs: string[] = []
+                    promptAction.openCustomDialog({
+                        builder: () => {
+                            this.ProgressDialog()
+                        },
+                        autoCancel: false
+                    }).then(dialogId => this.progressDialogId = dialogId)
+                    if (this.images.length > 0) {
+                        uploadImage(this.images).then(task => {
+                            task.on('complete', () => {
+                                this.publish(imageURLs)
+                            })
+                            task.on('headerReceive', (header) => {
+                                const body = JSON.parse((header as UploadResult).body) as ApiResponse<string[]>
+                                imageURLs.push(body.data[0])
+                            })
+                        })
+                    } else {
+                        this.publish()
+                    }
                 }
             }
         ]
     }
+
+    publish(imageURLs: string[] = []) {
+        createShare(this.content.trim(), 'post', imageURLs).then(() => {
+            promptAction.closeCustomDialog(this.progressDialogId)
+            this.pathInfos.pop()
+        }).catch((error: BusinessError) => {
+            promptAction.closeCustomDialog(this.progressDialogId)
+            AlertDialog.show({
+                title: '发布失败',
+                message: error.message,
+                buttons: [
+                    {
+                        value: '稍后重试',
+                        action: () => {
+                        },
+                        fontColor: BSColor.secondary
+                    }
+                ]
+            })
+        })
+    }
+
+    @Builder
+    ProgressDialog() {
+        Column() {
+            CustomContentDialog({
+                primaryTitle: '正在发布',
+                contentBuilder: () => {
+                    this.ProgressDialogContent()
+                },
+                buttons: [
+                    {
+                        value: '取消发布',
+                        fontColor: BSColor.danger,
+                        action: () => {
+                            promptAction.closeCustomDialog(this.progressDialogId)
+                            this.pathInfos.pop()
+                        }
+                    }
+                ]
+            })
+        }
+    }
+
+    @Builder
+    ProgressDialogContent() {
+        Text('请稍等片刻，马上就好~')
+    }
+}
+
+interface UploadResult {
+    body: string
 }
 
 @Builder
