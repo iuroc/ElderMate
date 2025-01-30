@@ -18,7 +18,7 @@ export struct ImageSelectBox {
 
     aboutToAppear(): void {
         const defaultDisplay = display.getDefaultDisplaySync()
-        this.itemHeight = (px2vp(defaultDisplay.width) - (this.columCount + 1) * this.columGap) / 3
+        this.itemHeight = (px2vp(defaultDisplay.width) - (this.columCount - 1) * this.columGap - 30) / 3
     }
 
     build() {
