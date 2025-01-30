@@ -11,3 +11,12 @@ export function extToMime(extention: string) {
     const mimeTypes = typeObj.mimeTypes
     return mimeTypes
 }
+
+/**
+ * 根据路径或 uri 获取后缀，以 . 开头
+ * @param path
+ * @returns
+ */
+export function extname(path: string) {
+    return path.substring(path.lastIndexOf('.'))
+}

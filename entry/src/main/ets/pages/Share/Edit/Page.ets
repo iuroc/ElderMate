@@ -2,6 +2,7 @@ import { BSColor } from '@iuroc/bootstrap5-color'
 import { LengthMetrics, SymbolGlyphModifier } from '@kit.ArkUI'
 import { ImageSelectBox } from './ImageSelectBox'
 import { unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
+import { uploadImage } from '../utils'
 
 @ComponentV2
 struct Page {
@@ -68,6 +69,7 @@ struct Page {
                 const record = event.getData().getRecords()[0] as unifiedDataChannel.PlainText
                 const imageIndex = parseInt(record.textContent)
                 this.images.splice(imageIndex, 1)
+                this.deleteAreaDragEnter = false
             })
             .onDragEnter(() => {
                 this.deleteAreaDragEnter = true
@@ -83,7 +85,12 @@ struct Page {
             {
                 value: '发布',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.checkmark')),
-                isEnabled: this.content.trim().length > 0
+                isEnabled: this.content.trim().length > 0,
+                action: () => {
+                    const content = this.content.trim()
+                    const images = this.images
+                    uploadImage(images)
+                }
             }
         ]
     }

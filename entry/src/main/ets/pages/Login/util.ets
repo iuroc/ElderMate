@@ -82,12 +82,10 @@ export function getUserInfo(): User {
  * @returns { Promise<ApiResponse> }
  */
 export async function checkToken(): Promise<ApiResponse> {
-    const data = await preferences.getPreferences(getContext(), 'user')
-    const token = await data.get('token', '')
     const url = apiOrigin + '/api/user/checkToken'
     const request = http.createHttp()
     const response = await request.request(url, {
-        header: { token },
+        header: { token: await getToken() },
         expectDataType: http.HttpDataType.OBJECT
     })
     return response.result as ApiResponse
@@ -97,4 +95,14 @@ export function saveToken(token: string) {
     const data = preferences.getPreferencesSync(getContext(), { name: 'user' })
     data.putSync('token', token)
     data.flush()
+}
+
+/**
+ * 从用户首选项中获取 token 值
+ * @returns
+ */
+export async function getToken(): Promise<string> {
+    const data = await preferences.getPreferences(getContext(), 'user')
+    const token = await data.get('token', '')
+    return token as string
 }

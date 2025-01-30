@@ -10,6 +10,9 @@ struct Page {
         }
         .menus(this.menuItems())
         .title('分享生活')
+        .onWillAppear(() => {
+            this.pathInfos.pushPath({ name: 'ShareEdit' })
+        })
     }
 
     menuItems(): NavigationMenuItem[] {

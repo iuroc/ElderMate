@@ -1,6 +1,6 @@
 import { display } from "@kit.ArkUI"
 import { filePreview } from "@kit.PreviewKit"
-import { extToMime } from "../../../common/utils"
+import { extname, extToMime } from "../../../common/utils"
 import { unifiedDataChannel, uniformTypeDescriptor } from "@kit.ArkData"
 import { BSColor } from "@iuroc/bootstrap5-color"
 import { photoAccessHelper } from "@kit.MediaLibraryKit"
@@ -31,7 +31,7 @@ export struct ImageSelectBox {
                                 filePreview.openPreview(getContext(), {
                                     uri: image,
                                     title: '预览图片',
-                                    mimeType: extToMime(image.substring(image.lastIndexOf('.')))[0]
+                                    mimeType: extToMime(extname(image))[0]
                                 })
                             })
                             .onPreDrag(status => {
