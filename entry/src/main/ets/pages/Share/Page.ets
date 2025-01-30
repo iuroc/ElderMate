@@ -132,6 +132,8 @@ struct Page {
                 .buttonStyle(ButtonStyleMode.NORMAL)
                 .padding(6)
             }
+
+            this.CommentArea(post)
         }
         .padding({
             top: 5,
@@ -151,6 +153,34 @@ struct Page {
                 }
             }
         ]
+    }
+
+    @Builder
+    CommentArea(post: SharePostObservedV2) {
+        Column() {
+            ForEach(post.comments_of_post, (comment: ShareCommentObservedV2, index) => {
+                Text() {
+                    Span(comment.user.nickName).fontWeight(FontWeight.Regular).fontColor(BSColor.primary_text_emphasis)
+                    Span(': ')
+                    Span(comment.content)
+                }
+                .padding({
+                    left: 10,
+                    right: 10,
+                    top: 7,
+                    bottom: 7
+                })
+                .border({
+                    width: { top: index == 0 ? 0 : 1 },
+                    color: '#DDDDDD'
+                })
+                .width('100%')
+            })
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .backgroundColor('#F7F7F7')
+        .borderRadius(10)
     }
 }
 
