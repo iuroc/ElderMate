@@ -1,7 +1,7 @@
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { BusinessError, request } from '@kit.BasicServicesKit'
 import { apiOrigin } from '../../common/config'
-import { getToken } from '../Login/util'
+import { getToken } from '../Login/utils'
 import { extname, extToMime } from '../../common/utils'
 import { http } from '@kit.NetworkKit'
 import { url } from '@kit.ArkTS'

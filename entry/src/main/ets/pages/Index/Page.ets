@@ -3,7 +3,7 @@ import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { AppList } from './AppList'
 import { common } from '@kit.AbilityKit'
 import { BSColor } from '@iuroc/bootstrap5-color'
-import { checkToken } from '../Login/util'
+import { checkToken } from '../Login/utils'
 
 @Entry
 @ComponentV2

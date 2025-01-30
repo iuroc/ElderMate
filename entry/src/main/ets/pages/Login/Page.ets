@@ -1,5 +1,5 @@
 import { SymbolGlyphModifier, window } from '@kit.ArkUI'
-import { loginOrRegister, saveToken, saveUserInfo, sendVerCode } from './util'
+import { loginOrRegister, saveToken, saveUserInfo, sendVerCode } from './utils'
 import { BusinessError } from '@kit.BasicServicesKit'
 
 @ComponentV2

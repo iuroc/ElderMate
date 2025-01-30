@@ -1,5 +1,5 @@
 import { BSColor } from "@iuroc/bootstrap5-color"
-import { getUserInfo } from "../Login/util"
+import { getUserInfo } from "../Login/utils"
 import { clearUserData } from "./utils"
 
 @ComponentV2
