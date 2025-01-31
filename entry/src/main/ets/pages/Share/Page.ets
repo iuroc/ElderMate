@@ -79,6 +79,9 @@ struct Page {
                             .alignItems(VerticalAlign.Top)
                         }
                         .padding(15)
+                        .margin({
+                            bottom: index == this.posts.length - 1 ? 60 : 0
+                        })
                     })
                 }
                 .width('100%')

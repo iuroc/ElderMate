@@ -74,6 +74,12 @@ struct Page {
                 const record = event.getData().getRecords()[0] as unifiedDataChannel.PlainText
                 const imageIndex = parseInt(record.textContent)
                 this.images.splice(imageIndex, 1)
+                // 这行代码的作用是，如果没有这行代码，那在将图片拖拽到删除区域后
+                // 会显示【松手即可删除】，然后释放瞬间，会恢复显示【拖动到此处删除】，然后才是隐藏删除区域（拖拽的图片元素本身的拖拽结束事件）
+                // 合理的效果应该是，图片拖拽到删除区域后，显示【松手即可删除】
+                // 然后松手后，直接隐藏删除区域，而不是有一瞬间显示【拖动到此处删除】这样的回弹
+                // 加上这行代码可以解决这个问题
+                this.showDeleteArea = false
                 this.deleteAreaDragEnter = false
             })
             .onDragEnter(() => {
