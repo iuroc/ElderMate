@@ -20,7 +20,7 @@ export async function sendVerCode(phone: string) {
 }
 
 interface User {
-    id: string
+    id: number
     phone: string
     nickName: string
     createTime: Date

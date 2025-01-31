@@ -13,6 +13,7 @@ struct Page {
     @Local showDeleteArea: boolean = false
     @Local deleteAreaDragEnter: boolean = false
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
+    @Consumer() shareListReload: () => void = Object()
     private progressDialogId = 0
 
     aboutToAppear(): void {
@@ -117,7 +118,13 @@ struct Page {
     }
 
     publish(imageURLs: string[] = []) {
-        createShare(this.content.trim(), 'post', imageURLs).then(() => {
+        createShare({
+            content: this.content.trim(),
+            type: 'post',
+            images: imageURLs
+        }).then(() => {
+            // 发布完成，返回上一页
+            this.shareListReload()
             promptAction.closeCustomDialog(this.progressDialogId)
             this.pathInfos.pop()
         }).catch((error: BusinessError) => {

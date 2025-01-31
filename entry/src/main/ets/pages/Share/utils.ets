@@ -1,7 +1,7 @@
-import { fileIo, fileUri } from '@kit.CoreFileKit'
-import { BusinessError, request } from '@kit.BasicServicesKit'
+import { fileIo } from '@kit.CoreFileKit'
+import { request } from '@kit.BasicServicesKit'
 import { apiOrigin } from '../../common/config'
-import { getToken } from '../Login/utils'
+import { getToken, getUserInfo } from '../Login/utils'
 import { extname, extToMime } from '../../common/utils'
 import { http } from '@kit.NetworkKit'
 import { url } from '@kit.ArkTS'
@@ -49,6 +49,18 @@ export async function uploadImage(uris: string[]): Promise<request.UploadTask> {
     })
 }
 
+export interface CreateCommentConfig {
+    postId: number
+    commentId?: number
+    content: string
+    type: 'comment'
+}
+
+export interface CreatePostConfig {
+    content: string
+    images: string[]
+    type: 'post'
+}
 
 /**
  * 发布内容或评论
@@ -57,14 +69,21 @@ export async function uploadImage(uris: string[]): Promise<request.UploadTask> {
  * @param images 发布帖子时的配图
  * @returns 发布后产生的新纪录
  */
-export async function createShare(content: string, type: 'post' | 'comment', images: string[] = []) {
+export async function createShare(config: CreateCommentConfig | CreatePostConfig) {
     const request = http.createHttp()
     const params = new url.URLParams({
-        content,
-        type,
+        content: config.content,
+        type: config.type,
     })
-    if (type == 'post' && images.length > 0) {
-        params.set('images', images.join('|'))
+    if (config.type == 'post') {
+        if (config.images.length > 0) {
+            params.set('images', config.images.join('|'))
+        }
+    } else if (config.type == 'comment') {
+        params.set('parentPostId', config.postId.toString())
+        if (config.commentId) {
+            params.set('parentCommentId', config.commentId.toString())
+        }
     }
     const response = await request.request(apiOrigin + '/api/share/create', {
         method: http.RequestMethod.POST,
@@ -154,8 +173,8 @@ export function iSharePostToObservedV2(list: ISharePost[]) {
         sharePost.user = new UserInPostObservedV2(item.user.id, item.user.nickName)
         sharePost.content = item.content
         sharePost.createTime = item.createTime
-        sharePost.likeCount = item.likeCount
-        sharePost.isDeleted = item.isDelete
+        // sharePost.likeCount = item.likeCount
+        // sharePost.isDeleted = item.isDelete
         sharePost.images = item.images.map(i => i.url)
         sharePost.isLike = item.isLike
         sharePost.comments_of_post = item.comments_of_post.map(comment => {
@@ -164,9 +183,13 @@ export function iSharePostToObservedV2(list: ISharePost[]) {
             shareComment.user = new UserInPostObservedV2(comment.user.id, comment.user.nickName)
             shareComment.content = comment.content
             shareComment.createTime = comment.createTime
-            shareComment.likeCount = comment.likeCount
-            shareComment.isDeleted = comment.isDelete
-            shareComment.parent_comment_nickName = comment.parent_comment?.user.nickName
+            // shareComment.likeCount = comment.likeCount
+            // shareComment.isDeleted = comment.isDelete
+            // shareComment.parent_comment_nickName = comment.parent_comment?.user.nickName
+            if (comment.parent_comment) {
+                shareComment.parent_comment_user =
+                    new UserInPostObservedV2(comment.parent_comment.user.id, comment.parent_comment.user.nickName)
+            }
             return shareComment
         }) as ShareCommentObservedV2[]
         return sharePost
@@ -190,4 +213,48 @@ export async function shareLike(id: number) {
         return result.data
     }
     throw new Error(result.message)
+}
+
+/**
+ * 删除发布的内容，包括删除帖子和评论
+ * @param id 需要删除的帖子或评论的 ID
+ * @throws { Error } 删除失败
+ */
+export async function deleteContent(id: string) {
+    const request = http.createHttp()
+    const response = await request.request(apiOrigin + '/api/share/delete', {
+        method: http.RequestMethod.POST,
+        extraData: new url.URLParams({ id }).toString(),
+        expectDataType: http.HttpDataType.OBJECT,
+        header: {
+            token: await getToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+    })
+    const result = response.result as ApiResponse
+    if (!result.success) {
+        throw new Error(result.message)
+    }
+}
+
+/**
+ * 用于在对帖子或评论发布评论后，将请求结果转换为 CommentObservedV2
+ * @param result
+ * @param content
+ * @param parentCommentNickname
+ * @returns
+ */
+export function createShareResultToCommentObservedV2(
+    result: CreateShareResult,
+    content: string,
+    parentCommentUser?: UserInPostObservedV2
+) {
+    const comment = new ShareCommentObservedV2()
+    comment.content = content
+    comment.id = result.id
+    comment.createTime = result.createTime
+    const user = getUserInfo()
+    comment.user = new UserInPostObservedV2(user.id, user.nickName)
+    comment.parent_comment_user = parentCommentUser
+    return comment
 }

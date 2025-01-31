@@ -10,6 +10,10 @@ import { checkToken } from '../Login/utils'
 struct Index {
     @Local navTitle: string = ''
     @Provider() pathInfos: NavPathStack = new NavPathStack()
+    /**
+     * 刷新分享生活的帖子列表，且用于发布页面在发布成功后，与其上一页的列表页共享该方法的调用，所以在这里全局提供
+     */
+    @Provider() shareListReload: () => void = Object()
     scroller = new Scroller()
     @Local navigationShow: boolean = false
 
