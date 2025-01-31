@@ -41,6 +41,7 @@ export struct AppList {
                     icon: $r('app.media.calendar_badge_clock'),
                 },
                 onClick: () => {
+                    this.pathInfos.pushPath({ name: 'MedAlert' })
                 }
             },
             {

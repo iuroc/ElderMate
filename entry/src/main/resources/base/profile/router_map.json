@@ -39,6 +39,16 @@
             "name": "CallHelp",
             "pageSourceFile": "src/main/ets/pages/CallHelp/Page.ets",
             "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "MedAlert",
+            "pageSourceFile": "src/main/ets/pages/MedAlert/Page.ets",
+            "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "AddMed",
+            "pageSourceFile": "src/main/ets/pages/MedAlert/AddMed/Page.ets",
+            "buildFunction": "PageBuilder"
         }
     ]
 }

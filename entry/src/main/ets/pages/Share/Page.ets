@@ -90,8 +90,10 @@ struct Page {
                     strokeWidth: 1
                 })
                 .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
-                .onTouch(() => {
-                    this.bottomCommentAreaInputController.stopEditing()
+                .onTouch(event => {
+                    if (event.type == TouchType.Down) {
+                        this.bottomCommentAreaInputController.stopEditing()
+                    }
                 })
 
                 this.BottomCommentArea()
