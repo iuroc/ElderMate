@@ -1,15 +1,26 @@
 import { BSColor } from "@iuroc/bootstrap5-color"
 import { promptAction, SymbolGlyphModifier } from "@kit.ArkUI"
-import { daysBetweenInclusive, isABeforeB, isBeforeToday } from "./utils"
+import {
+    createMedAlert,
+    CreateMedAlertConfig,
+    CreateMedAlertResult,
+    daysBetweenInclusive,
+    isABeforeB,
+    isBeforeToday
+} from "./utils"
 
 @ComponentV2
 struct Page {
     @Local i_name: string = '强效缓释镇痛胶囊XK-750'
     @Local i_countPerDay: string = '2'
-    @Local i_howUse: string = '口服'
-    @Local i_other: string = '饭后服用，避免与酒精同服'
+    @Local i_description: string = '饭后服用，避免与酒精同服'
     @Local startDate?: Date = new Date()
     @Local endDate?: Date = new Date()
+    @Consumer() pathInfos: NavPathStack = new NavPathStack()
+
+    menuEnabled() {
+        return !!this.i_name && !!this.i_countPerDay && !!this.startDate && !!this.endDate
+    }
 
     build() {
         NavDestination() {
@@ -33,7 +44,7 @@ struct Page {
 
                     Row({ space: 10 }) {
                         Text('用药说明').fontWeight(FontWeight.Medium)
-                        TextArea({ placeholder: '比如饭后服用、孕妇慎用', text: $$this.i_other })
+                        TextArea({ placeholder: '比如饭后服用、孕妇慎用', text: $$this.i_description })
                             .enableKeyboardOnFocus(false)
                             .layoutWeight(1)
                             .maxLines(3)
@@ -107,11 +118,6 @@ struct Page {
             .height('100%')
             .align(Alignment.Top)
             .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
-            .onTouch(event => {
-                if (event.type == TouchType.Down) {
-                    this.getUIContext().getFocusController().clearFocus()
-                }
-            })
         }
         .title('新增用药')
         .menus([
@@ -119,11 +125,31 @@ struct Page {
                 value: '确定',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.checkmark')),
                 action: () => {
-
-                }
+                    const config = {
+                        name: this.i_name.trim(),
+                        useCountPerDay: parseInt(this.i_countPerDay),
+                        description: this.i_description,
+                        startDate: this.startDate,
+                        endDate: this.endDate
+                    } as CreateMedAlertConfig
+                    createMedAlert(config).then(result => {
+                        this.pathInfos.pop({
+                            result,
+                            config
+                        } as AddMedPagePopResult)
+                    }).catch((error: Error) => {
+                        promptAction.showToast(error)
+                    })
+                },
+                isEnabled: this.menuEnabled()
             }
         ])
     }
+}
+
+export interface AddMedPagePopResult {
+    result: CreateMedAlertResult
+    config: CreateMedAlertConfig
 }
 
 @Builder

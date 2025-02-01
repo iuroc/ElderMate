@@ -1,1 +1,1 @@
-export const apiOrigin = 'http://192.168.1.12:7887'
+export const apiOrigin = 'http://192.168.1.88:7887'

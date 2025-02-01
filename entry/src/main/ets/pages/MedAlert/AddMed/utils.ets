@@ -1,3 +1,9 @@
+import { http } from "@kit.NetworkKit"
+import { apiOrigin } from "../../../common/config"
+import { url } from "@kit.ArkTS"
+import { getToken } from "../../Login/utils"
+import { ApiResponse } from "../../../common/types"
+
 /**
  * 查看日期是否比今天更早
  * @param date
@@ -34,4 +40,41 @@ export function daysBetweenInclusive(startDate: Date, endDate: Date): number {
     const diffTime = end.getTime() - start.getTime()
     const diffDays = Math.abs(diffTime) / (1000 * 60 * 60 * 24)
     return diffDays + 1
+}
+
+export interface CreateMedAlertConfig {
+    name: string
+    useCountPerDay: number
+    description: string
+    startDate: Date
+    endDate: Date
+}
+
+export interface CreateMedAlertResult {
+    id: number
+    createTime: string
+}
+
+export async function createMedAlert(config: CreateMedAlertConfig): Promise<CreateMedAlertResult> {
+    const request = http.createHttp()
+    const response = await request.request(apiOrigin + '/api/medAlert/create', {
+        method: http.RequestMethod.POST,
+        extraData: new url.URLParams({
+            name: config.name,
+            useCountPerDay: config.useCountPerDay.toString(),
+            description: config.description,
+            startDate: config.startDate.getTime().toString(),
+            endDate: config.endDate.getTime().toString()
+        }).toString(),
+        expectDataType: http.HttpDataType.OBJECT,
+        header: {
+            token: await getToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+    })
+    const result = response.result as ApiResponse<CreateMedAlertResult>
+    if (result.success) {
+        return result.data
+    }
+    throw new Error(result.message)
 }

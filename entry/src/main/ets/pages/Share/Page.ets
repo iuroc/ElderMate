@@ -3,6 +3,7 @@ import { display, promptAction, SymbolGlyphModifier, window } from "@kit.ArkUI"
 import { apiOrigin } from "../../common/config"
 import {
     createShare,
+    CreateShareResult,
     createShareResultToCommentObservedV2,
     deleteContent,
     getSharePostList,
@@ -14,6 +15,10 @@ import { extname, extToMime } from "../../common/utils"
 import { request } from "@kit.BasicServicesKit"
 import { fileIo, fileUri } from "@kit.CoreFileKit"
 import { getUserInfo } from "../Login/utils"
+import { ShareEditPagePopResult } from "./Edit/Page"
+
+
+// 加页功能没写完
 
 @ComponentV2
 struct Page {
@@ -21,7 +26,6 @@ struct Page {
     @Local imageHeight: number = 0
     columCount = 3
     columGap = 5
-    @Consumer() shareListReload: () => void = Object()
     @Local posts: SharePostObservedV2[] = []
     listScroller = new Scroller()
     // -------- 底部评论面板 --------
@@ -49,6 +53,13 @@ struct Page {
         }
     }
 
+    shareListReload() {
+        getSharePostList(0, 120).then(list => {
+            this.posts.splice(0)
+            this.posts.push(...iSharePostToObservedV2(list))
+        })
+    }
+
     aboutToAppear(): void {
         window.getLastWindow(getContext()).then(lastWindow => {
             lastWindow.on('keyboardHeightChange', this.keyboardHeightChange)
@@ -58,12 +69,7 @@ struct Page {
         this.imageHeight = (px2vp(defaultDisplay.width) - 30 - 10 - 40
             - (this.columCount - 1) * this.columGap) / 3
 
-        this.shareListReload = () => {
-            getSharePostList(0, 120).then(list => {
-                this.posts.splice(0)
-                this.posts.push(...iSharePostToObservedV2(list))
-            })
-        }
+
     }
 
     build() {
@@ -304,7 +310,20 @@ struct Page {
                 value: '发布帖子',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.square_and_pencil')),
                 action: () => {
-                    this.pathInfos.pushPath({ name: 'ShareEdit' })
+                    this.pathInfos.pushPath({
+                        name: 'ShareEdit',
+                        onPop: info => {
+                            const sharePost = new SharePostObservedV2()
+                            const result = info.result as ShareEditPagePopResult
+                            sharePost.images = result.images
+                            sharePost.id = result.result.id
+                            const currentUser = getUserInfo()
+                            sharePost.user = new UserInPostObservedV2(currentUser.id, currentUser.nickName)
+                            sharePost.content = result.content
+                            sharePost.createTime = result.result.createTime
+                            this.posts.unshift(sharePost)
+                        }
+                    })
                 }
             }
         ]
@@ -382,7 +401,7 @@ export class ShareContentObservedV2 {
 @ObservedV2
 export class ShareCommentObservedV2 extends ShareContentObservedV2 {
     @Trace
-    type = 'comment'
+    type: 'comment' = 'comment'
     // @Trace
     // parent_comment_nickName?: string = ''
     @Trace
@@ -392,7 +411,7 @@ export class ShareCommentObservedV2 extends ShareContentObservedV2 {
 @ObservedV2
 export class SharePostObservedV2 extends ShareContentObservedV2 {
     @Trace
-    type = 'post'
+    type: 'post' = 'post'
     @Trace
     images: string[] = []
     @Trace

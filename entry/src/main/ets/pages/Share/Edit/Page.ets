@@ -2,7 +2,7 @@ import { BSColor } from '@iuroc/bootstrap5-color'
 import { CustomContentDialog, LengthMetrics, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { ImageSelectBox } from './ImageSelectBox'
 import { unifiedDataChannel } from '@kit.ArkData'
-import { createShare, uploadImage } from '../utils'
+import { createShare, CreateShareResult, uploadImage } from '../utils'
 import { ApiResponse } from '../../../common/types'
 import { BusinessError } from '@kit.BasicServicesKit'
 
@@ -13,7 +13,6 @@ struct Page {
     @Local showDeleteArea: boolean = false
     @Local deleteAreaDragEnter: boolean = false
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
-    @Consumer() shareListReload: () => void = Object()
     private progressDialogId = 0
 
     aboutToAppear(): void {
@@ -128,11 +127,14 @@ struct Page {
             content: this.content.trim(),
             type: 'post',
             images: imageURLs
-        }).then(() => {
+        }).then(result => {
             // 发布完成，返回上一页
-            this.shareListReload()
             promptAction.closeCustomDialog(this.progressDialogId)
-            this.pathInfos.pop()
+            this.pathInfos.pop({
+                result,
+                content: this.content.trim(),
+                images: imageURLs
+            } as ShareEditPagePopResult)
         }).catch((error: BusinessError) => {
             promptAction.closeCustomDialog(this.progressDialogId)
             AlertDialog.show({
@@ -185,4 +187,10 @@ interface UploadResult {
 @Builder
 export function PageBuilder() {
     Page()
+}
+
+export interface ShareEditPagePopResult {
+    result: CreateShareResult
+    content: string
+    images: string[]
 }
