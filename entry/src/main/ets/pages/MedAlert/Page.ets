@@ -1,6 +1,7 @@
+import { BSColor } from "@iuroc/bootstrap5-color"
 import { ComposeListItem, IconType, promptAction, SymbolGlyphModifier, SymbolSpanModifier } from "@kit.ArkUI"
 import { AddMedPagePopResult } from "./AddMed/Page"
-import { getMedAlertList, MedAlertListItem } from "./utils"
+import { deleteMedAlert, getMedAlertList, MedAlertListItem } from "./utils"
 
 /**
  * MedAlert 用药提醒模块
@@ -18,12 +19,37 @@ struct Page {
                         ComposeListItem({
                             contentItem: {
                                 primaryText: medAlert.name,
-                                secondaryText: `每日 ${medAlert.useCountPerDay} 次`,
+                                secondaryText: `每日 ${medAlert.useCountPerDay} 次 (${medAlert.startDate.toLocaleDateString('zh-CN')}~${medAlert.endDate.toLocaleDateString('zh-CN')})`,
                                 description: medAlert.description,
                                 icon: $r('app.media.yi_liao'),
                                 iconStyle: IconType.SYSTEM_ICON
-                            }
+                            },
                         })
+                            .gesture(LongPressGesture().onAction(() => {
+                                AlertDialog.show({
+                                    title: '删除提示',
+                                    message: '确定要删除该记录吗？',
+                                    buttons: [
+                                        {
+                                            value: '确定删除',
+                                            fontColor: BSColor.danger,
+                                            action: () => {
+                                                deleteMedAlert(medAlert.id).then(() => {
+                                                    this.medAlerts.splice(index, 1)
+                                                }).catch((error: Error) => {
+                                                    promptAction.showToast(error)
+                                                })
+                                            }
+                                        },
+                                        {
+                                            value: '取消',
+                                            action: () => {
+
+                                            }
+                                        }
+                                    ]
+                                })
+                            }))
                     }
                 })
             }

@@ -26,6 +26,31 @@ export async function getMedAlertList(date = new Date(), page: number = 0, pageS
     throw new Error(result.message)
 }
 
+/**
+ * 删除用药提醒
+ *
+ * @throws { Error }
+ * @param id
+ */
+export async function deleteMedAlert(id: number) {
+    const request = http.createHttp()
+    const response = await request.request(apiOrigin + '/api/medAlert/delete', {
+        method: http.RequestMethod.POST,
+        expectDataType: http.HttpDataType.OBJECT,
+        extraData: new url.URLParams({
+            id: id.toString()
+        }).toString(),
+        header: {
+            token: await getToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+    const result = response.result as ApiResponse
+    if (!result.success) {
+        throw new Error(result.message)
+    }
+}
+
 export interface MedAlertListItem {
     id: number
     name: string

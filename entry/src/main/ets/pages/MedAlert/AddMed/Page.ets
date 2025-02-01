@@ -11,9 +11,9 @@ import {
 
 @ComponentV2
 struct Page {
-    @Local i_name: string = '强效缓释镇痛胶囊XK-750'
-    @Local i_countPerDay: string = '2'
-    @Local i_description: string = '饭后服用，避免与酒精同服'
+    @Local i_name: string = '' // 强效缓释镇痛胶囊XK-750
+    @Local i_countPerDay: string = '' // 2
+    @Local i_description: string = '' // 饭后服用，避免与酒精同服
     @Local startDate?: Date = new Date()
     @Local endDate?: Date = new Date()
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
@@ -31,21 +31,19 @@ struct Page {
                         TextArea({ placeholder: '药品名称', text: $$this.i_name })
                             .layoutWeight(1)
                             .maxLines(3)
-                            .enableKeyboardOnFocus(false)
+                            .defaultFocus(true)
                     }
 
                     Row({ space: 10 }) {
                         Text('每日次数').fontWeight(FontWeight.Medium)
                         TextInput({ placeholder: '每天吃几次，比如 3 次', text: $$this.i_countPerDay })
                             .layoutWeight(1)
-                            .enableKeyboardOnFocus(false)
                             .type(InputType.Number)
                     }
 
                     Row({ space: 10 }) {
                         Text('用药说明').fontWeight(FontWeight.Medium)
                         TextArea({ placeholder: '比如饭后服用、孕妇慎用', text: $$this.i_description })
-                            .enableKeyboardOnFocus(false)
                             .layoutWeight(1)
                             .maxLines(3)
                     }
