@@ -51,8 +51,8 @@
             "buildFunction": "PageBuilder"
         },
         {
-            "name": "MedRecords",
-            "pageSourceFile": "src/main/ets/pages/MedRecords/Page.ets",
+            "name": "MedRecord",
+            "pageSourceFile": "src/main/ets/pages/MedRecord/Page.ets",
             "buildFunction": "PageBuilder"
         }
     ]

@@ -63,7 +63,7 @@ export struct AppList {
                     icon: $r('app.media.doc_text_badge_checkmark'),
                 },
                 onClick: () => {
-                    this.pathInfos.pushPath({ name: 'MedRecords' })
+                    this.pathInfos.pushPath({ name: 'medRecord' })
                 }
             },
             {
