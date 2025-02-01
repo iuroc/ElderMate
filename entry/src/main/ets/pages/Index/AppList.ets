@@ -60,9 +60,10 @@ export struct AppList {
                     primaryText: '我的医疗记录',
                     secondaryText: '给医生看我的就诊记录',
                     iconStyle: IconType.HEAD_SCULPTURE,
-                    icon: $r('app.media.doc_text_badge_checkmark')
+                    icon: $r('app.media.doc_text_badge_checkmark'),
                 },
                 onClick: () => {
+                    this.pathInfos.pushPath({ name: 'MedRecords' })
                 }
             },
             {

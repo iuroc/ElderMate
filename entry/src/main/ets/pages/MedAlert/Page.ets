@@ -1,6 +1,7 @@
 import { BSColor } from "@iuroc/bootstrap5-color"
 import { ComposeListItem, IconType, promptAction, SymbolGlyphModifier, SymbolSpanModifier } from "@kit.ArkUI"
 import { AddMedPagePopResult } from "./AddMed/Page"
+import { CreateMedAlertConfig } from "./AddMed/utils"
 import { deleteMedAlert, getMedAlertList, MedAlertListItem } from "./utils"
 
 /**
@@ -50,6 +51,32 @@ struct Page {
                                     ]
                                 })
                             }))
+                            .onClick(() => {
+                                this.pathInfos.pushPath({
+                                    name: 'AddMed',
+                                    param: {
+                                        id: medAlert.id,
+                                        createTime: medAlert.createTime,
+                                        name: medAlert.name,
+                                        useCountPerDay: medAlert.useCountPerDay,
+                                        description: medAlert.description,
+                                        startDate: medAlert.startDate,
+                                        endDate: medAlert.endDate,
+                                    } as CreateMedAlertConfig,
+                                    onPop: info => {
+                                        const result = info.result as AddMedPagePopResult
+                                        this.medAlerts.forEach(item => {
+                                            if (item.id == result.config.id) {
+                                                item.name = result.config.name
+                                                item.useCountPerDay = result.config.useCountPerDay
+                                                item.description = result.config.description
+                                                item.startDate = result.config.startDate
+                                                item.endDate = result.config.endDate
+                                            }
+                                        })
+                                    }
+                                })
+                            })
                     }
                 })
             }

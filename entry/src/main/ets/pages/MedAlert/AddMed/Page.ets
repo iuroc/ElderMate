@@ -16,10 +16,12 @@ struct Page {
     @Local i_description: string = '' // 饭后服用，避免与酒精同服
     @Local startDate?: Date = new Date()
     @Local endDate?: Date = new Date()
+    editId?: number
+    createTime?: Date
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
 
     menuEnabled() {
-        return !!this.i_name && !!this.i_countPerDay && !!this.startDate && !!this.endDate
+        return !!this.i_name && parseInt(this.i_countPerDay) > 0 && !!this.startDate && !!this.endDate
     }
 
     build() {
@@ -117,7 +119,7 @@ struct Page {
             .align(Alignment.Top)
             .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
         }
-        .title('新增用药')
+        .title(this.editId == null ? '新增用药' : '编辑用药')
         .menus([
             {
                 value: '确定',
@@ -128,11 +130,16 @@ struct Page {
                         useCountPerDay: parseInt(this.i_countPerDay),
                         description: this.i_description,
                         startDate: this.startDate,
-                        endDate: this.endDate
+                        endDate: this.endDate,
+                        id: this.editId
                     } as CreateMedAlertConfig
                     createMedAlert(config).then(result => {
+                        config.id = this.editId
                         this.pathInfos.pop({
-                            result,
+                            result: result || {
+                                id: this.editId,
+                                createTime: this.createTime
+                            },
                             config
                         } as AddMedPagePopResult)
                     }).catch((error: Error) => {
@@ -142,6 +149,18 @@ struct Page {
                 isEnabled: this.menuEnabled()
             }
         ])
+        .onWillAppear(() => {
+            const config = this.pathInfos.getParamByName('AddMed')[0] as CreateMedAlertConfig
+            if (config) {
+                this.i_name = config.name
+                this.i_countPerDay = config.useCountPerDay.toString()
+                this.i_description = config.description
+                this.startDate = config.startDate
+                this.endDate = config.endDate
+                this.editId = config.id
+                this.createTime = config.createTime
+            }
+        })
     }
 }
 

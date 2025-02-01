@@ -48,6 +48,8 @@ export interface CreateMedAlertConfig {
     description: string
     startDate: Date
     endDate: Date
+    id?: number
+    createTime?: Date
 }
 
 export interface CreateMedAlertResult {
@@ -55,17 +57,21 @@ export interface CreateMedAlertResult {
     createTime: string
 }
 
-export async function createMedAlert(config: CreateMedAlertConfig): Promise<CreateMedAlertResult> {
+export async function createMedAlert(config: CreateMedAlertConfig): Promise<CreateMedAlertResult | null> {
     const request = http.createHttp()
+    const params = new url.URLParams({
+        name: config.name,
+        useCountPerDay: config.useCountPerDay.toString(),
+        description: config.description,
+        startDate: config.startDate.getTime().toString(),
+        endDate: config.endDate.getTime().toString(),
+    })
+    if (config.id !== undefined) {
+        params.set('id', config.id.toString())
+    }
     const response = await request.request(apiOrigin + '/api/medAlert/create', {
         method: http.RequestMethod.POST,
-        extraData: new url.URLParams({
-            name: config.name,
-            useCountPerDay: config.useCountPerDay.toString(),
-            description: config.description,
-            startDate: config.startDate.getTime().toString(),
-            endDate: config.endDate.getTime().toString()
-        }).toString(),
+        extraData: params.toString(),
         expectDataType: http.HttpDataType.OBJECT,
         header: {
             token: await getToken(),

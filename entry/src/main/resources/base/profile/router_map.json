@@ -49,6 +49,11 @@
             "name": "AddMed",
             "pageSourceFile": "src/main/ets/pages/MedAlert/AddMed/Page.ets",
             "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "MedRecords",
+            "pageSourceFile": "src/main/ets/pages/MedRecords/Page.ets",
+            "buildFunction": "PageBuilder"
         }
     ]
 }
