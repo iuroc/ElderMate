@@ -1,6 +1,6 @@
 import { BSColor } from '@iuroc/bootstrap5-color'
 import { CustomContentDialog, display, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
-import { extname, extToMime, formatDateChinese } from '../../../common/utils'
+import { extname, extToMime, formatDateChinese, getPreviewFileUriForImageURL } from '../../../common/utils'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { unifiedDataChannel } from '@kit.ArkData'
 import { filePreview } from '@kit.PreviewKit'
@@ -45,6 +45,7 @@ struct Page {
                             Text('就诊医院')
                             TextInput({ placeholder: '请输入医院名称', text: $$this.hospitalName })
                                 .layoutWeight(1)
+                                .defaultFocus(true)
                         }
 
                         Row({ space: 10 }) {
@@ -100,8 +101,13 @@ struct Page {
                 isEnabled: this.hospitalName.trim() != '' && this.visitDate != null &&
                     (this.medRecord.trim() != '' || this.images.length > 0),
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.checkmark')),
-                action: () => {
+                action: async () => {
                     if (this.images.length > 0) {
+                        for (let i = 0; i < this.images.length; i++) {
+                            if (this.images[i].startsWith('http')) {
+                                this.images[i] = await getPreviewFileUriForImageURL(this.images[i])
+                            }
+                        }
                         const imageURLs: string[] = []
                         promptAction.openCustomDialog({
                             builder: () => {
@@ -128,11 +134,13 @@ struct Page {
             const params = this.pathInfos.getParamByName('AddMedRecord') as object[]
             if (params.length > 0 && typeof params[0] == 'number') {
                 this.editId = params[0] as number
-                getMedRecordInfo(this.editId).then(info => {
+                getMedRecordInfo(this.editId).then(async info => {
                     this.visitDate = new Date(info.visitDate)
                     this.hospitalName = info.hospitalName
                     this.medRecord = info.medRecord
-                    this.images = info.images.map(item => apiOrigin + item.url)
+                    for (let i = 0; i < info.images.length; i++) {
+                        this.images.push(await getPreviewFileUriForImageURL(apiOrigin + info.images[i].url))
+                    }
                 })
             }
         })
@@ -170,7 +178,8 @@ struct Page {
             hospitalName: this.hospitalName,
             visitDate: this.visitDate as Date,
             medRecord: this.medRecord,
-            imageURLs
+            imageURLs,
+            editId: this.editId || null
         } as CreateMedRecordConfig
         createMedRecord(config).then(result => {
             promptAction.closeCustomDialog(this.progressDialogId)
@@ -275,10 +284,19 @@ struct Page {
                 photoSelectOptions.preselectedUris = [...this.images]
                 const photoViewPicker = new photoAccessHelper.PhotoViewPicker()
                 photoViewPicker.select(photoSelectOptions).then(result => {
-                    if (result.photoUris.length > 0) {
-                        this.images.splice(0)
-                        this.images.push(...result.photoUris)
+                    const length = this.images.length
+                    for (let i = 0; i < length; i++) {
+                        const item = this.images[i]
+                        if (item.startsWith('file://media/') && !result.photoUris.includes(item)) {
+                            this.images[i] = ''
+                        }
                     }
+                    result.photoUris.forEach(uri => {
+                        if (!this.images.includes((uri))) {
+                            this.images.push(uri)
+                        }
+                    })
+                    this.images = this.images.filter(Boolean)
                 })
             })
             .borderRadius(5)

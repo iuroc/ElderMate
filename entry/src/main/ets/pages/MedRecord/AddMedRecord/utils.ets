@@ -23,6 +23,7 @@ export interface CreateMedRecordConfig {
     hospitalName: string
     medRecord: string
     imageURLs: string[]
+    editId?: number
 }
 
 interface CreateMedRecordResult {
@@ -32,6 +33,15 @@ interface CreateMedRecordResult {
 
 export async function createMedRecord(config: CreateMedRecordConfig) {
     const request = http.createHttp()
+    const params = new url.URLParams({
+        visitDate: config.visitDate.getTime().toString(),
+        hospitalName: config.hospitalName.trim(),
+        medRecord: config.medRecord.trim(),
+        visitImages: config.imageURLs.join('|')
+    })
+    if (config.editId != null) {
+        params.set('id', config.editId.toString())
+    }
     const response = await request.request(apiOrigin + '/api/medRecord/create', {
         method: http.RequestMethod.POST,
         expectDataType: http.HttpDataType.OBJECT,
@@ -39,12 +49,7 @@ export async function createMedRecord(config: CreateMedRecordConfig) {
             token: await getToken(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        extraData: new url.URLParams({
-            visitDate: config.visitDate.getTime().toString(),
-            hospitalName: config.hospitalName.trim(),
-            medRecord: config.medRecord.trim(),
-            visitImages: config.imageURLs.join('|')
-        }).toString()
+        extraData: params.toString()
     })
     const result = response.result as ApiResponse<CreateMedRecordResult>
     if (result.success) {
