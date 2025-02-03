@@ -1,5 +1,6 @@
 import { BSColor } from "@iuroc/bootstrap5-color"
 import { promptAction, SymbolGlyphModifier } from "@kit.ArkUI"
+import { formatDateChinese } from "../../../common/utils"
 import {
     createMedAlert,
     CreateMedAlertConfig,
@@ -64,11 +65,7 @@ struct Page {
                     .padding({ top: 10, bottom: 10 })
 
                     Row({ space: 10 }) {
-                        Button(this.startDate ? '始 ' + this.startDate.toLocaleDateString('zh-CN', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                        }) : '起始日期')
+                        Button(this.startDate ? formatDateChinese(this.startDate) : '起始日期')
                             .layoutWeight(1)
                             .buttonStyle(ButtonStyleMode.NORMAL)
                             .onClick(() => {
@@ -90,11 +87,7 @@ struct Page {
                                 })
                             })
                         SymbolGlyph($r('sys.symbol.arrow_right'))
-                        Button(this.endDate ? '终 ' + this.endDate.toLocaleDateString('zh-CN', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                        }) : '结束日期')
+                        Button(this.endDate ? formatDateChinese(this.endDate) : '结束日期')
                             .enabled(!!this.startDate)
                             .layoutWeight(1)
                             .buttonStyle(ButtonStyleMode.NORMAL)
