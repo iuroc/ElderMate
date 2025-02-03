@@ -1,22 +1,28 @@
 import { BSColor } from '@iuroc/bootstrap5-color'
-import { display, SymbolGlyphModifier } from '@kit.ArkUI'
+import { CustomContentDialog, display, promptAction, SymbolGlyphModifier } from '@kit.ArkUI'
 import { extname, extToMime, formatDateChinese } from '../../../common/utils'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { unifiedDataChannel } from '@kit.ArkData'
 import { filePreview } from '@kit.PreviewKit'
-import { DragDeleteArea } from '../../Share/Edit/Page'
+import { DragDeleteArea, UploadResult } from '../../Share/Edit/Page'
+import { uploadImage } from '../../Share/utils'
+import { ApiResponse } from '../../../common/types'
+import { AddMedRecordPopResult, createMedRecord, CreateMedRecordConfig } from './utils'
+import { BusinessError } from '@kit.BasicServicesKit'
 
 @ComponentV2
 struct Page {
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
     @Local visitDate: Date | null = null
     @Local hospitalName: string = ''
+    @Local medRecord: string = ''
     @Local images: string[] = []
-    columCount = 3
-    columGap = 5
+    private columCount = 3
+    private columGap = 5
     @Local columHeight: number = 0
     @Local showDeleteArea: boolean = false
     @Local deleteAreaDragEnter: boolean = false
+    private progressDialogId = 0
 
     aboutToAppear(): void {
         const defaultDisplay = display.getDefaultDisplaySync()
@@ -34,7 +40,7 @@ struct Page {
                     Column({ space: 15 }) {
                         Row({ space: 10 }) {
                             Text('就诊医院')
-                            TextInput({ placeholder: '请输入医院名称' })
+                            TextInput({ placeholder: '请输入医院名称', text: $$this.hospitalName })
                                 .layoutWeight(1)
                         }
 
@@ -55,7 +61,7 @@ struct Page {
 
                         Row({ space: 10 }) {
                             Text('就诊记录').margin({ top: 10 })
-                            TextArea({ placeholder: '请输入就诊记录' })
+                            TextArea({ placeholder: '请输入就诊记录', text: $$this.medRecord })
                                 .layoutWeight(1)
                                 .constraintSize({ minHeight: 200 })
                                 .padding({
@@ -88,12 +94,91 @@ struct Page {
         .menus([
             {
                 value: '确定添加',
+                isEnabled: this.hospitalName.trim() != '' && this.visitDate != null &&
+                    (this.medRecord.trim() != '' || this.images.length > 0),
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.checkmark')),
                 action: () => {
-
+                    if (this.images.length > 0) {
+                        const imageURLs: string[] = []
+                        promptAction.openCustomDialog({
+                            builder: () => {
+                                this.ProgressDialog()
+                            },
+                            autoCancel: false
+                        }).then(dialogId => this.progressDialogId = dialogId)
+                        uploadImage(this.images).then(task => {
+                            task.on('complete', () => {
+                                this.create(imageURLs)
+                            })
+                            task.on('headerReceive', (header) => {
+                                const body = JSON.parse((header as UploadResult).body) as ApiResponse<string[]>
+                                imageURLs.push(body.data[0])
+                            })
+                        })
+                    } else {
+                        this.create()
+                    }
                 }
             }
         ])
+    }
+
+    @Builder
+    ProgressDialog() {
+        Column() {
+            CustomContentDialog({
+                primaryTitle: '正在提交',
+                contentBuilder: () => {
+                    this.ProgressDialogContent()
+                },
+                buttons: [
+                    {
+                        value: '取消提交',
+                        fontColor: BSColor.danger,
+                        action: () => {
+                            promptAction.closeCustomDialog(this.progressDialogId)
+                            this.pathInfos.pop()
+                        }
+                    }
+                ]
+            })
+        }
+    }
+
+    @Builder
+    ProgressDialogContent() {
+        Text('请稍等片刻，马上就好~')
+    }
+
+    create(imageURLs: string[] = []) {
+        const config = {
+            hospitalName: this.hospitalName,
+            visitDate: this.visitDate as Date,
+            medRecord: this.medRecord,
+            imageURLs
+        } as CreateMedRecordConfig
+        createMedRecord(config).then(result => {
+            promptAction.closeCustomDialog(this.progressDialogId)
+            this.pathInfos.pop({
+                result,
+                config,
+                imageURLs
+            } as AddMedRecordPopResult)
+        }).catch((error: BusinessError) => {
+            promptAction.closeCustomDialog(this.progressDialogId)
+            AlertDialog.show({
+                title: '提交失败',
+                message: error.message,
+                buttons: [
+                    {
+                        value: '稍后重试',
+                        action: () => {
+                        },
+                        fontColor: BSColor.secondary
+                    }
+                ]
+            })
+        })
     }
 
     @Builder

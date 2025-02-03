@@ -1,5 +1,8 @@
 import { unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
+import { filePreview } from '@kit.PreviewKit'
+import { fileIo, fileUri } from '@kit.CoreFileKit'
+import { request } from '@kit.BasicServicesKit'
 
 /**
  * 根据文件后缀查询 Mime 类型
@@ -41,4 +44,30 @@ export function formatDateChinese(date: Date, includeTime: boolean = false): str
     } else {
         return `${year}年${month}月${day}日`
     }
+}
+
+/**
+ * 获取网络图片的本地预览路径
+ * @param url
+ * @returns
+ */
+export function getPreviewFileUriForImageURL(url: string) {
+    return new Promise<string>((resolve, reject) => {
+        const filePath = getContext().filesDir + '/' + url.replaceAll(/[\/:]/g, '')
+        if (!fileIo.accessSync(filePath)) {
+            request.downloadFile(getContext(), {
+                url: url,
+                filePath
+            }).then(task => {
+                task.on('complete', () => {
+                    resolve(fileUri.getUriFromPath(filePath))
+                })
+                task.on('fail', error => {
+                    reject(new Error(error.toString()))
+                })
+            })
+        } else {
+            resolve(fileUri.getUriFromPath(filePath))
+        }
+    })
 }

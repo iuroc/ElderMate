@@ -144,7 +144,7 @@ struct Page {
     }
 }
 
-interface UploadResult {
+export interface UploadResult {
     body: string
 }
 

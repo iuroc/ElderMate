@@ -11,7 +11,7 @@ import {
     shareLike
 } from "./utils"
 import { filePreview } from "@kit.PreviewKit"
-import { extname, extToMime } from "../../common/utils"
+import { extname, extToMime, getPreviewFileUriForImageURL } from "../../common/utils"
 import { request } from "@kit.BasicServicesKit"
 import { fileIo, fileUri } from "@kit.CoreFileKit"
 import { getUserInfo } from "../Login/utils"
@@ -24,22 +24,22 @@ import { ShareEditPagePopResult } from "./Edit/Page"
 struct Page {
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
     @Local imageHeight: number = 0
-    columCount = 3
-    columGap = 5
+    private columCount = 3
+    private columGap = 5
     @Local posts: SharePostObservedV2[] = []
-    listScroller = new Scroller()
+    private listScroller = new Scroller()
     // -------- 底部评论面板 --------
     /** 当前评论的目标帖子下标 */
-    nowCommentListItemIndex = 0
+    private nowCommentListItemIndex = 0
     /** 对某一条评论进行评论，评论对象的用户信息
      *
      * 该属性会如果不为空，会在输入框的空提示中显示需要评论的目标用户的昵称
      */
-    nowCommentParentComment: ShareCommentObservedV2 | null = null
+    private nowCommentParentComment: ShareCommentObservedV2 | null = null
     @Local showBottomCommentArea: boolean = false
-    bottomCommentAreaInputController = new TextInputController()
+    private bottomCommentAreaInputController = new TextInputController()
     @Local bottomCommentAreaContent: string = ''
-    currentUser = getUserInfo()
+    private currentUser = getUserInfo()
 
     aboutToDisappear(): void {
         window.getLastWindow(getContext()).then(lastWindow => {
@@ -183,26 +183,33 @@ struct Page {
                                 .height(this.imageHeight)
                                 .width('100%')
                                 .onClick(() => {
-                                    const filePath = getContext().filesDir + image.replaceAll('/', '')
-                                    const preview = () => {
+                                    getPreviewFileUriForImageURL(apiOrigin + image).then(uri => {
                                         filePreview.openPreview(getContext(), {
-                                            uri: fileUri.getUriFromPath(filePath),
+                                            uri: uri,
                                             title: '预览图片',
                                             mimeType: extToMime(extname(image))[0]
                                         })
-                                    }
-                                    if (!fileIo.accessSync(filePath)) {
-                                        request.downloadFile(getContext(), {
-                                            url: apiOrigin + image,
-                                            filePath
-                                        }).then(task => {
-                                            task.on('complete', () => {
-                                                preview()
-                                            })
-                                        })
-                                    } else {
-                                        preview()
-                                    }
+                                    })
+                                    // const filePath = getContext().filesDir + image.replaceAll('/', '')
+                                    // const preview = () => {
+                                    //     filePreview.openPreview(getContext(), {
+                                    //         uri: fileUri.getUriFromPath(filePath),
+                                    //         title: '预览图片',
+                                    //         mimeType: extToMime(extname(image))[0]
+                                    //     })
+                                    // }
+                                    // if (!fileIo.accessSync(filePath)) {
+                                    //     request.downloadFile(getContext(), {
+                                    //         url: apiOrigin + image,
+                                    //         filePath
+                                    //     }).then(task => {
+                                    //         task.on('complete', () => {
+                                    //             preview()
+                                    //         })
+                                    //     })
+                                    // } else {
+                                    //     preview()
+                                    // }
                                 })
                         }
                     })
