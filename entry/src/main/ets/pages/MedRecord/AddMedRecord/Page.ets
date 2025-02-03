@@ -9,6 +9,8 @@ import { uploadImage } from '../../Share/utils'
 import { ApiResponse } from '../../../common/types'
 import { AddMedRecordPopResult, createMedRecord, CreateMedRecordConfig } from './utils'
 import { BusinessError } from '@kit.BasicServicesKit'
+import { getMedRecordInfo } from '../ViewMedRecord/utils'
+import { apiOrigin } from '../../../common/config'
 
 @ComponentV2
 struct Page {
@@ -23,6 +25,8 @@ struct Page {
     @Local showDeleteArea: boolean = false
     @Local deleteAreaDragEnter: boolean = false
     private progressDialogId = 0
+    /** 该值在页面载入时由路由载入 */
+    @Local editId: number | null = null
 
     aboutToAppear(): void {
         const defaultDisplay = display.getDefaultDisplaySync()
@@ -34,7 +38,6 @@ struct Page {
 
     build() {
         NavDestination() {
-
             RelativeContainer() {
                 Scroll() {
                     Column({ space: 15 }) {
@@ -121,6 +124,18 @@ struct Page {
                 }
             }
         ])
+        .onWillAppear(() => {
+            const params = this.pathInfos.getParamByName('AddMedRecord') as object[]
+            if (params.length > 0 && typeof params[0] == 'number') {
+                this.editId = params[0] as number
+                getMedRecordInfo(this.editId).then(info => {
+                    this.visitDate = new Date(info.visitDate)
+                    this.hospitalName = info.hospitalName
+                    this.medRecord = info.medRecord
+                    this.images = info.images.map(item => apiOrigin + item.url)
+                })
+            }
+        })
     }
 
     @Builder

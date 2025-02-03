@@ -103,7 +103,15 @@ struct Page {
                 value: '编辑',
                 symbolIcon: new SymbolGlyphModifier($r('sys.symbol.square_and_pencil')),
                 action: () => {
-
+                    this.pathInfos.pushPath({
+                        name: 'AddMedRecord', param: this.medRecordId, onPop: info => {
+                            // info.result 返回是否完成了编辑
+                            if (info.result) {
+                                this.requestDone = false
+                                this.reload()
+                            }
+                        }
+                    })
                 }
             }
         ])
@@ -113,16 +121,20 @@ struct Page {
             if (params.length > 0 && params[0] != null) {
                 const id = params[0] as number
                 this.medRecordId = id
-                getMedRecordInfo(id).then(info => {
-                    this.requestDone = true
-                    this.hospitalName = info.hospitalName
-                    this.medRecord = info.medRecord
-                    this.images = info.images.map(item => item.url)
-                    this.visitDate = new Date(info.visitDate)
-                }).catch((error: Error) => {
-                    promptAction.showToast(error)
-                })
+                this.reload()
             }
+        })
+    }
+
+    reload() {
+        getMedRecordInfo(this.medRecordId).then(info => {
+            this.requestDone = true
+            this.hospitalName = info.hospitalName
+            this.medRecord = info.medRecord
+            this.images = info.images.map(item => item.url)
+            this.visitDate = new Date(info.visitDate)
+        }).catch((error: Error) => {
+            promptAction.showToast(error)
         })
     }
 }
