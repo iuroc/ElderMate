@@ -1,4 +1,5 @@
 import { unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
+import { photoAccessHelper } from '@kit.MediaLibraryKit'
 
 /**
  * 根据文件后缀查询 Mime 类型

@@ -18,7 +18,7 @@ export struct ImageSelectBox {
 
     aboutToAppear(): void {
         const defaultDisplay = display.getDefaultDisplaySync()
-        this.itemHeight = (px2vp(defaultDisplay.width) - (this.columCount - 1) * this.columGap - 30) / 3
+        this.itemHeight = (px2vp(defaultDisplay.width) - (this.columCount - 1) * this.columGap - 30) / this.columCount
     }
 
     build() {
@@ -62,9 +62,6 @@ export struct ImageSelectBox {
                     }
                     .height(this.itemHeight)
                     .width('100%')
-                    .onClick(() => {
-                        this.images.splice(index, 1)
-                    })
                 }
             })
             if (this.images.length < this.maxImageCount) {
