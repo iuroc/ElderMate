@@ -48,7 +48,13 @@ struct Page {
                                 })
                             }))
                             .onClick(() => {
-                                this.pathInfos.pushPath({ name: 'ViewMedRecord', param: medRecord.id })
+                                this.pathInfos.pushPath({
+                                    name: 'ViewMedRecord', param: medRecord.id, onPop: info => {
+                                        if (info.result == 'delete') {
+                                            this.medRecords.splice(index, 1)
+                                        }
+                                    }
+                                })
                             })
                     }
                     .padding({ left: 10, right: 10 })
@@ -58,7 +64,7 @@ struct Page {
             .height('100%')
             .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
         }
-        .title('我的医疗记录')
+        .title('我的就诊记录')
         .menus([
             {
                 value: '添加记录',

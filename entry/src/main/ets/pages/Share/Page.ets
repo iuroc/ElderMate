@@ -190,26 +190,6 @@ struct Page {
                                             mimeType: extToMime(extname(image))[0]
                                         })
                                     })
-                                    // const filePath = getContext().filesDir + image.replaceAll('/', '')
-                                    // const preview = () => {
-                                    //     filePreview.openPreview(getContext(), {
-                                    //         uri: fileUri.getUriFromPath(filePath),
-                                    //         title: '预览图片',
-                                    //         mimeType: extToMime(extname(image))[0]
-                                    //     })
-                                    // }
-                                    // if (!fileIo.accessSync(filePath)) {
-                                    //     request.downloadFile(getContext(), {
-                                    //         url: apiOrigin + image,
-                                    //         filePath
-                                    //     }).then(task => {
-                                    //         task.on('complete', () => {
-                                    //             preview()
-                                    //         })
-                                    //     })
-                                    // } else {
-                                    //     preview()
-                                    // }
                                 })
                         }
                     })

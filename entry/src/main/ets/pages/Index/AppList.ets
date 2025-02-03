@@ -57,7 +57,7 @@ export struct AppList {
             },
             {
                 contentItem: {
-                    primaryText: '我的医疗记录',
+                    primaryText: '我的就诊记录',
                     secondaryText: '给医生看我的就诊记录',
                     iconStyle: IconType.HEAD_SCULPTURE,
                     icon: $r('app.media.doc_text_badge_checkmark'),
