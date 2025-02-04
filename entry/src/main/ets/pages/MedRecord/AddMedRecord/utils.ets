@@ -36,9 +36,13 @@ export async function createMedRecord(config: CreateMedRecordConfig) {
     const params = new url.URLParams({
         visitDate: config.visitDate.getTime().toString(),
         hospitalName: config.hospitalName.trim(),
-        medRecord: config.medRecord.trim(),
-        visitImages: config.imageURLs.join('|')
     })
+    if (config.medRecord.trim()) {
+        params.set('medRecord', config.medRecord.trim())
+    }
+    if (config.imageURLs.length > 0) {
+        params.set('visitImages', config.imageURLs.join('|'))
+    }
     if (config.editId != null) {
         params.set('id', config.editId.toString())
     }
