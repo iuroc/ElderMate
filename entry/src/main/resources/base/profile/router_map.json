@@ -64,6 +64,11 @@
             "name": "ViewMedRecord",
             "pageSourceFile": "src/main/ets/pages/MedRecord/ViewMedRecord/Page.ets",
             "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "MyInfo",
+            "pageSourceFile": "src/main/ets/pages/MyInfo/Page.ets",
+            "buildFunction": "PageBuilder"
         }
     ]
 }

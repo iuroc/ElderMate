@@ -22,7 +22,7 @@ struct Index {
         checkToken().then(result => {
             this.navigationShow = true
             if (result.success) {
-                this.pathInfos.pushPath({ name: 'MyInfo' }, false)
+                // this.pathInfos.pushPath({ name: 'User' }, false)
             } else {
                 this.pathInfos.replacePath({ name: 'Login' }, false)
             }

@@ -74,6 +74,7 @@ export struct AppList {
                     icon: $r('app.media.info_shield')
                 },
                 onClick: () => {
+                    this.pathInfos.pushPath({ name: 'MyInfo' })
                 }
             },
             {
@@ -118,7 +119,7 @@ export struct AppList {
                     icon: $r('app.media.flag')
                 },
                 onClick: () => {
-
+                    this.pathInfos.pushPath({ name: 'Share' })
                 }
             },
         ]
