@@ -1,4 +1,5 @@
 import { IconType, ContentItem, OperateItem, ComposeListItem, } from '@kit.ArkUI'
+import { ShareLink } from '../More/Page'
 
 @ComponentV2
 export struct AppList {
@@ -85,6 +86,12 @@ export struct AppList {
                     icon: $r('app.media.icloud')
                 },
                 onClick: () => {
+                    this.pathInfos.pushPath({
+                        name: 'WebView', param: {
+                            href: 'https://xw.tianqi.qq.com/',
+                            title: '天气预报'
+                        } as ShareLink
+                    })
                 }
             },
             {

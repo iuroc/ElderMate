@@ -69,6 +69,11 @@
             "name": "MyInfo",
             "pageSourceFile": "src/main/ets/pages/MyInfo/Page.ets",
             "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "WebView",
+            "pageSourceFile": "src/main/ets/pages/More/WebView/Page.ets",
+            "buildFunction": "PageBuilder"
         }
     ]
 }
