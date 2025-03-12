@@ -48,9 +48,11 @@ response.then(() => {
 
 ### 流式输出
 
+> 使用 `onData` 回调函数时，注意 `chunk.choices` 有可能是空数组，建议加上 `?` 去获取内容。
+
 ```extendtypescript
 const onData: OnDataCallback = chunks => {
-    const newContent = chunks.map(chunk => chunk.choices[0].delta.content).join('')
+    const newContent = chunks.map(chunk => chunk.choices[0]?.delta.content).join('')
     console.log(newContent)
 }
 

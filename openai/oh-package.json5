@@ -1,6 +1,6 @@
 {
     "name": "@iuroc/openai",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "description": "OpenAI 请求工具库，基本保留原 npm 库 TypeScript 定义。",
     "main": "Index.ets",
     "author": "iuroc",
