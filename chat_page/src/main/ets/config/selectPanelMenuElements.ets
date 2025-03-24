@@ -45,9 +45,9 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
             symbolIcon: new SymbolGlyphModifier($r('sys.symbol.trash')).fontColor([BSColor.danger]),
             action: async () => {
                 AlertDialog.show({
-                    title: await getContext().resourceManager.getStringValue($r('app.string.operation_tip')),
+                    title: '操作提示',
                     primaryButton: {
-                        value: await getContext().resourceManager.getStringValue($r('app.string.confirm_button')),
+                        value: '确定',
                         fontColor: BSColor.danger, action: () => {
                             selectedItems(that.messageDataList).forEach(needDeleteItem => {
                                 that.messageDataList.splice(
@@ -60,11 +60,11 @@ export function selectPanelMenuElements(that: BottomPanel): MenuElement[] {
                         }
                     },
                     secondaryButton: {
-                        value: await getContext().resourceManager.getStringValue($r('app.string.cancel_button')),
+                        value: '取消',
                         action: () => {
                         }
                     },
-                    message: await getContext().resourceManager.getStringValue($r('app.string.confirm_delete_message'))
+                    message: '确定要删除所选的消息吗？'
                 })
             },
         },

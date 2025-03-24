@@ -115,8 +115,7 @@ export struct MainPage {
      */
     initStringValue() {
         if (this.defaultChatTitle == '') {
-            const resourceManager = getContext().resourceManager
-            resourceManager.getStringValue($r('app.string.chat_assistant')).then(value => this.defaultChatTitle = value)
+            this.defaultChatTitle = '聊天助手'
         }
     }
 

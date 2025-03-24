@@ -83,7 +83,8 @@ export async function sendMailWithToast(title: string, content: string) {
 
 /** 调用系统文本分享时的标题 */
 export async function getShareTextTitle() {
-    return getContext().resourceManager.getStringValue($r('app.string.text_share_title'))
+    // return getContext().resourceManager.getStringValue($r('app.string.text_share_title'))
+    return '来自聊天助手的文本分享'
 }
 
 export function getDatetimeString(date: Date): string {
@@ -96,6 +97,11 @@ export function getDatetimeString(date: Date): string {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
+/**
+ * @deprecated
+ * @param resource
+ * @returns
+ */
 export async function getResourceStringValue(resource: Resource) {
     return getContext().resourceManager.getStringValue(resource)
 }
