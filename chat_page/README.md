@@ -2,7 +2,11 @@
 
 基于 OpenAI API 的智能聊天页面 `NavDestination` 组件。
 
+<!--
 ![](./image/01.png)
+-->
+
+![](https://img.apee.top/i/1111079755438977024)
 
 ## 安装模块
 
