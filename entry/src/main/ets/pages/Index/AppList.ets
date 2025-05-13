@@ -113,7 +113,7 @@ export struct AppList {
                 onClick: () => {
                     this.pathInfos.pushPath({
                         name: 'WebView', param: {
-                            href: 'https://xw.tianqi.qq.com/',
+                            href: 'https://www.msn.com/zh-cn/weather',
                             title: '天气预报'
                         } as ShareLink
                     })

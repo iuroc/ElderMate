@@ -41,7 +41,7 @@ struct Page {
             },
             {
                 title: '天气预报',
-                href: 'https://xw.tianqi.qq.com/'
+                href: 'https://www.msn.com/zh-cn/weather'
             },
             {
                 title: '微博热搜',
