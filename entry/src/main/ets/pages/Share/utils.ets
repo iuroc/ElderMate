@@ -1,7 +1,7 @@
 import { fileIo } from '@kit.CoreFileKit'
 import { request } from '@kit.BasicServicesKit'
 import { apiOrigin } from '../../common/config'
-import { getToken, getUserInfo } from '../Login/utils'
+import { getLoginInfo, getUserInfo } from '../Login/utils'
 import { extname, extToMime } from '../../common/utils'
 import { http } from '@kit.NetworkKit'
 import { url } from '@kit.ArkTS'
@@ -42,7 +42,7 @@ export async function uploadImage(uris: string[]): Promise<request.UploadTask> {
     })
     return request.uploadFile(getContext(), {
         url: apiOrigin + '/api/share/uploadImage',
-        header: { token: await getToken() },
+        header: { token: await getLoginInfo() },
         method: 'POST',
         files: files,
         data: []
@@ -88,7 +88,7 @@ export async function createShare(config: CreateCommentConfig | CreatePostConfig
     const response = await request.request(apiOrigin + '/api/share/create', {
         method: http.RequestMethod.POST,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         extraData: params.toString(),
@@ -154,7 +154,7 @@ export async function getSharePostList(page: number = 0, pageSize: number = 36) 
             pageSize: pageSize.toString()
         }).toString(),
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         expectDataType: http.HttpDataType.OBJECT,
@@ -203,7 +203,7 @@ export async function shareLike(id: number) {
         method: http.RequestMethod.POST,
         extraData: `id=${id}`,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         expectDataType: http.HttpDataType.OBJECT
@@ -227,7 +227,7 @@ export async function deleteContent(id: string) {
         extraData: new url.URLParams({ id }).toString(),
         expectDataType: http.HttpDataType.OBJECT,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
     })

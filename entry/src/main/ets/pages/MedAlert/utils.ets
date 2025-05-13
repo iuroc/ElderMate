@@ -1,7 +1,7 @@
 import { http } from '@kit.NetworkKit'
 import { apiOrigin } from '../../common/config'
 import { ApiResponse } from '../../common/types'
-import { getToken } from '../Login/utils'
+import { getLoginInfo } from '../Login/utils'
 import { url } from '@kit.ArkTS'
 
 export async function getMedAlertList(date = new Date(), page: number = 0, pageSize: number = 120) {
@@ -15,7 +15,7 @@ export async function getMedAlertList(date = new Date(), page: number = 0, pageS
             date: date.getTime().toString()
         }).toString(),
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     })
@@ -41,7 +41,7 @@ export async function deleteMedAlert(id: number) {
             id: id.toString()
         }).toString(),
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     })

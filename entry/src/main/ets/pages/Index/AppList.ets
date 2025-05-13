@@ -1,26 +1,26 @@
 import { IconType, ContentItem, OperateItem, ComposeListItem, } from '@kit.ArkUI'
+import { getUserInfo, User } from '../Login/utils'
 import { ShareLink } from '../More/Page'
 
 @ComponentV2
 export struct AppList {
     @Consumer() pathInfos: NavPathStack = Object()
     @Require @Param scroller: Scroller = Object()
-    listItemDataList: ListItemData[] = []
+    @Consumer() isAdmin: boolean = false
 
     aboutToAppear(): void {
-        this.listItemDataList = this.makeListItemDataList()
     }
 
     build() {
         List({ scroller: this.scroller }) {
-            ForEach(this.listItemDataList, (listItemData: ListItemData, index) => {
+            ForEach(this.makeListItemDataList(), (listItemData: ListItemData, index) => {
                 ListItem() {
                     ComposeListItem({
                         contentItem: listItemData.contentItem,
                         operateItem: listItemData.operateItem
                     }).onClick(listItemData.onClick)
                         .margin({
-                            bottom: index == this.listItemDataList.length - 1 ? 20 : 0,
+                            bottom: index == this.makeListItemDataList().length - 1 ? 20 : 0,
                             left: 10,
                             right: 10
                         })
@@ -33,7 +33,32 @@ export struct AppList {
     }
 
     private makeListItemDataList(): ListItemData[] {
-        return [
+        return (this.isAdmin
+            ? [
+                {
+                    contentItem: {
+                        primaryText: '用户管理',
+                        secondaryText: '查看和管理用户列表',
+                        iconStyle: IconType.HEAD_SCULPTURE,
+                        icon: $r('app.media.gearshape'),
+                    },
+                    onClick: () => {
+                        this.pathInfos.pushPath({ name: 'UserControl' })
+                    }
+                },
+                {
+                    contentItem: {
+                        primaryText: '帖子审核',
+                        secondaryText: '支持删除不合规的帖子',
+                        iconStyle: IconType.HEAD_SCULPTURE,
+                        icon: $r('app.media.trash'),
+                    },
+                    onClick: () => {
+                        this.pathInfos.pushPath({ name: 'Share' })
+                    }
+                }
+            ] as ListItemData[]
+            : [] as ListItemData[]).concat([
             {
                 contentItem: {
                     primaryText: '用药提醒',
@@ -129,7 +154,7 @@ export struct AppList {
                     this.pathInfos.pushPath({ name: 'Share' })
                 }
             },
-        ]
+        ])
     }
 }
 

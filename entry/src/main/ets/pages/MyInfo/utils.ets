@@ -1,7 +1,7 @@
 import { http } from "@kit.NetworkKit";
 import { apiOrigin } from "../../common/config";
 import { ApiResponse } from "../../common/types";
-import { getToken } from "../Login/utils";
+import { getLoginInfo, UserRole } from "../Login/utils";
 import { url } from "@kit.ArkTS";
 
 export async function updateInfo(config: UpdateInfoConfig) {
@@ -40,7 +40,7 @@ export async function updateInfo(config: UpdateInfoConfig) {
         method: http.RequestMethod.POST,
         extraData: params.toString() || undefined,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         expectDataType: http.HttpDataType.OBJECT,
@@ -57,7 +57,7 @@ export async function getInfo() {
     const response = await request.request(apiOrigin + '/api/myInfo/get', {
         method: http.RequestMethod.POST,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
         },
         expectDataType: http.HttpDataType.OBJECT,
     })
@@ -86,6 +86,7 @@ export interface UpdateInfoConfig {
 export interface GetInfoResult extends UpdateInfoConfig {
     id: number
     nickName: string
+    role: UserRole
     phone: string
     createTime: string
 }

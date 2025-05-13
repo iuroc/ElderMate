@@ -1,6 +1,6 @@
 import { http } from "@kit.NetworkKit"
 import { apiOrigin } from "../../../common/config"
-import { getToken } from "../../Login/utils"
+import { getLoginInfo } from "../../Login/utils"
 import { url } from "@kit.ArkTS"
 import { ApiResponse } from "../../../common/types"
 
@@ -50,7 +50,7 @@ export async function createMedRecord(config: CreateMedRecordConfig) {
         method: http.RequestMethod.POST,
         expectDataType: http.HttpDataType.OBJECT,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         extraData: params.toString()

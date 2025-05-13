@@ -1,5 +1,5 @@
 import { SymbolGlyphModifier, window } from '@kit.ArkUI'
-import { loginOrRegister, saveToken, saveUserInfo, sendVerCode } from './utils'
+import { loginOrRegister, saveToken, saveUserInfo, sendVerCode, User } from './utils'
 import { BusinessError } from '@kit.BasicServicesKit'
 
 @ComponentV2
@@ -26,6 +26,7 @@ struct PageContent {
     @Local password: string = '' // 生产环境置空
     @Local loginMode: 'verCode' | 'password' = 'verCode'
     @Consumer() pathInfos: NavPathStack = new NavPathStack()
+    @Consumer() isAdmin: boolean = false
 
     sendVerCodeBtnText() {
         return this.secondsLeft == 0 ? '发送验证码' : `${this.secondsLeft}秒后重试`
@@ -89,29 +90,38 @@ struct PageContent {
         .menus(this.navMenus())
     }
 
+    loginButtonEnabled() {
+        return this.phoneAllow() && (this.verCodeAllow() || this.allowPassword()) && !this.loginRequesting
+    }
+
+    clickLogin(isAdmin = false) {
+        this.loginRequesting = true
+        if (this.loginMode == 'verCode') {
+            this.password = ''
+        } else if (this.loginMode == 'password') {
+            this.verCode = ''
+        }
+        loginOrRegister(this.phone, this.verCode, this.password, isAdmin).then(result => {
+            if (result.success) {
+                // 登录成功
+                saveUserInfo(result.data.user)
+                saveToken(result.data.token)
+                this.isAdmin = result.data.user.role == 'admin'
+                this.pathInfos.pop(false)
+            } else {
+                this.showLoginErrorDialog(result.message)
+            }
+        }).catch((error: BusinessError) => {
+            this.showLoginErrorDialog(error.message)
+        }).finally(() => this.loginRequesting = false)
+    }
+
     @Builder
     LoginButton() {
         Button('登录').width('100%').padding({ top: 5, bottom: 5 })
-            .enabled(this.phoneAllow() && (this.verCodeAllow() || this.allowPassword()) && !this.loginRequesting)
+            .enabled(this.loginButtonEnabled())
             .onClick(() => {
-                this.loginRequesting = true
-                if (this.loginMode == 'verCode') {
-                    this.password = ''
-                } else if (this.loginMode == 'password') {
-                    this.verCode = ''
-                }
-                loginOrRegister(this.phone, this.verCode, this.password).then(result => {
-                    if (result.success) {
-                        // 登录成功
-                        saveUserInfo(result.data.user)
-                        saveToken(result.data.token)
-                        this.pathInfos.pop(false)
-                    } else {
-                        this.showLoginErrorDialog(result.message)
-                    }
-                }).catch((error: BusinessError) => {
-                    this.showLoginErrorDialog(error.message)
-                }).finally(() => this.loginRequesting = false)
+                this.clickLogin(false)
             })
     }
 
@@ -130,13 +140,24 @@ struct PageContent {
 
     @Builder
     ChangeLoginMode() {
-        Button(this.loginMode == 'verCode' ? '使用密码登录' : '使用验证码登录')
-            .width('100%')
-            .buttonStyle(ButtonStyleMode.TEXTUAL)
-            .onClick(() => {
-                this.loginMode = this.loginMode == 'verCode' ? 'password' : 'verCode'
-                this.verCode = this.password = ''
-            })
+        Row({ space: 10 }) {
+            Button(this.loginMode == 'verCode' ? '使用密码登录' : '使用验证码登录')
+                .layoutWeight(1)
+                .buttonStyle(ButtonStyleMode.NORMAL)
+                .onClick(() => {
+                    this.loginMode = this.loginMode == 'verCode' ? 'password' : 'verCode'
+                    this.verCode = this.password = ''
+                })
+            if (this.loginMode == 'password') {
+                Button('管理员登录')
+                    .layoutWeight(1)
+                    .enabled(this.loginButtonEnabled())
+                    .buttonStyle(ButtonStyleMode.NORMAL)
+                    .onClick(() => {
+                        this.clickLogin(true)
+                    })
+            }
+        }
     }
 
     @Builder

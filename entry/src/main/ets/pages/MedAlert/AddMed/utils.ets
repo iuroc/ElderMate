@@ -1,7 +1,7 @@
 import { http } from "@kit.NetworkKit"
 import { apiOrigin } from "../../../common/config"
 import { url } from "@kit.ArkTS"
-import { getToken } from "../../Login/utils"
+import { getLoginInfo } from "../../Login/utils"
 import { ApiResponse } from "../../../common/types"
 
 /**
@@ -74,7 +74,7 @@ export async function createMedAlert(config: CreateMedAlertConfig): Promise<Crea
         extraData: params.toString(),
         expectDataType: http.HttpDataType.OBJECT,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
     })

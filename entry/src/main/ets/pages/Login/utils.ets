@@ -19,19 +19,22 @@ export async function sendVerCode(phone: string) {
     return response.result as ApiResponse
 }
 
-interface User {
+export type UserRole = 'admin' | 'user'
+
+export interface User {
     id: number
     phone: string
     nickName: string
+    role: UserRole
     createTime: Date
 }
 
-interface LoginResult {
+export interface LoginResult {
     user: User
     token: string
 }
 
-export async function loginOrRegister(phone: string, verCode: string, password: string) {
+export async function loginOrRegister(phone: string, verCode: string, password: string, isAdmin: boolean) {
     const request = http.createHttp()
     const params = new url.URLParams({ phone })
     if (password) {
@@ -40,6 +43,7 @@ export async function loginOrRegister(phone: string, verCode: string, password: 
     if (verCode) {
         params.set('verCode', verCode)
     }
+    params.set('role', isAdmin ? 'admin' : 'user')
     const response = await request.request(`${apiOrigin}/api/user/loginOrRegister`, {
         method: http.RequestMethod.POST,
         extraData: params.toString(),
@@ -60,6 +64,7 @@ export function saveUserInfo(user: User) {
     data.putSync('id', user.id)
     data.putSync('phone', user.phone)
     data.putSync('nickName', user.nickName)
+    data.putSync('role', user.role)
     data.putSync('createTime', user.createTime)
     data.flush()
 }
@@ -70,7 +75,8 @@ export function getUserInfo(): User {
         id: data.getSync('id', ''),
         phone: data.getSync('phone', ''),
         nickName: data.getSync('nickName', ''),
-        createTime: data.getSync('createTime', '')
+        role: data.getSync('role', ''),
+        createTime: data.getSync('createTime', ''),
     } as User
 }
 
@@ -81,14 +87,14 @@ export function getUserInfo(): User {
  * 如果校验失败，从 `message` 读取错误信息。
  * @returns { Promise<ApiResponse> }
  */
-export async function checkToken(): Promise<ApiResponse> {
+export async function checkLoginInfo() {
     const url = apiOrigin + '/api/user/checkToken'
     const request = http.createHttp()
     const response = await request.request(url, {
-        header: { token: await getToken() },
+        header: { token: await getLoginInfo() },
         expectDataType: http.HttpDataType.OBJECT
     })
-    return response.result as ApiResponse
+    return response.result as ApiResponse<User>
 }
 
 export function saveToken(token: string) {
@@ -101,7 +107,7 @@ export function saveToken(token: string) {
  * 从用户首选项中获取 token 值
  * @returns
  */
-export async function getToken(): Promise<string> {
+export async function getLoginInfo(): Promise<string> {
     const data = await preferences.getPreferences(getContext(), 'user')
     const token = await data.get('token', '')
     return token as string

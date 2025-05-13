@@ -74,6 +74,16 @@
             "name": "WebView",
             "pageSourceFile": "src/main/ets/pages/More/WebView/Page.ets",
             "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "UserControl",
+            "pageSourceFile": "src/main/ets/pages/UserControl/Page.ets",
+            "buildFunction": "PageBuilder"
+        },
+        {
+            "name": "ShareControl",
+            "pageSourceFile": "src/main/ets/pages/ShareControl/Page.ets",
+            "buildFunction": "PageBuilder"
         }
     ]
 }

@@ -1,6 +1,6 @@
 import { http } from "@kit.NetworkKit"
 import { url } from "@kit.ArkTS"
-import { getToken } from "../Login/utils"
+import { getLoginInfo } from "../Login/utils"
 import { ApiResponse } from "../../common/types"
 import { apiOrigin } from "../../common/config"
 import { MedRecordListResultItem } from "./AddMedRecord/utils"
@@ -20,7 +20,7 @@ export async function deleteMedRecord(id: number) {
             id: id.toString()
         }).toString(),
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     })
@@ -36,7 +36,7 @@ export async function getMedRecordList(page: number = 0, pageSize: number = 120)
         method: http.RequestMethod.POST,
         expectDataType: http.HttpDataType.OBJECT,
         header: {
-            token: await getToken(),
+            token: await getLoginInfo(),
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         extraData: new url.URLParams({

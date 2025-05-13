@@ -40,6 +40,7 @@ struct Page {
     private bottomCommentAreaInputController = new TextInputController()
     @Local bottomCommentAreaContent: string = ''
     private currentUser = getUserInfo()
+    @Consumer() isAdmin: boolean = false
 
     aboutToDisappear(): void {
         window.getLastWindow(getContext()).then(lastWindow => {
@@ -206,7 +207,7 @@ struct Page {
                     .layoutWeight(1)
 
                 // 删除按钮
-                if (this.currentUser.id == post.user.id) {
+                if (this.currentUser.id == post.user.id || this.isAdmin) {
                     Button() {
                         SymbolGlyph($r('sys.symbol.trash')).fontSize(18).fontColor([BSColor.danger])
                     }

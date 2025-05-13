@@ -3,13 +3,14 @@ import { SymbolGlyphModifier } from '@kit.ArkUI'
 import { AppList } from './AppList'
 import { common } from '@kit.AbilityKit'
 import { BSColor } from '@iuroc/bootstrap5-color'
-import { checkToken } from '../Login/utils'
+import { checkLoginInfo, User } from '../Login/utils'
 
 @Entry
 @ComponentV2
 struct Index {
     @Local navTitle: string = ''
     @Provider() pathInfos: NavPathStack = new NavPathStack()
+    @Provider() isAdmin: boolean = false
     scroller = new Scroller()
     @Local navigationShow: boolean = false
 
@@ -19,14 +20,16 @@ struct Index {
     }
 
     mustCheckToken() {
-        checkToken().then(result => {
+        checkLoginInfo().then(result => {
             this.navigationShow = true
             if (result.success) {
+                this.isAdmin = result.data.role == 'admin'
                 // this.pathInfos.pushPath({ name: 'More' }, false)
             } else {
                 this.pathInfos.replacePath({ name: 'Login' }, false)
             }
-        }).catch(() => {
+        }).catch((error: Error) => {
+            console.log(error.message)
             this.navigationShow = false
             AlertDialog.show({
                 title: '服务器错误',
